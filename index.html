@@ -3509,6 +3509,17 @@
   let yearDayDate = "";   // 값이 있으면 그 날짜의 하루 페이지
   let yearMobileSide = "left";
 
+  // 선택된 책이 항상 가운데, 양옆에 이전/다음 책이 대칭으로 보이는 창(window)
+  function shelfSlots(n, active, radius) {
+    if (!n) return [];
+    const r = Math.min(radius, Math.floor((n - 1) / 2));
+    const out = [];
+    for (let k = -r; k <= r; k++) {
+      out.push({ index: ((active + k) % n + n) % n, offset: k });
+    }
+    return out;
+  }
+
   function pad2(n) {
     return String(n).padStart(2, "0");
   }
@@ -3615,12 +3626,12 @@
     `;
   }
 
-  function renderYearCover(year, isActive) {
+  function renderYearCover(year, isActive, offset) {
     const y = Number(year);
     const days = countYearDays(y);
     const isThisYear = String(y) === TODAY_STR.slice(0, 4);
     return `
-      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" onclick="openYearBook(${y})" aria-label="${y}년 노트 펼치기" title="${y}년 노트 펼치기">
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" data-offset="${Number(offset) || 0}" onclick="openYearBook(${y})" aria-label="${y}년 노트 펼치기" title="${y}년 노트 펼치기">
         <span class="nb-cover nb-cover--year" style="--spine:${yearSpineColor(y)}">
           ${isThisYear ? `<span class="nb-year-now">올해</span>` : ""}
           ${(getYearBook(y) && getYearBook(y).cover)
@@ -3663,7 +3674,7 @@
       <div class="nb-stage nb-stage--shelf">
         <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
         <div class="nb-shelf">
-          <div class="nb-shelf-track" id="nbYearShelfTrack">${yearBooks.map((b, i) => renderYearCover(b.year, i === yearShelfIndex)).join("")}</div>
+          <div class="nb-shelf-track" id="nbYearShelfTrack">${shelfSlots(yearBooks.length, yearShelfIndex, 2).map(slot => renderYearCover(yearBooks[slot.index].year, slot.offset === 0, slot.offset)).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
@@ -3677,15 +3688,7 @@
     const idx = yearBooks.findIndex(b => b.year === Number(year));
     if (idx < 0) return;
     yearShelfIndex = idx;
-    const activeYear = yearBooks[idx].year;
-    const track = document.getElementById("nbYearShelfTrack");
-    if (!track) { render(); return; }
-    Array.from(track.children).forEach(el => el.classList.toggle("is-active", Number(el.dataset.year) === activeYear));
-    const meta = document.getElementById("nbYearShelfMeta");
-    if (meta) meta.innerHTML = renderYearShelfMeta(activeYear);
-    const actions = document.getElementById("nbYearShelfActions");
-    if (actions) actions.innerHTML = renderYearShelfActions(activeYear);
-    scrollShelfCenter(track.querySelector(".nb-cover-btn.is-active"));
+    render();
   }
 
   function yearShelfStep(delta) {
@@ -4620,7 +4623,6 @@
     render();
   }
 
-  // ---------- 아카이브 (주제별 책장 + 스프링 노트북 단일 뷰) ----------
   function renderArchiveView() {
     return renderArchiveNotebookView();
   }
@@ -4676,54 +4678,18 @@
     state.shelfSelectedBookId = books[notebookShelfIndex].id;
   }
 
-  // 첫 책과 마지막 책도 가운데에 올 수 있도록 좌우 여백을 맞춘다
-  function applyShelfPadding(track) {
-    if (!track) return;
-    const cover = track.querySelector(".nb-cover");
-    if (!cover) return;
-    const pad = Math.max(0, Math.round((track.clientWidth - cover.offsetWidth) / 2));
-    track.style.paddingLeft = `${pad}px`;
-    track.style.paddingRight = `${pad}px`;
-  }
-
-  // 선택된 책이 책장 가운데에 오도록 스크롤
-  function centerShelfOn(track, el, smooth) {
-    if (!track || !el) return;
-    const trackRect = track.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    const delta = (elRect.left + elRect.width / 2) - (trackRect.left + trackRect.width / 2);
-    if (Math.abs(delta) < 1) return;
-    const max = Math.max(0, track.scrollWidth - track.clientWidth);
-    const target = Math.min(max, Math.max(0, track.scrollLeft + delta));
-    if (smooth) {
-      try {
-        track.scrollTo({ left: target, behavior: "smooth" });
-      } catch (_) {
-        track.scrollLeft = target;
-      }
-    } else {
-      track.scrollLeft = target;
-    }
-  }
-
-  function scrollShelfCenter(el) {
-    if (!el) return;
-    const track = el.closest(".nb-shelf-track") || el.parentElement;
-    centerShelfOn(track, el, true);
-  }
-
   function renderArchiveNotebookView() {
     const book = notebookBookId ? getBookById(notebookBookId) : null;
     if (notebookBookId && !book) notebookBookId = "";
     return book ? renderNotebookReader(book) : renderNotebookShelf();
   }
 
-  function renderShelfCover(book, isActive) {
+  function renderShelfCover(book, isActive, offset) {
     const recs = bookArchives(book.id);
     const coverImg = book.cover || "";
     const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
     return `
-      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" onclick="openNotebook('${book.id}')" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-offset="${Number(offset) || 0}" onclick="openNotebook('${book.id}')" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
         <span class="nb-cover" style="--spine:${spine}">
           ${coverImg
             ? `<img class="nb-cover-photo" src="${coverImg}" alt="" /><span class="nb-cover-plate">${escapeHtml(book.title)}</span>`
@@ -4783,7 +4749,7 @@
       <div class="nb-stage nb-stage--shelf">
         <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
         <div class="nb-shelf">
-          <div class="nb-shelf-track" id="nbShelfTrack">${books.map((b, i) => renderShelfCover(b, i === notebookShelfIndex)).join("")}</div>
+          <div class="nb-shelf-track" id="nbShelfTrack">${shelfSlots(books.length, notebookShelfIndex, 2).map(slot => renderShelfCover(books[slot.index], slot.offset === 0, slot.offset)).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
         <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
@@ -4798,14 +4764,7 @@
     notebookShelfIndex = idx;
     state.shelfSelectedBookId = id;
     saveState();
-    const track = document.getElementById("nbShelfTrack");
-    if (!track) { render(); return; }
-    Array.from(track.children).forEach(el => el.classList.toggle("is-active", el.dataset.bookId === id));
-    const meta = document.getElementById("nbShelfMeta");
-    if (meta) meta.innerHTML = renderShelfMeta(books[idx]);
-    const actions = document.getElementById("nbShelfActions");
-    if (actions) actions.innerHTML = renderShelfActions(books[idx]);
-    scrollShelfCenter(track.querySelector(".nb-cover-btn.is-active"));
+    render();
   }
 
   function shelfStep(delta) {
@@ -5014,22 +4973,6 @@
       const label = (b.textContent || "").replace(/\s+/g, " ").trim();
       if (label) b.setAttribute("aria-label", label);
     });
-    ["nbShelfTrack", "nbYearShelfTrack"].forEach(id => {
-      const track = document.getElementById(id);
-      if (!track) return;
-      const active = track.querySelector(".nb-cover-btn.is-active");
-      if (!active) return;
-      applyShelfPadding(track);
-      centerShelfOn(track, active);
-      requestAnimationFrame(() => {
-        applyShelfPadding(track);
-        centerShelfOn(track, active);
-      });
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        applyShelfPadding(track);
-        centerShelfOn(track, active);
-      }));
-    });
     const spreads = [document.getElementById("nbSpread"), document.getElementById("nbYearSpread")].filter(Boolean);
     spreads.forEach(spread => {
       const isYear = spread.id === "nbYearSpread";
@@ -5088,32 +5031,19 @@
         if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.25) step(dx < 0 ? 1 : -1);
       }, { passive: true });
 
-      // 데스크톱: 마우스로 책장을 끌어 넘기기 (움직임이 생기기 전에는 일반 클릭 유지)
+      // 데스크톱: 마우스로 끌어 책 넘기기 (끌지 않고 누르면 일반 클릭 유지)
       let down = false;
       let startX = 0;
-      let startScroll = 0;
       let moved = 0;
-      let pastDragAt = 0;
-      const onMove = e => {
-        if (!down) return;
-        const dx = e.clientX - startX;
-        moved = Math.max(moved, Math.abs(dx));
-        if (moved > 6) {
-          el.classList.add("dragging");
-          el.scrollLeft = startScroll - dx;
-        }
-      };
-      const endDrag = () => {
+      const endDrag = e => {
         if (!down) return;
         down = false;
-        el.classList.remove("dragging");
-        window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", endDrag);
         window.removeEventListener("pointercancel", endDrag);
-        if (moved > 8) {
+        const dx = (e && typeof e.clientX === "number" ? e.clientX : startX) - startX;
+        if (moved > 40 && Math.abs(dx) > 20) {
           el.dataset.draggedAt = String(Date.now());
-          pastDragAt = Number(el.dataset.draggedAt);
-          settleShelfSelection(el);
+          step(dx < 0 ? 1 : -1);
         }
       };
       el.addEventListener("pointerdown", e => {
@@ -5121,36 +5051,21 @@
         down = true;
         moved = 0;
         startX = e.clientX;
-        startScroll = el.scrollLeft;
-        window.addEventListener("pointermove", onMove);
         window.addEventListener("pointerup", endDrag);
         window.addEventListener("pointercancel", endDrag);
       });
+      el.addEventListener("pointermove", e => {
+        if (!down) return;
+        moved = Math.max(moved, Math.abs(e.clientX - startX));
+      });
       el.addEventListener("click", e => {
-        const at = Number(el.dataset.draggedAt || pastDragAt);
+        const at = Number(el.dataset.draggedAt || 0);
         if (at && Date.now() - at < 320) {
           e.preventDefault();
           e.stopPropagation();
         }
       }, true);
     });
-  }
-
-  // 드래그가 끝나면 가운데에 가장 가까운 책을 선택한다
-  function settleShelfSelection(track) {
-    if (!track) return;
-    const trackRect = track.getBoundingClientRect();
-    const centerX = trackRect.left + trackRect.width / 2;
-    let best = null;
-    let bestDist = Infinity;
-    track.querySelectorAll(".nb-cover-btn").forEach(el => {
-      const r = el.getBoundingClientRect();
-      const d = Math.abs((r.left + r.width / 2) - centerX);
-      if (d < bestDist) { bestDist = d; best = el; }
-    });
-    if (!best) return;
-    if (track.id === "nbYearShelfTrack") selectYearShelf(Number(best.dataset.year));
-    else if (best.dataset.bookId) selectShelfBook(best.dataset.bookId);
   }
 
   // 모바일 노트 뒤집기 (사진 면 ↔ 노트 면) + 부드러운 전환
@@ -6149,20 +6064,6 @@
         }
       }
     }
-  });
-
-  let shelfResizeTimer = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(shelfResizeTimer);
-    shelfResizeTimer = setTimeout(() => {
-      ["nbShelfTrack", "nbYearShelfTrack"].forEach(id => {
-        const track = document.getElementById(id);
-        if (!track) return;
-        applyShelfPadding(track);
-        const active = track.querySelector(".nb-cover-btn.is-active");
-        if (active) centerShelfOn(track, active);
-      });
-    }, 140);
   });
 
   const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
