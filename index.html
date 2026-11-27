@@ -2136,12 +2136,12 @@
       background: linear-gradient(90deg, rgba(0,0,0,.18), rgba(0,0,0,0) 55%), var(--tab-color);
       color: rgba(255,255,255,.94); font-family: inherit;
       font-size: 9.5px; font-weight: 700; letter-spacing: .02em; line-height: 1.2;
-      writing-mode: vertical-rl; text-orientation: upright;
       cursor: pointer; user-select: none; -webkit-user-select: none;
       box-shadow: 1px 2px 6px rgba(10,14,24,.34), inset 0 1px 0 rgba(255,255,255,.26);
       transition: width .2s ease, transform .2s ease, filter .2s ease;
     }
-    .idx-tab span { writing-mode: vertical-rl; text-orientation: upright; }
+    .idx-tab span { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .idx-tab i { font-style: normal; line-height: 1.02; }
     .idx-tab:hover { transform: translateX(-2px); filter: brightness(1.08); }
     .idx-tab.is-active {
       width: 35px; transform: translateX(-5px);
@@ -3058,6 +3058,15 @@
     const num = Number(n);
     if (!Number.isFinite(num) || num <= 0) return "";
     return `<span class="nb-page-no" aria-label="페이지 ${num}">- ${num} -</span>`;
+  }
+
+  // 인덱스 탭 라벨을 한 글자씩 세로로 세워 표시 (글꼴·브라우저에 상관없이 똑바로)
+  function stackedLabel(text) {
+    return String(text == null ? "" : text)
+      .split("")
+      .filter(ch => ch.trim())
+      .map(ch => `<i>${escapeHtml(ch)}</i>`)
+      .join("");
   }
 
   function normalizeTab(tab) {
@@ -4279,7 +4288,7 @@
             <div class="idx-tabs idx-tabs--quarter" role="tablist" aria-label="분기 인덱스">
               ${[0, 1, 2, 3].map(q => `
                 <button class="idx-tab idx-tab--q${q + 1} ${quarter === q ? "is-active" : ""}" role="tab" aria-selected="${quarter === q ? "true" : "false"}" onclick="yearQuarterJump(${q})" title="${q + 1}분기 (${q * 3 + 1}월)">
-                  <span>${q + 1}분기</span>
+                  <span>${stackedLabel(`${q + 1}분기`)}</span>
                 </button>
               `).join("")}
             </div>
@@ -5175,7 +5184,7 @@
       const color = TOPIC_TAB_COLORS[i % TOPIC_TAB_COLORS.length];
       return `
         <button class="idx-tab idx-tab--topic ${i === idx ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-selected="${i === idx ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
-          <span>${escapeHtml(short)}</span>
+          <span>${stackedLabel(short)}</span>
         </button>
       `;
     }).join("");
