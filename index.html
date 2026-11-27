@@ -1430,14 +1430,20 @@
     .diary-figure .pill { background: rgba(120,126,140,.13); color: #5b6478; }
     .diary-figure .item-title { font-size: 13px; font-weight: 600; color: #2f343d; }
 
+    .day-stack { display: flex; flex-direction: column; gap: 14px; }
     .diary-stage-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
       gap: 14px;
       align-items: start;
     }
-    .diary-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-    .diary-side .paper { margin-bottom: 0; }
+    .day-side-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .day-stack .paper, .day-side-grid .paper { margin-bottom: 0; }
 
     /* ===== 종이 카드 ===== */
     .paper {
@@ -1495,7 +1501,7 @@
     .paper-input-line:focus { border-color: #8f9299 !important; }
     textarea.diary-area {
       width: 100%;
-      min-height: 292px;
+      min-height: 300px;
       resize: vertical;
       border: 0 !important;
       border-radius: 0 !important;
@@ -1524,6 +1530,14 @@
     .paper .btn { background: #fff; border-color: #e4dfd1; color: #3b404a; }
     .paper .btn:hover { background: #f5f2e9; }
     .paper .btn-primary { background: #33383f; border-color: #33383f; color: #fff; }
+    .nb-page .btn, .paper .icon-btn {
+      background: #fff;
+      border-color: #e4dfd1;
+      color: #5b6478;
+    }
+    .nb-page .btn:hover, .paper .icon-btn:hover { background: #f5f2e9; color: #33383f; }
+    .paper .icon-btn { border-color: transparent; background: transparent; color: #a9a6a0; }
+    .paper .icon-btn.danger:hover { background: rgba(200,75,75,.1); color: var(--sun); }
     .paper .btn-primary:hover { background: #22262c; }
     .paper .chk { accent-color: #4a5162; }
 
@@ -2065,8 +2079,9 @@
       .diary-date span { font-size: 10.5px; }
       .diary-subcontrols { gap: 6px; margin-bottom: 12px; }
       .diary-subcontrols .stage-date { width: 132px; }
-      .diary-stage-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-      textarea.diary-area { min-height: 220px; }
+      .diary-stage-grid, .day-side-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .day-stack { gap: 12px; }
+      textarea.diary-area { min-height: 200px; }
 
       .paper { padding: 15px 16px; margin-bottom: 12px; }
       .goal-list { gap: 10px; }
@@ -3341,7 +3356,7 @@
       btn.classList.toggle("active", btn.dataset.tab === state.activeTab);
     });
     const label = document.getElementById("sidebarDateLabel");
-    if (label) label.textContent = `오늘: ${TODAY_STR} · 선택: ${state.selectedDate}`;
+    if (label) label.textContent = `오늘 ${TODAY_STR}`;
   }
 
   function render() {
@@ -3749,10 +3764,10 @@
         <div class="nb-reader-head">
           <button class="nb-back" onclick="closeYearDay()">${ICONS.chevLeft}${m}월 달력</button>
           <div class="nb-reader-title">
-            <b>${m}월 ${day}일 <em style="font-style:normal; color:${dow === 0 ? "#e8b4b4" : "inherit"};">${dowNames[dow]}</em></b>
-            <span>${y}년 · 연력 한 줄 · 일기 · 할일</span>
+            <b>${m}월 ${day}일 <em>(${dowNames[dow]})</em></b>
+            <span>${y}년${isToday ? " · 오늘" : ""} · 연력 한 줄 · 일기 · 할일</span>
           </div>
-          <span class="nb-stage-count">${isToday ? "오늘" : `${day} / ${maxDay}`}</span>
+          <span class="nb-stage-count">${day} / ${maxDay}</span>
         </div>
 
         <div class="day-controls">
@@ -3761,7 +3776,7 @@
           <button class="stage-nav next" onclick="stepYearDay(1)" aria-label="다음 날"><span class="label">다음 날</span>${ICONS.chevRight}</button>
         </div>
 
-        <div class="diary-stage-grid">
+        <div class="day-stack">
           <section class="paper diary-note paper--dot">
             <div class="paper-label">${ICONS.diary}연력 한 줄 요약</div>
             <input type="text" id="oneLineInput" class="paper-input-line" placeholder="연력 칸에 표시될 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" aria-label="연력 한 줄 요약" />
@@ -3773,7 +3788,7 @@
             </div>
           </section>
 
-          <div class="diary-side">
+          <div class="day-side-grid">
             <section class="paper">
               <div class="paper-label">${ICONS.year}이 날의 할일</div>
               <div class="form-row" style="margin-bottom:8px;">
