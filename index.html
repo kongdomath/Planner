@@ -6435,18 +6435,18 @@
       return;
     }
 
-    const localJson = JSON.stringify(state);
-    const cloudJson = JSON.stringify(cloud.state);
+    const localCanon = stableStringify(state);
+    const cloudCanon = stableStringify(cloud.state);
 
     // 이 기기가 마지막으로 맞춘 뒤 계정 쪽이 변하지 않았다면, 이 기기 기록이 기준입니다.
     // (기기에서 지운 항목이 계정 때문에 되살아나지 않게)
     const baseline = readCloudBaseline(authUser.uid);
     const cloudChanged = Number(cloud.updatedAt) > baseline;
 
-    if (localJson === cloudJson) {
-      lastPushedSerialized = localJson;
+    if (localCanon === cloudCanon) {
+      lastPushedSerialized = JSON.stringify(state);
       lastCloudAt = new Date();
-      cloudBytes = cloud.bytes || jsonBytes(localJson);
+      cloudBytes = cloud.bytes || jsonBytes(localCanon);
       writeCloudBaseline(cloud.updatedAt);
       refreshSettingsIfOpen();
       if (manual) showToast("계정과 이미 같은 기록입니다.", "info", 2800);
@@ -6463,11 +6463,11 @@
     const result = mergeStates(state, cloud.state);
     state = result.state;
     saveState({ skipCloud: true });
-    const mergedJson = JSON.stringify(state);
+    const mergedCanon = stableStringify(state);
 
-    if (mergedJson === cloudJson) {
-      lastPushedSerialized = mergedJson;
-      cloudBytes = cloud.bytes || jsonBytes(mergedJson);
+    if (mergedCanon === cloudCanon) {
+      lastPushedSerialized = JSON.stringify(state);
+      cloudBytes = cloud.bytes || jsonBytes(mergedCanon);
       lastCloudAt = new Date();
       writeCloudBaseline(cloud.updatedAt);
       render();
