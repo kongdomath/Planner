@@ -1,1843 +1,3841 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>index</title>
-<style>
-  :root {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --surface-muted: #f1f3f6;
-    --text: #14161a;
-    --text-secondary: #5c6370;
-    --text-muted: #8b92a0;
-    --border: #e4e7ec;
-    --accent: #14161a;
-    --accent-text: #ffffff;
-    --danger: #d92d20;
-    --danger-bg: #fef3f2;
-    --dot-diary: #2563eb;
-    --dot-goal: #16a34a;
-    --dot-archive: #9333ea;
-    --dot-todo: #ea580c;
-    --radius-lg: 16px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
-    --radius-pill: 999px;
-    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
-    --shadow-fab: 0 8px 24px rgba(20, 22, 26, 0.22);
-    --nav-h: 64px;
-  }
-
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    padding-bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom, 0px));
-  }
-
-  button, input, select, textarea {
-    font-family: inherit;
-    color: inherit;
-  }
-
-  button {
-    cursor: pointer;
-    border: none;
-    background: none;
-  }
-
-  .app-container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 16px 16px 24px;
-  }
-
-  .top-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .top-title {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0;
-  }
-
-  .top-sub {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 12px;
-  }
-
-  /* 카테고리 필터 칩: 수정·휴지통 상시 버튼 제거 */
-  .chip-row {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 4px;
-    margin-bottom: 10px;
-  }
-
-  .chip-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  .chip {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 13px;
-    border-radius: var(--radius-pill);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.15s ease;
-  }
-
-  .chip.active {
-    background: var(--accent);
-    color: var(--accent-text);
-    border-color: var(--accent);
-    font-weight: 600;
-  }
-
-  .chip-count {
-    opacity: 0.72;
-    font-size: 12px;
-  }
-
-  .toolbar-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-
-  .btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
-
-  .btn-outline:hover {
-    background: var(--surface-muted);
-    color: var(--text);
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border-radius: var(--radius-sm);
-    background: var(--accent);
-    color: var(--accent-text);
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border-radius: var(--radius-sm);
-    background: var(--danger-bg);
-    color: var(--danger);
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .select-sm, .input-sm, .textarea-field {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    font-size: 14px;
-    padding: 8px 11px;
-    width: 100%;
-  }
-
-  .select-sm {
-    width: auto;
-    padding: 7px 10px;
-    font-size: 13px;
-  }
-
-  /* 접이식 카테고리 관리 박스 */
-  .cat-manager {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-
-  .cat-add-form {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .cat-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .cat-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-muted);
-    font-size: 13px;
-  }
-
-  .cat-item-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .link-btn {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    padding: 4px 6px;
-  }
-
-  .link-btn.danger {
-    color: var(--danger);
-  }
-
-  /* 아카이브 카드 */
-  .archive-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-sm);
-    cursor: pointer;
-    transition: transform 0.12s ease, border-color 0.12s ease;
-  }
-
-  .archive-card:hover {
-    border-color: #cbd2dc;
-  }
-
-  .archive-cover {
-    width: 100%;
-    max-height: 220px;
-    object-fit: cover;
-    display: block;
-    background: var(--surface-muted);
-  }
-
-  .archive-body {
-    padding: 14px 16px;
-  }
-
-  .archive-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-
-  .badge {
-    background: var(--surface-muted);
-    color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: var(--radius-pill);
-    font-weight: 600;
-    font-size: 11px;
-  }
-
-  .archive-title {
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0 0 4px;
-  }
-
-  .archive-sub {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0 0 8px;
-  }
-
-  .archive-note {
-    font-size: 13px;
-    color: var(--text);
-    margin: 0;
-    white-space: pre-line;
-  }
-
-  /* 일기 탭 (날짜 중복 제거) */
-  .diary-header-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-
-  .date-nav {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .date-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-  }
-
-  .date-picker-input {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .field-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-  }
-
-  .field-group {
-    margin-bottom: 14px;
-  }
-
-  .diary-textarea {
-    min-height: 240px;
-    resize: vertical;
-    line-height: 1.65;
-  }
-
-  /* 목표 & 버킷 리스트 */
-  .list-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 13px 15px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    cursor: pointer;
-  }
-
-  .list-item-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0 0 3px;
-  }
-
-  .list-item-desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0;
-  }
-
-  .check-pill {
-    padding: 5px 10px;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 600;
-    background: var(--surface-muted);
-    color: var(--text-secondary);
-    flex-shrink: 0;
-  }
-
-  .check-pill.done {
-    background: #dcfce7;
-    color: #166534;
-  }
-
-  /* 1년 연력 탭 */
-  .cal-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .cal-top-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .cal-top-row .input-sm {
-    flex: 1 1 180px;
-  }
-
-  .seg-group {
-    display: inline-flex;
-    background: var(--surface-muted);
-    padding: 3px;
-    border-radius: var(--radius-sm);
-  }
-
-  .seg-btn {
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  .seg-btn.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .month-jump-bar {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
-
-  .month-jump-bar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .month-pill {
-    flex: 0 0 auto;
-    padding: 5px 10px;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 600;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-  }
-
-  .month-pill.has-entry {
-    border-color: #b7c4d6;
-    color: var(--text);
-  }
-
-  .month-pill.active {
-    background: var(--accent);
-    color: var(--accent-text);
-    border-color: var(--accent);
-  }
-
-  .legend-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    flex-wrap: wrap;
-    font-size: 12px;
-    color: var(--text-secondary);
-    padding: 8px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    margin-bottom: 12px;
-  }
-
-  .legend-dots {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .dot-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .month-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 14px 16px;
-    margin-bottom: 10px;
-  }
-
-  .month-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .month-card-title {
-    font-size: 15px;
-    font-weight: 700;
-    margin: 0;
-  }
-
-  .day-entry-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 9px 10px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-muted);
-    margin-bottom: 6px;
-    cursor: pointer;
-  }
-
-  .day-entry-row:last-child {
-    margin-bottom: 0;
-  }
-
-  .year-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-  }
-
-  .mini-cal-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
-    text-align: center;
-    font-size: 11px;
-  }
-
-  .mini-day {
-    padding: 5px 0;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .mini-day.has-entry {
-    background: #eef2ff;
-    font-weight: 700;
-  }
-
-  .mini-day.today {
-    outline: 1.5px solid var(--accent);
-  }
-
-  /* 우측 하단 플로팅 추가 버튼 (FAB) */
-  .fab-btn {
-    position: fixed;
-    right: 20px;
-    bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px));
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--accent-text);
-    box-shadow: var(--shadow-fab);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    font-weight: 400;
-    z-index: 30;
-  }
-
-  .fab-btn:active {
-    transform: scale(0.96);
-  }
-
-  /* 하단 탭 내비게이션 */
-  .bottom-nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    z-index: 25;
-  }
-
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-  }
-
-  .nav-item.active {
-    color: var(--text);
-    font-weight: 700;
-  }
-
-  .nav-icon {
-    font-size: 17px;
-    line-height: 1;
-  }
-
-  /* 모달 */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    display: none;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 50;
-  }
-
-  .modal-backdrop.open {
-    display: flex;
-  }
-
-  .modal-sheet {
-    width: 100%;
-    max-width: 640px;
-    max-height: 88vh;
-    overflow-y: auto;
-    background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    padding: 20px 18px calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-
-  @media (min-width: 640px) {
-    .modal-backdrop {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="아카이브 플래너" />
+  <meta name="theme-color" content="#faf9f6" />
+  <title>index</title>
+  <style>
+    :root {
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --surface-muted: #f3f1ec;
+      --border: #e5e2da;
+      --text: #1f2421;
+      --text-sub: #6b7280;
+      --sat: #3b6ea5;
+      --sun: #c84b4b;
+      --c-year: #334155;
+      --c-diary: #2b4c7e;
+      --c-goal: #2d6a4f;
+      --c-bucket: #b46528;
+      --c-archive: #5b4b8a;
+      --c-todo: #6441a5;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 232px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      flex-shrink: 0;
+    }
+    .brand {
+      padding: 6px 10px 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .brand p {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin: 4px 0 0;
+    }
+    .nav-btn {
+      display: flex;
       align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-sub);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
     }
-    .modal-sheet {
-      border-radius: 18px;
-      padding-bottom: 20px;
+    .nav-btn:hover { background: var(--surface-muted); color: var(--text); }
+    .nav-btn.active { background: var(--surface-muted); color: var(--text); font-weight: 700; }
+    .nav-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
-  }
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      padding: 0 2px;
+      line-height: 1.5;
+    }
+    .main {
+      flex: 1;
+      padding: 24px 28px 92px;
+      max-width: 1320px;
+      margin: 0 auto;
+      width: 100%;
+      min-width: 0;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 12px;
+      min-height: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 36px;
+      min-width: 0;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-left: auto;
+      min-height: 36px;
+    }
+    .topbar-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .page-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .title-year { color: var(--c-year); }
+    .title-diary { color: var(--c-diary); }
+    .title-goal { color: var(--c-goal); }
+    .title-bucket { color: var(--c-bucket); }
+    .title-archive { color: var(--c-archive); }
 
-  .modal-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
+    /* 공통 상단 유틸리티 (검색 · 설정) */
+    .global-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 4px;
+    }
+    .global-tools.search-open { margin-left: 0; }
+    .search-open-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .search-open-inner .search-input { min-width: 220px; }
 
-  .modal-title {
-    font-size: 17px;
-    font-weight: 700;
-    margin: 0;
-  }
+    .diary-date-badge {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
 
-  .modal-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 16px;
-  }
+    select, input[type="text"], input[type="date"], textarea {
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 11px;
+      height: 36px;
+      outline: none;
+    }
+    textarea {
+      height: auto;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    select:focus, input:focus, textarea:focus {
+      border-color: #94a3b8;
+    }
+    .search-input {
+      min-width: 210px;
+      font-size: 13px;
+      height: 36px;
+    }
+    .year-select {
+      font-weight: 600;
+      font-size: 13px;
+      height: 36px;
+      padding: 0 12px;
+      cursor: pointer;
+      background: var(--surface);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--surface-muted); }
+    .btn-primary {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+    .btn-primary:hover { opacity: 0.9; background: var(--text); }
+    .btn-sm {
+      height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+    .btn-nav-arrow {
+      width: 36px;
+      padding: 0;
+    }
+    .btn-danger-outline {
+      color: var(--sun);
+      border-color: #f0c9c9;
+      background: #fff;
+    }
+    .btn-danger-outline:hover { background: #fef2f2; }
+    .segmented {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+    }
+    .segmented button {
+      border: none;
+      background: transparent;
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .segmented button.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
 
-  .empty-state {
-    text-align: center;
-    padding: 36px 16px;
-    color: var(--text-muted);
-    font-size: 14px;
-  }
-</style>
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 7px;
+      color: var(--text-sub);
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+    .icon-btn:hover { background: var(--surface-muted); color: var(--text); }
+    .icon-btn.danger:hover { color: var(--sun); border-color: #fecaca; background: #fef2f2; }
+    .icon-btn-lg {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+    }
+
+    .tap-edit-target {
+      cursor: pointer;
+      transition: opacity 0.14s, color 0.14s;
+    }
+    .tap-edit-target:hover {
+      opacity: 0.78;
+    }
+
+    /* 통계 요약 바 */
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .summary-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+    }
+    .progress-track {
+      width: 140px;
+      height: 8px;
+      background: var(--surface-muted);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--c-goal);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+    .legend-dots {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* 검색 결과 패널 */
+    .search-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .search-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .search-result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+    .search-result-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      background: var(--bg);
+    }
+    .search-result-item:hover { background: var(--surface-muted); }
+
+    /* 연력 뷰 */
+    .year-block { margin-bottom: 32px; }
+    .year-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--c-year);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .matrix-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      max-height: 76vh;
+      overflow-y: auto;
+    }
+    table.year-table {
+      width: 100%;
+      min-width: 1120px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.year-table th {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      background: var(--surface-muted);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    table.year-table th.day-axis-col,
+    table.year-table td.day-axis-cell {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      width: 44px;
+      background: var(--surface-muted);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      cursor: default;
+      vertical-align: middle;
+    }
+    table.year-table th.day-axis-col {
+      z-index: 5;
+    }
+    table.year-table td {
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 6px 7px;
+      vertical-align: top;
+      height: 54px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    table.year-table td:hover:not(.empty-cell):not(.day-axis-cell) { background: #f4f6fb; }
+    table.year-table td.empty-cell { background: #faf9f6; cursor: default; }
+    table.year-table td.weekend-bg { background: #fcfbf9; }
+    table.year-table td.selected-day { outline: 2px solid var(--c-diary); outline-offset: -2px; background: #eef2ff; }
+    table.year-table td.today-cell { background: #fefce8; }
+    .cell-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .day-num { color: var(--text-sub); }
+    .day-num.sat { color: var(--sat); }
+    .day-num.sun, .day-num.holiday { color: var(--sun); }
+    .cell-badges { display: flex; gap: 3px; align-items: center; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .cell-line {
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: keep-all;
+    }
+    .cell-line.holiday-label {
+      color: var(--sun);
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    /* 달별 모아보기 (기록 있는 날만) */
+    .month-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .month-jump-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .month-jump-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-sub);
+      border-radius: 7px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .month-jump-btn:hover { background: var(--surface-muted); color: var(--text); }
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .month-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+    }
+    .month-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .month-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--c-year);
+    }
+    .month-card-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: var(--surface-muted);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .month-highlights {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .highlight-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      padding: 5px 7px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .highlight-row:hover { background: var(--surface-muted); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .list-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .list-item.done .item-title {
+      text-decoration: line-through;
+      color: var(--text-sub);
+    }
+    .item-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .chk {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: var(--text);
+      flex-shrink: 0;
+    }
+    .item-title {
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .item-meta {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      color: var(--text-sub);
+    }
+    .pill svg, .chip-btn svg {
+      flex-shrink: 0;
+    }
+    .done-date-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+    .done-date-inline input[type="date"] {
+      font-size: 11px;
+      height: 26px;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    textarea.diary-area {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
+      line-height: 1.7;
+      padding: 14px;
+    }
+    .diary-save-line {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .save-status {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+    .save-status.saving { color: var(--c-diary); }
+
+    /* 필터 칩 */
+    .filter-bar-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+    }
+    .chip-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-sub);
+      border-radius: 999px;
+      height: 32px;
+      padding: 0 13px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .chip-btn:hover { background: var(--surface-muted); color: var(--text); }
+    .chip-btn.active {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+    .chip-btn.active .chip-count { color: rgba(255,255,255,0.75); }
+    .chip-count {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.7;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip-manage-btn {
+      color: var(--text-sub);
+      flex-shrink: 0;
+    }
+
+    .composer-card {
+      border-color: #cbd5e1;
+      background: #fdfcfa;
+    }
+    .composer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .composer-header h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .composer-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 10px;
+      margin-top: 4px;
+      border-top: 1px dashed var(--border);
+    }
+    .composer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    /* 픽토그램 선택 피커 */
+    .icon-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+    .icon-pick-btn {
+      height: 36px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-sub);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .icon-pick-btn:hover {
+      background: var(--surface-muted);
+      color: var(--text);
+    }
+    .icon-pick-btn.selected {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .media-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: opacity 0.15s;
+    }
+    .media-card.done {
+      background: #fcfbf9;
+    }
+    .media-card.done .media-title {
+      text-decoration: line-through;
+      color: var(--text-sub);
+    }
+    .media-cover {
+      width: 100%;
+      height: 185px;
+      background: var(--surface-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-sub);
+      cursor: pointer;
+      position: relative;
+    }
+    .media-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .photo-count-badge {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(15, 23, 42, 0.72);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .cover-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+    .cover-placeholder .big-pictogram {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-sub);
+    }
+    .media-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .media-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 28px;
+    }
+    .media-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+    .media-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .media-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+    .media-note {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-line;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .img-preview-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .thumb-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .thumb-wrap img {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .thumb-del-btn {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: var(--text);
+      color: #fff;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 6px 4px;
+      z-index: 40;
+      justify-content: space-around;
+    }
+    .mobile-nav button {
+      border: none;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sub);
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .mobile-nav button.active { color: var(--text); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.38);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+    .modal h3 { margin: 0 0 14px; font-size: 16px; }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .modal-head h3 { margin: 0; }
+    .modal-field { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+    .modal-field label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+    /* 설정 모달 */
+    #settingsModal { z-index: 58; }
+    #catModal { z-index: 58; }
+    .settings-section { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
+    .settings-section:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+    .settings-section h4 { margin: 0 0 8px; font-size: 13.5px; }
+    .settings-hint { font-size: 12px; color: var(--text-sub); line-height: 1.65; margin: 8px 0 0; }
+    .settings-hint code { font-size: 11px; background: var(--surface-muted); padding: 1px 5px; border-radius: 5px; }
+    .storage-line { display: flex; align-items: baseline; gap: 6px; font-size: 13px; margin-bottom: 6px; }
+    .storage-line span { font-size: 12px; color: var(--text-sub); }
+    .storage-track {
+      height: 8px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .storage-fill { height: 100%; background: var(--c-diary); border-radius: 999px; }
+    .storage-fill.warn { background: var(--sun); }
+    .settings-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* 카테고리 관리 모달 */
+    .cat-manage-list { display: flex; flex-direction: column; gap: 6px; }
+    .cat-manage-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg);
+    }
+    .cat-manage-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      min-width: 0;
+    }
+    .cat-manage-count {
+      font-size: 11px;
+      color: var(--text-sub);
+      background: var(--surface-muted);
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-weight: 600;
+    }
+    .cat-manage-actions { display: inline-flex; gap: 6px; flex-shrink: 0; }
+    .cat-add-card {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+    }
+    .cat-add-card h4 { margin: 0 0 10px; font-size: 13px; }
+    .cat-add-row { display: flex; gap: 8px; margin-top: 10px; }
+    .cat-add-row input[type="text"] { flex: 1; min-width: 0; }
+
+    /* 라이트박스 */
+    .lightbox-backdrop {
+      background: rgba(8, 11, 18, 0.88);
+      z-index: 80;
+      padding: 0;
+    }
+    .lightbox {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+      padding: 56px 8px;
+    }
+    .lightbox img {
+      max-width: 92vw;
+      max-height: 78vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #14181f;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      cursor: zoom-out;
+    }
+    .lightbox-close {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      right: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-close:hover { background: rgba(255, 255, 255, 0.26); }
+    .lightbox-caption {
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 13px;
+      text-align: center;
+      max-width: 90vw;
+      word-break: break-word;
+    }
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-nav:hover { background: rgba(255, 255, 255, 0.26); }
+    .lightbox-nav.prev { left: 10px; }
+    .lightbox-nav.next { right: 10px; }
+
+    @media (max-width: 1060px) {
+      .months-grid, .media-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      .mobile-nav {
+        display: flex;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+      }
+      .main { padding: 14px 14px calc(96px + env(safe-area-inset-bottom, 0px)); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .months-grid, .media-grid { grid-template-columns: 1fr; }
+
+      /* 상단 바: 1줄 제목 + 유틸리티, 2줄 필터 그리드 */
+      .topbar { align-items: flex-start; gap: 8px 10px; }
+      .topbar-left { flex: 1 1 auto; }
+      .global-tools { order: 1; flex: 0 0 auto; margin-left: auto; }
+      .global-tools.search-open { order: 1; flex: 1 1 100%; margin-left: 0; }
+      .global-tools.search-open .search-open-inner { flex: 1 1 auto; width: 100%; }
+      .global-tools.search-open .search-input {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+      }
+      .topbar-right {
+        order: 2;
+        flex: 1 1 100%;
+        margin-left: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .topbar-right > select {
+        flex: 1 1 calc(50% - 3px);
+        width: auto;
+        min-width: 0;
+        height: 34px;
+      }
+      .topbar-right > input[type="date"] {
+        flex: 1 1 110px;
+        width: auto;
+        min-width: 0;
+        height: 34px;
+      }
+      .topbar-right > .segmented { flex: 1 1 100%; }
+      .topbar-right > .segmented button { flex: 1; }
+      .topbar-right > .btn-primary { flex: 1 1 100%; }
+      .topbar-right > .btn-nav-arrow { flex: 0 0 34px; width: 34px; height: 34px; }
+      .topbar-right > .btn { height: 34px; }
+      .page-title { font-size: 18px; }
+      .diary-date-badge { font-size: 14px; }
+      .topbar-sub { font-size: 12px; }
+
+      .filter-chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .filter-chips::-webkit-scrollbar { display: none; }
+      .chip-manage-btn { margin-left: auto; }
+
+      .search-panel { padding: 12px 14px; }
+      .modal { padding: 16px; }
+      .icon-picker-grid { grid-template-columns: repeat(6, 1fr); }
+      .composer-actions { margin-left: auto; }
+      .lightbox-nav { width: 38px; height: 38px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-container" id="app"></div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>아카이브 &amp; 플래너</h1>
+      <p id="sidebarDateLabel"></p>
+    </div>
+    <button class="nav-btn active" data-tab="year"><span class="nav-icon" id="navIconYear"></span>1년 연력</button>
+    <button class="nav-btn" data-tab="diary"><span class="nav-icon" id="navIconDiary"></span>하루 기록 · 일기</button>
+    <button class="nav-btn" data-tab="goals"><span class="nav-icon" id="navIconGoals"></span>목표</button>
+    <button class="nav-btn" data-tab="bucket"><span class="nav-icon" id="navIconBucket"></span>버킷리스트</button>
+    <button class="nav-btn" data-tab="archive"><span class="nav-icon" id="navIconArchive"></span>아카이브</button>
+    <div class="sidebar-footer">
+      <button class="btn" onclick="openSettings()"><span class="nav-icon" id="navIconSettings"></span>설정 · 데이터 관리</button>
+      <span class="sidebar-hint">기록은 이 브라우저에만 저장됩니다. 가끔 JSON으로 백업해 두세요.</span>
+    </div>
+  </aside>
 
-  <button type="button" class="fab-btn" id="fabBtn" aria-label="새 항목 추가" style="display:none;">+</button>
+  <main class="main" id="mainView"></main>
+</div>
 
-  <nav class="bottom-nav" aria-label="주요 탭">
-    <button type="button" class="nav-item" data-tab="calendar">
-      <span class="nav-icon">🗓</span>
-      <span>연력</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="diary">
-      <span class="nav-icon">📝</span>
-      <span>일기</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="goals">
-      <span class="nav-icon">🎯</span>
-      <span>목표</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="bucket">
-      <span class="nav-icon">⭐</span>
-      <span>버킷</span>
-    </button>
-    <button type="button" class="nav-item active" data-tab="archive">
-      <span class="nav-icon">🗂</span>
-      <span>아카이브</span>
-    </button>
-  </nav>
+<nav class="mobile-nav" id="mobileNav">
+  <button class="active" data-tab="year"><span class="nav-icon" id="mIconYear"></span>연력</button>
+  <button data-tab="diary"><span class="nav-icon" id="mIconDiary"></span>일기</button>
+  <button data-tab="goals"><span class="nav-icon" id="mIconGoals"></span>목표</button>
+  <button data-tab="bucket"><span class="nav-icon" id="mIconBucket"></span>버킷</button>
+  <button data-tab="archive"><span class="nav-icon" id="mIconArchive"></span>아카이브</button>
+</nav>
 
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
-    <div class="modal-sheet" id="modalSheet"></div>
+<div class="modal-backdrop" id="editModal" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <h3 id="modalTitle">항목 수정</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions">
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="modalSaveBtn">저장</button>
+    </div>
   </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettings()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>설정 · 데이터 관리</h3>
+      <button class="icon-btn" onclick="closeSettings()" title="닫기" aria-label="설정 닫기">&#10005;</button>
+    </div>
+    <div id="settingsBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="catModal" onclick="if(event.target===this) closeCategoryManager()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="catModalTitle">카테고리 관리</h3>
+      <button class="icon-btn" onclick="closeCategoryManager()" title="닫기" aria-label="카테고리 관리 닫기">&#10005;</button>
+    </div>
+    <div id="catModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop lightbox-backdrop" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+  <div class="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()" title="닫기" aria-label="사진 닫기">&#10005;</button>
+    <button class="lightbox-nav prev" onclick="lightboxStep(-1)" title="이전 사진" aria-label="이전 사진">&#8249;</button>
+    <img id="lightboxImg" alt="사진" onclick="if (lightboxImages.length > 1) lightboxStep(1)" />
+    <button class="lightbox-nav next" onclick="lightboxStep(1)" title="다음 사진" aria-label="다음 사진">&#8250;</button>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+</div>
 
 <script>
-const STORAGE_KEY = "archive_planner_index_v2_3";
+  "use strict";
 
-function todayStr() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+  const APP_VERSION = "2.4";
+  const STORAGE_KEY = "personal_archive_planner_v8";
+  const LEGACY_PERSONAL_KEYS = [
+    "personal_archive_planner_v7",
+    "personal_archive_planner_v6",
+    "personal_archive_planner_v5",
+    "personal_archive_planner_v4"
+  ];
+  const LEGACY_INDEX_KEY = "archive_planner_index_v2_3";
+  const YEARS = [2026, 2027, 2028, 2029, 2030];
+  const PERIODS = ["연간", "상반기", "하반기", "1분기", "2분기", "3분기", "4분기"];
 
-function formatDotDate(iso) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  return `${y}. ${Number(m)}. ${Number(d)}.`;
-}
+  window.__errors = [];
+  window.addEventListener("error", event => {
+    try { window.__errors.push(String(event.message || (event.error && event.error.message) || "error")); } catch (_) {}
+  });
+  window.addEventListener("unhandledrejection", event => {
+    try { window.__errors.push(String(event.reason)); } catch (_) {}
+  });
 
-const defaultState = {
-  activeTab: "archive",
-  archiveCategories: ["독서", "공부", "여행", "전시", "차"],
-  goalCategories: ["학업", "운동", "재테크", "습관"],
-  selectedArchiveCat: "전체",
-  selectedGoalCat: "전체",
-  archiveSort: "newest",
-  showCatManager: false,
-  diaryDate: "2026-09-20",
-  calYear: 2026,
-  calMode: "monthly", // "monthly" | "yearly"
-  calSelectedMonth: null,
-  calShowEmptyMonths: false,
-  calSearch: "",
-  archives: [
-    {
-      id: "arc-1",
-      category: "독서",
-      date: "2026-09-20",
-      title: "면도날",
-      subtitle: "서머싯 몸 · 세계문학전집 214",
-      note: "나만의 삶의 기준과 가치관을 돌아보게 만든 책. 남들의 기준이 아니라 스스로 납득하는 길을 선택하는 태도를 기록했다.",
-      coverUrl: ""
-    },
-    {
-      id: "arc-2",
-      category: "차",
-      date: "2026-11-22",
-      title: "2018 생차 시음 기록",
-      subtitle: "개완 · 숙우",
-      note: "잔향과 회감이 깔끔하게 이어졌던 오후 차 자리."
-    }
-  ],
-  diaries: {
-    "2026-09-20": {
-      summary: "면도날 독서 및 가치관 정리",
-      body: ""
-    },
-    "2026-11-22": {
-      summary: "보이차 시음 및 다구 정리",
-      body: "개완과 숙우를 물로만 깔끔하게 헹구고 하루를 마무리했다."
-    }
-  },
-  goals: [
-    {
-      id: "goal-1",
-      category: "학업",
-      title: "미적분학·미분기하 개념 복습",
-      detail: "주간 핵심 정리 및 연습문제 풀이",
-      done: false
-    },
-    {
-      id: "goal-2",
-      category: "운동",
-      title: "주 2~3회 상체·코어 루틴 유지",
-      detail: "사이드 레터럴 레이즈, 리버스 펙덱, 레그레이즈",
-      done: true
-    }
-  ],
-  buckets: [
-    {
-      id: "bkt-1",
-      title: "국내·해외 혼자 여행 떠나기",
-      detail: "전역 후 일정 맞춰 차근차근 계획 세우기",
-      done: false
-    },
-    {
-      id: "bkt-2",
-      title: "재즈 바·LP 바 방문하기",
-      detail: "조용히 음악 감상할 수 있는 공간 찾기",
-      done: false
-    }
-  ]
-};
+  function getSystemTodayStr() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
-    const parsed = JSON.parse(raw);
+  const TODAY_STR = getSystemTodayStr();
+
+  function clone(value) {
+    try {
+      return structuredClone(value);
+    } catch (_) {
+      return JSON.parse(JSON.stringify(value));
+    }
+  }
+
+  // 단색 라인 SVG 픽토그램 세트
+  const ICONS = {
+    year: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    diary: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`,
+    goals: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+    bucket: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    archive: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>`,
+    trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    chevLeft: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+    chevRight: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+    search: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg>`,
+    settings: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    sliders: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`,
+    close: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+  };
+
+  // 카테고리/주제용 단색 라인 SVG 픽토그램 라이브러리
+  const PICTOGRAMS = {
+    target: { label: "목표", paths: `<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>` },
+    book: { label: "독서·학업", paths: `<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>` },
+    dumbbell: { label: "운동·건강", paths: `<path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>` },
+    palette: { label: "예술·전시", paths: `<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>` },
+    chart: { label: "자산·성장", paths: `<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>` },
+    leaf: { label: "생활·루틴", paths: `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>` },
+    compass: { label: "여행·탐험", paths: `<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>` },
+    music: { label: "음악·문화", paths: `<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>` },
+    star: { label: "버킷·경험", paths: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>` },
+    award: { label: "성취·수상", paths: `<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>` },
+    pen: { label: "공부·기록", paths: `<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>` },
+    coffee: { label: "차·미식", paths: `<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>` },
+    folder: { label: "아카이브", paths: `<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>` },
+    camera: { label: "사진·추억", paths: `<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>` },
+    bookmark: { label: "북마크", paths: `<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>` },
+    layers: { label: "프로젝트", paths: `<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>` },
+    heart: { label: "관계·마음", paths: `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>` },
+    home: { label: "공간·일상", paths: `<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>` }
+  };
+
+  const EMOJI_TO_ICON_KEY = {
+    "📚": "book", "📖": "book",
+    "💪": "dumbbell",
+    "🎨": "palette", "🖼️": "palette",
+    "📈": "chart",
+    "🌿": "leaf",
+    "✈️": "compass",
+    "🎵": "music",
+    "✨": "star", "⭐": "star",
+    "🏆": "award",
+    "✏️": "pen",
+    "🍵": "coffee",
+    "🗂️": "folder", "📌": "bookmark",
+    "🎯": "target"
+  };
+
+  function resolveIconKey(val, fallback = "target") {
+    if (!val) return fallback;
+    if (PICTOGRAMS[val]) return val;
+    if (EMOJI_TO_ICON_KEY[val]) return EMOJI_TO_ICON_KEY[val];
+    return fallback;
+  }
+
+  function renderPictogram(iconKey, size = 14) {
+    const key = resolveIconKey(iconKey, "target");
+    const item = PICTOGRAMS[key] || PICTOGRAMS.target;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${item.paths}</svg>`;
+  }
+
+  function renderIconPickerHtml(inputId, selectedKey) {
+    const cur = resolveIconKey(selectedKey, "target");
+    return `
+      <input type="hidden" id="${inputId}" value="${cur}" />
+      <div class="icon-picker-grid">
+        ${Object.entries(PICTOGRAMS).map(([k, info]) => `
+          <button type="button" class="icon-pick-btn ${k === cur ? "selected" : ""}" title="${info.label}" aria-label="${info.label}" onclick="selectPickerIcon('${inputId}', '${k}', this)">
+            ${renderPictogram(k, 16)}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function selectPickerIcon(inputId, key, btnEl) {
+    const inp = document.getElementById(inputId);
+    if (inp) inp.value = key;
+    const grid = btnEl.parentElement;
+    if (grid) {
+      grid.querySelectorAll(".icon-pick-btn").forEach(el => el.classList.remove("selected"));
+    }
+    btnEl.classList.add("selected");
+  }
+
+  function mountNavIcons() {
+    const pairs = [
+      ["navIconYear", ICONS.year], ["mIconYear", ICONS.year],
+      ["navIconDiary", ICONS.diary], ["mIconDiary", ICONS.diary],
+      ["navIconGoals", ICONS.goals], ["mIconGoals", ICONS.goals],
+      ["navIconBucket", ICONS.bucket], ["mIconBucket", ICONS.bucket],
+      ["navIconArchive", ICONS.archive], ["mIconArchive", ICONS.archive],
+      ["navIconSettings", ICONS.settings]
+    ];
+    pairs.forEach(([id, svg]) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = svg;
+    });
+  }
+
+  const FIXED_SOLAR_HOLIDAYS = {
+    "01-01": "신정",
+    "03-01": "삼일절",
+    "05-05": "어린이날",
+    "06-06": "현충일",
+    "08-15": "광복절",
+    "10-03": "개천절",
+    "10-09": "한글날",
+    "12-25": "크리스마스"
+  };
+
+  const lunarFormatter = new Intl.DateTimeFormat("ko-KR-u-ca-chinese", {
+    month: "numeric",
+    day: "numeric"
+  });
+
+  function getLunarMonthDay(dateObj) {
+    try {
+      const parts = lunarFormatter.formatToParts(dateObj);
+      const monthPart = parts.find(p => p.type === "month");
+      const dayPart = parts.find(p => p.type === "day");
+      const mPart = (monthPart && monthPart.value) || "";
+      const dPart = (dayPart && dayPart.value) || "";
+      const isLeap = mPart.includes("윤");
+      const month = parseInt(mPart.replace(/[^0-9]/g, ""), 10);
+      const day = parseInt(dPart.replace(/[^0-9]/g, ""), 10);
+      return { month, day, isLeap };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function buildHolidayMap(years) {
+    const map = {};
+    const addName = (ds, name) => {
+      if (!map[ds]) map[ds] = name;
+      else if (!map[ds].includes(name)) map[ds] += ` · ${name}`;
+    };
+
+    years.forEach(year => {
+      const start = new Date(year - 1, 11, 25);
+      const end = new Date(year + 1, 0, 5);
+      for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+        const y = dt.getFullYear();
+        const m = dt.getMonth() + 1;
+        const d = dt.getDate();
+        const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const md = `${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+        if (y === year && FIXED_SOLAR_HOLIDAYS[md]) {
+          addName(ds, FIXED_SOLAR_HOLIDAYS[md]);
+        }
+
+        const lunar = getLunarMonthDay(dt);
+        if (lunar && !lunar.isLeap) {
+          if (lunar.month === 1 && lunar.day === 1) {
+            const prev = new Date(dt); prev.setDate(prev.getDate() - 1);
+            const next = new Date(dt); next.setDate(next.getDate() + 1);
+            const pStr = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+            const nStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+            if (prev.getFullYear() === year) addName(pStr, "설날 연휴");
+            if (y === year) addName(ds, "설날");
+            if (next.getFullYear() === year) addName(nStr, "설날 연휴");
+          }
+          if (y === year && lunar.month === 4 && lunar.day === 8) {
+            addName(ds, "부처님오신날");
+          }
+          if (lunar.month === 8 && lunar.day === 15) {
+            const prev = new Date(dt); prev.setDate(prev.getDate() - 1);
+            const next = new Date(dt); next.setDate(next.getDate() + 1);
+            const pStr = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+            const nStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+            if (prev.getFullYear() === year) addName(pStr, "추석 연휴");
+            if (y === year) addName(ds, "추석");
+            if (next.getFullYear() === year) addName(nStr, "추석 연휴");
+          }
+        }
+      }
+
+      const subTargets = new Set(["설날 연휴", "설날", "추석 연휴", "추석", "삼일절", "어린이날", "부처님오신날", "광복절", "개천절", "한글날", "크리스마스"]);
+      const yearDates = Object.keys(map).filter(k => k.startsWith(`${year}-`)).sort();
+      yearDates.forEach(ds => {
+        const [yy, mm, dd] = ds.split("-").map(Number);
+        const dt = new Date(yy, mm - 1, dd);
+        const dow = dt.getDay();
+        const names = map[ds].split(" · ");
+        const isSeolOrChuseok = names.some(n => n.includes("설날") || n.includes("추석"));
+        const isOtherSub = names.some(n => subTargets.has(n) && !n.includes("설날") && !n.includes("추석"));
+        const hasOverlap = names.length > 1;
+
+        if ((isSeolOrChuseok && (dow === 0 || hasOverlap)) || (isOtherSub && (dow === 0 || dow === 6 || hasOverlap))) {
+          const cursor = new Date(dt);
+          while (true) {
+            cursor.setDate(cursor.getDate() + 1);
+            const cStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+            const cDow = cursor.getDay();
+            if (cDow !== 0 && cDow !== 6 && !map[cStr]) {
+              if (cursor.getFullYear() === year) {
+                map[cStr] = "대체공휴일";
+              }
+              break;
+            }
+          }
+        }
+      });
+    });
+
+    return map;
+  }
+
+  const HOLIDAYS = buildHolidayMap(YEARS);
+
+  const defaultState = {
+    activeTab: "year",
+    yearFilter: YEARS.includes(Number(TODAY_STR.slice(0, 4))) ? TODAY_STR.slice(0, 4) : "2026",
+    yearViewMode: "auto",
+    goalTopicFilter: "all",
+    goalYearFilter: "all",
+    goalPeriodFilter: "all",
+    goalSort: "newest",
+    bucketCatFilter: "all",
+    bucketSort: "newest",
+    archiveCatFilter: "all",
+    archiveSort: "newest",
+    selectedDate: TODAY_STR,
+    logs: {
+      "2026-11-27": {
+        oneLine: "나만의 플래너 앱 구조 확정 및 첫 기록",
+        diary: "오늘부터 연력 한 줄 기록과 긴 일기, 기간별 목표, 버킷리스트와 아카이브를 하나로 연결해 기록하기 시작했다."
+      },
+      "2027-01-01": {
+        oneLine: "2027년 새해 첫날, 목표 점검",
+        diary: "새해 첫 아침. 올 한 해 차분히 쌓아갈 공부, 운동, 독서와 여행의 방향을 정리했다."
+      }
+    },
+    topics: [
+      { name: "학업 · 전공", icon: "book" },
+      { name: "운동 · 건강", icon: "dumbbell" },
+      { name: "독서 · 문화", icon: "palette" },
+      { name: "자산 · 경제", icon: "chart" },
+      { name: "생활 · 루틴", icon: "leaf" }
+    ],
+    goals: [
+      {
+        id: "g0",
+        topic: "생활 · 루틴",
+        year: "2026",
+        period: "연간",
+        title: "하루 기록 루틴 정착시키기",
+        note: "매일 연력 한 줄 요약과 짧은 일기를 꾸준히 남기며 올해를 마무리하기",
+        images: [],
+        done: false,
+        doneDate: ""
+      },
+      {
+        id: "g1",
+        topic: "학업 · 전공",
+        year: "2027",
+        period: "상반기",
+        title: "전공 핵심 과목 복습 및 임용 기본서 1회독",
+        note: "미분방정식·미분기하학 핵심 정리 노트 완성 후 기출 분석 병행",
+        images: [],
+        done: false,
+        doneDate: ""
+      },
+      {
+        id: "g2",
+        topic: "학업 · 전공",
+        year: "2027",
+        period: "하반기",
+        title: "복학 후 교육학·전공 심화 스터디 완주",
+        note: "주 2회 스터디 참여 및 모의고사 오답 정리",
+        images: [],
+        done: false,
+        doneDate: ""
+      },
+      {
+        id: "g3",
+        topic: "운동 · 건강",
+        year: "2027",
+        period: "연간",
+        title: "주 3회 근력 루틴 꾸준히 유지하기",
+        note: "상체·코어 분할 루틴 기록하고 체지방률 관리하기",
+        images: [],
+        done: false,
+        doneDate: ""
+      }
+    ],
+    bucketCategories: [
+      { name: "여행", icon: "compass" },
+      { name: "문화", icon: "music" },
+      { name: "경험", icon: "star" },
+      { name: "성취", icon: "award" }
+    ],
+    buckets: [
+      { id: "b1", category: "여행", title: "혼자 떠나는 해외 자유여행 다녀오기", note: "일정과 동선 직접 기획해 보기", done: false, doneDate: "" },
+      { id: "b2", category: "문화", title: "조용한 LP바와 재즈바에서 저녁 시간 보내기", note: "", done: false, doneDate: "" },
+      { id: "b3", category: "경험", title: "1년 동안 하루도 빠짐없이 연력 한 줄 채우기", note: "", done: false, doneDate: "" }
+    ],
+    archiveCategories: [
+      { name: "독서", icon: "book" },
+      { name: "공부", icon: "pen" },
+      { name: "여행", icon: "compass" },
+      { name: "전시", icon: "palette" },
+      { name: "차", icon: "coffee" }
+    ],
+    archives: [
+      {
+        id: "a1",
+        category: "독서",
+        date: "2026-09-20",
+        title: "면도날",
+        subtitle: "서머싯 몸",
+        note: "나만의 삶의 기준과 가치관을 돌아보게 만든 책. 남들의 기준이 아니라 스스로 납득하는 길을 선택하는 태도를 기록했다.",
+        images: []
+      },
+      {
+        id: "a2",
+        category: "차",
+        date: "2026-11-22",
+        title: "2018년산 보이숙차",
+        subtitle: "개완 · 숙우 다구 세트",
+        note: "첫 세차 후 3포째부터 깊고 맑은 단맛이 올라온다. 조용히 차를 우리는 시간이 하루를 정돈해 준다.",
+        images: []
+      }
+    ],
+    todos: [
+      { id: "t1", date: TODAY_STR, title: "오늘의 연력 한 줄과 일기 작성하기", done: false },
+      { id: "t2", date: "2027-01-01", title: "2027년 목표 세부 항목 확정", done: false }
+    ]
+  };
+
+  let state = loadState();
+  let searchQuery = "";
+  let searchOpen = false;
+  let showGoalComposer = false;
+  let showBucketComposer = false;
+  let showArchiveComposer = false;
+  let draftArchiveImages = [];
+  let draftGoalImages = [];
+  let lastSavedAt = null;
+  let quotaWarned = false;
+  let diaryTimer = null;
+  let diaryPending = false;
+  let catManagerKind = null;
+  let lightboxImages = [];
+  let lightboxIndex = 0;
+  let lightboxCaption = "";
+  let currentSearchList = [];
+
+  function normalizeTab(tab) {
+    if (!tab || tab === "todos" || tab === "plans") return "goals";
+    return tab;
+  }
+
+  function normalizeYear(y) {
+    const cleaned = String(y || "").replace(/[^0-9]/g, "");
+    return cleaned || "2026";
+  }
+
+  function normalizePeriod(p) {
+    const trimmed = String(p || "").trim();
+    return PERIODS.includes(trimmed) ? trimmed : "연간";
+  }
+
+  function normalizeCategoryList(list, fallbackIcon = "target") {
+    if (!Array.isArray(list)) return [];
+    const seen = new Set();
+    return list.map(item => {
+      if (typeof item === "string") return { name: item, icon: fallbackIcon };
+      const name = String(item && item.name ? item.name : "").trim();
+      const rawIcon = (item && (item.icon || item.emoji)) || fallbackIcon;
+      return { name, icon: resolveIconKey(rawIcon, fallbackIcon) };
+    }).filter(x => {
+      if (!x.name || seen.has(x.name)) return false;
+      seen.add(x.name);
+      return true;
+    });
+  }
+
+  function normalizeImages(item) {
+    if (item && Array.isArray(item.images)) return item.images.filter(Boolean);
+    if (item && item.image) return [item.image];
+    return [];
+  }
+
+  function normalizeState(parsed) {
+    const merged = { ...clone(defaultState), ...parsed };
+    merged.activeTab = normalizeTab(merged.activeTab);
+    if (!["auto", "matrix", "months"].includes(merged.yearViewMode)) merged.yearViewMode = "auto";
+    merged.topics = normalizeCategoryList(merged.topics, "target");
+    merged.archiveCategories = normalizeCategoryList(merged.archiveCategories, "folder");
+    merged.bucketCategories = normalizeCategoryList(merged.bucketCategories, "star");
+    merged.logs = (merged.logs && typeof merged.logs === "object" && !Array.isArray(merged.logs)) ? merged.logs : {};
+    merged.goals = (Array.isArray(merged.goals) ? merged.goals : []).map(g => ({
+      note: "",
+      ...g,
+      images: normalizeImages(g),
+      year: normalizeYear(g.year),
+      period: normalizePeriod(g.period)
+    }));
+    merged.buckets = (Array.isArray(merged.buckets) ? merged.buckets : []).map(b => ({
+      note: "",
+      doneDate: "",
+      ...b
+    }));
+    merged.archives = (Array.isArray(merged.archives) ? merged.archives : []).map(a => ({
+      ...a,
+      images: normalizeImages(a)
+    }));
+    merged.todos = (Array.isArray(merged.todos) ? merged.todos : []).map(t => ({
+      done: false,
+      ...t
+    }));
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(merged.selectedDate))) merged.selectedDate = TODAY_STR;
+    if (merged.yearFilter !== "all" && !YEARS.includes(Number(normalizeYear(merged.yearFilter)))) {
+      merged.yearFilter = defaultState.yearFilter;
+    }
+    if (!["year", "diary", "goals", "bucket", "archive"].includes(merged.activeTab)) merged.activeTab = "year";
+    return merged;
+  }
+
+  // ---------- 이전 버전(archive_planner_index_v2_3) 데이터 이전 ----------
+  const LEGACY_SAMPLE = {
+    archives: ["면도날", "2018 생차 시음 기록"],
+    goals: ["미적분학·미분기하 개념 복습", "주 2~3회 상체·코어 루틴 유지"],
+    buckets: ["국내·해외 혼자 여행 떠나기", "재즈 바·LP 바 방문하기"],
+    diaryDates: ["2026-09-20", "2026-11-22"]
+  };
+
+  function guessIconByName(name) {
+    const n = String(name || "");
+    const rules = [
+      [/학업|공부|전공|시험|임용|교육|수학/, "book"],
+      [/운동|건강|헬스|근력/, "dumbbell"],
+      [/독서|책|문화|전시|예술|그림/, "palette"],
+      [/자산|경제|재테크|투자|돈/, "chart"],
+      [/생활|루틴|습관|일상/, "leaf"],
+      [/여행|탐험|해외/, "compass"],
+      [/음악|공연|LP/, "music"],
+      [/차|미식|커피|음료/, "coffee"]
+    ];
+    for (const [re, key] of rules) {
+      if (re.test(n)) return key;
+    }
+    return null;
+  }
+
+  function looksLikeLegacyIndex(obj) {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return false;
+    if (obj.logs || obj.topics) return false;
+    return (
+      Array.isArray(obj.archives) ||
+      (obj.diaries && typeof obj.diaries === "object") ||
+      Array.isArray(obj.goalCategories) ||
+      "selectedArchiveCat" in obj ||
+      "calMode" in obj ||
+      "calYear" in obj
+    );
+  }
+
+  function isUntouchedLegacySample(obj) {
+    const archives = Array.isArray(obj.archives) ? obj.archives : [];
+    const goals = Array.isArray(obj.goals) ? obj.goals : [];
+    const buckets = Array.isArray(obj.buckets) ? obj.buckets : [];
+    const diaryDates = (obj.diaries && typeof obj.diaries === "object" && !Array.isArray(obj.diaries)) ? Object.keys(obj.diaries) : [];
+    return (
+      archives.every(a => LEGACY_SAMPLE.archives.includes(a && a.title)) &&
+      goals.every(g => LEGACY_SAMPLE.goals.includes(g && g.title)) &&
+      buckets.every(b => LEGACY_SAMPLE.buckets.includes(b && b.title)) &&
+      diaryDates.every(d => LEGACY_SAMPLE.diaryDates.includes(d))
+    );
+  }
+
+  function migrateLegacyIndex(parsed) {
+    if (!looksLikeLegacyIndex(parsed)) return null;
+    if (isUntouchedLegacySample(parsed)) return null;
+
+    const base = clone(defaultState);
+    const topics = [];
+    (Array.isArray(parsed.goalCategories) ? parsed.goalCategories : []).forEach(raw => {
+      const name = String(raw && raw.name ? raw.name : raw || "").trim();
+      if (name && !topics.some(t => t.name === name)) {
+        topics.push({ name, icon: resolveIconKey(raw && raw.icon, guessIconByName(name) || "target") });
+      }
+    });
+
+    const archiveCategories = [];
+    (Array.isArray(parsed.archiveCategories) ? parsed.archiveCategories : []).forEach(raw => {
+      const name = String(raw && raw.name ? raw.name : raw || "").trim();
+      if (name && !archiveCategories.some(c => c.name === name)) {
+        archiveCategories.push({ name, icon: resolveIconKey(raw && raw.icon, guessIconByName(name) || "folder") });
+      }
+    });
+
+    const logs = {};
+    if (parsed.diaries && typeof parsed.diaries === "object" && !Array.isArray(parsed.diaries)) {
+      Object.entries(parsed.diaries).forEach(([dateStr, value]) => {
+        if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+        const oneLine = String(value.summary || value.oneLine || "").trim();
+        const diary = String(value.body || value.diary || "").trim();
+        if (oneLine || diary) logs[dateStr] = { oneLine, diary };
+      });
+    }
+
+    const goals = (Array.isArray(parsed.goals) ? parsed.goals : []).map(g => {
+      const title = String(g && g.title || "").trim();
+      if (!title) return null;
+      let topic = String(g.category || g.topic || "").trim();
+      if (!topic) topic = topics[0] ? topics[0].name : "기타";
+      if (!topics.some(t => t.name === topic)) {
+        topics.push({ name: topic, icon: guessIconByName(topic) || "target" });
+      }
+      return {
+        id: g.id || uid(),
+        topic,
+        year: normalizeYear(g.year),
+        period: normalizePeriod(g.period),
+        title,
+        note: String(g.note || g.detail || "").trim(),
+        images: [],
+        done: Boolean(g.done),
+        doneDate: String(g.doneDate || "").trim()
+      };
+    }).filter(Boolean);
+
+    const bucketCategories = [];
+    const buckets = (Array.isArray(parsed.buckets) ? parsed.buckets : []).map(b => {
+      const title = String(b && b.title || "").trim();
+      if (!title) return null;
+      let category = String(b.category || "").trim() || "경험";
+      if (!bucketCategories.some(c => c.name === category)) {
+        bucketCategories.push({ name: category, icon: guessIconByName(category) || "star" });
+      }
+      return {
+        id: b.id || uid(),
+        category,
+        title,
+        note: String(b.note || b.detail || "").trim(),
+        done: Boolean(b.done),
+        doneDate: String(b.doneDate || "").trim()
+      };
+    }).filter(Boolean);
+
+    const archives = (Array.isArray(parsed.archives) ? parsed.archives : []).map(a => {
+      const title = String(a && a.title || "").trim();
+      if (!title) return null;
+      const category = String(a.category || "").trim() || (archiveCategories[0] ? archiveCategories[0].name : "기타");
+      if (!archiveCategories.some(c => c.name === category)) {
+        archiveCategories.push({ name: category, icon: guessIconByName(category) || "folder" });
+      }
+      return {
+        id: a.id || uid(),
+        category,
+        date: String(a.date || TODAY_STR).trim(),
+        title,
+        subtitle: String(a.subtitle || "").trim(),
+        note: String(a.note || "").trim(),
+        images: a.coverUrl ? [a.coverUrl] : []
+      };
+    }).filter(Boolean);
+
+    const calYear = Number(parsed.calYear);
+    const yearFilter = YEARS.includes(calYear) ? String(calYear) : base.yearFilter;
+    const selectedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(parsed.diaryDate || "")) ? parsed.diaryDate : base.selectedDate;
+
     return {
-      ...structuredClone(defaultState),
-      ...parsed,
-      diaries: { ...defaultState.diaries, ...(parsed.diaries || {}) }
+      ...base,
+      activeTab: normalizeTab(parsed.activeTab),
+      yearFilter,
+      selectedDate,
+      logs,
+      topics: topics.length ? topics : base.topics,
+      archiveCategories: archiveCategories.length ? archiveCategories : base.archiveCategories,
+      bucketCategories: bucketCategories.length ? bucketCategories : base.bucketCategories,
+      goals,
+      buckets,
+      archives,
+      todos: [],
+      migratedFrom: LEGACY_INDEX_KEY
     };
-  } catch {
-    return structuredClone(defaultState);
   }
-}
 
-let state = loadState();
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") return normalizeState(parsed);
+      }
+    } catch (_) { /* 손상된 v8 데이터는 아래 후보에서 복구 */ }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+    for (const key of LEGACY_PERSONAL_KEYS) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") return normalizeState(parsed);
+      } catch (_) { /* 다음 후보 */ }
+    }
 
-function escapeHtml(str = "") {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
+    try {
+      const rawLegacy = localStorage.getItem(LEGACY_INDEX_KEY);
+      if (rawLegacy) {
+        const parsed = JSON.parse(rawLegacy);
+        const migrated = migrateLegacyIndex(parsed);
+        if (migrated) {
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated)); } catch (_) {}
+          return migrated;
+        }
+      }
+    } catch (_) { /* 이전 데이터가 깨졌으면 새 기본값으로 */ }
 
-function switchTab(tab) {
-  state.activeTab = tab;
-  state.showCatManager = false;
-  saveState();
-  render();
-}
-
-function renderNav() {
-  document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === state.activeTab);
-  });
-
-  const fab = document.getElementById("fabBtn");
-  if (state.activeTab === "archive" || state.activeTab === "goals" || state.activeTab === "bucket") {
-    fab.style.display = "inline-flex";
-    const labels = {
-      archive: "새 아카이브 추가",
-      goals: "새 목표 추가",
-      bucket: "새 버킷 추가"
-    };
-    fab.setAttribute("aria-label", labels[state.activeTab]);
-  } else {
-    fab.style.display = "none";
+    return clone(defaultState);
   }
-}
 
-/* ---------------- 아카이브 탭 ---------------- */
-function renderArchiveTab(container) {
-  const counts = { 전체: state.archives.length };
-  state.archiveCategories.forEach((c) => (counts[c] = 0));
-  state.archives.forEach((item) => {
-    counts[item.category] = (counts[item.category] || 0) + 1;
-  });
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      lastSavedAt = new Date();
+      return true;
+    } catch (e) {
+      const msg = `${(e && e.name) || ""} ${(e && e.message) || ""}`;
+      const isQuota = /quota|exceeded/i.test(msg) || (e && (e.code === 22 || e.code === 1014));
+      if (isQuota) {
+        if (!quotaWarned) {
+          quotaWarned = true;
+          alert("브라우저 저장 공간이 가득 찼습니다.\n\n· 설정 → ‘데이터 백업 (JSON)’으로 먼저 백업해 주세요.\n· 사진이 많은 항목의 사진을 줄이거나 오래된 사진을 삭제하면 공간이 확보됩니다.\n\n방금 입력한 내용은 저장되지 않았을 수 있습니다.");
+        }
+      } else {
+        console.error(e);
+      }
+      return false;
+    }
+  }
 
-  let filtered = state.selectedArchiveCat === "전체"
-    ? [...state.archives]
-    : state.archives.filter((a) => a.category === state.selectedArchiveCat);
+  function getStorageUsage() {
+    let bytes = 0;
+    let keys = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key === null) continue;
+        const value = localStorage.getItem(key) || "";
+        bytes += (key.length + value.length) * 2; // UTF-16 기준 추정
+        keys += 1;
+      }
+    } catch (_) {}
+    return { bytes, keys };
+  }
 
-  filtered.sort((a, b) =>
-    state.archiveSort === "newest"
-      ? b.date.localeCompare(a.date)
-      : a.date.localeCompare(b.date)
-  );
+  function formatBytes(bytes) {
+    if (!bytes || bytes < 1024) return `${bytes || 0} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  }
 
-  const chipsHtml = ["전체", ...state.archiveCategories]
-    .map((cat) => {
-      const active = state.selectedArchiveCat === cat ? "active" : "";
-      return `
-        <button type="button" class="chip ${active}" data-arch-cat="${escapeHtml(cat)}">
-          <span>${escapeHtml(cat)}</span>
-          <span class="chip-count">${counts[cat] || 0}</span>
-        </button>
-      `;
-    })
-    .join("");
+  function getPhotoCount() {
+    return [...(state.goals || []), ...(state.archives || [])].reduce((sum, item) => sum + normalizeImages(item).length, 0);
+  }
 
-  const catManagerHtml = state.showCatManager
-    ? `
-      <div class="cat-manager">
-        <div class="cat-add-form">
-          <input type="text" class="input-sm" id="newCatInput" placeholder="새 카테고리명 입력" />
-          <button type="button" class="btn-primary" id="addCatBtn">추가</button>
-        </div>
-        <div class="cat-list">
-          ${state.archiveCategories
-            .map(
-              (cat) => `
-            <div class="cat-item">
-              <span>${escapeHtml(cat)}</span>
-              <div class="cat-item-actions">
-                <button type="button" class="link-btn" data-rename-arch-cat="${escapeHtml(cat)}">이름 변경</button>
-                <button type="button" class="link-btn danger" data-del-arch-cat="${escapeHtml(cat)}">삭제</button>
-              </div>
-            </div>
-          `
-            )
-            .join("")}
-        </div>
-      </div>
-    `
-    : "";
+  function timeStr(date) {
+    const d = date instanceof Date ? date : new Date();
+    return d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+  }
 
-  const cardsHtml = filtered.length
-    ? filtered
-        .map(
-          (item) => `
-        <article class="archive-card" data-open-archive="${item.id}">
-          ${item.coverUrl ? `<img class="archive-cover" src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.title)}" />` : ""}
-          <div class="archive-body">
-            <div class="archive-meta">
-              <span class="badge">${escapeHtml(item.category)}</span>
-              <span>·</span>
-              <span>${escapeHtml(item.date)}</span>
-            </div>
-            <h3 class="archive-title">${escapeHtml(item.title)}</h3>
-            ${item.subtitle ? `<p class="archive-sub">${escapeHtml(item.subtitle)}</p>` : ""}
-            ${item.note ? `<p class="archive-note">${escapeHtml(item.note)}</p>` : ""}
-          </div>
-        </article>
-      `
-        )
-        .join("")
-    : `<div class="empty-state">표시할 아카이브가 없습니다. 우측 하단 + 버튼으로 추가해 보세요.</div>`;
+  function clearSamples() {
+    if (!confirm("모든 기록(일기·목표·버킷리스트·아카이브·할일)을 지우고 빈 상태로 시작할까요?\n\n되돌릴 수 없으니 먼저 ‘데이터 백업 (JSON)’을 권장합니다.")) return;
+    state.logs = {};
+    state.goals = [];
+    state.buckets = [];
+    state.archives = [];
+    state.todos = [];
+    saveState();
+    render();
+    refreshSettingsIfOpen();
+  }
 
-  container.innerHTML = `
-    <div class="top-header">
-      <h1 class="top-title">아카이브</h1>
-      <span class="top-sub">총 ${state.archives.length}개 · 탭해서 수정</span>
-    </div>
-    <div class="chip-row">${chipsHtml}</div>
-    <div class="toolbar-row">
-      <button type="button" class="btn-outline" id="toggleCatManagerBtn">
-        ${state.showCatManager ? "카테고리 관리 닫기" : "카테고리 관리"}
-      </button>
-      <select class="select-sm" id="archiveSortSelect" aria-label="정렬 기준">
-        <option value="newest" ${state.archiveSort === "newest" ? "selected" : ""}>등록 최신순</option>
-        <option value="oldest" ${state.archiveSort === "oldest" ? "selected" : ""}>등록 오래된순</option>
+  function uid() {
+    return "id_" + Math.random().toString(36).slice(2, 9);
+  }
+
+  function getTopicIconKey(topicName) {
+    const found = state.topics.find(t => t.name === topicName);
+    return found ? resolveIconKey(found.icon, "target") : "target";
+  }
+
+  function getArchiveCatIconKey(catName) {
+    const found = state.archiveCategories.find(c => c.name === catName);
+    return found ? resolveIconKey(found.icon, "folder") : "folder";
+  }
+
+  function getBucketCatIconKey(catName) {
+    const found = state.bucketCategories.find(c => c.name === catName);
+    return found ? resolveIconKey(found.icon, "star") : "star";
+  }
+
+  function getDayOfWeek(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).getDay();
+  }
+
+  function isHoliday(dateStr) {
+    return Boolean(HOLIDAYS[dateStr]);
+  }
+
+  function getDateColor(dateStr) {
+    if (isHoliday(dateStr)) return "var(--sun)";
+    const dow = getDayOfWeek(dateStr);
+    if (dow === 0) return "var(--sun)";
+    if (dow === 6) return "var(--sat)";
+    return "var(--text)";
+  }
+
+  function shiftDate(dateStr, deltaDays) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const dt = new Date(y, m - 1, d + deltaDays);
+    const ny = dt.getFullYear();
+    const nm = String(dt.getMonth() + 1).padStart(2, "0");
+    const nd = String(dt.getDate()).padStart(2, "0");
+    return `${ny}-${nm}-${nd}`;
+  }
+
+  function formatDateKo(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    const dow = new Date(y, m - 1, d).getDay();
+    const hName = HOLIDAYS[dateStr] ? ` · ${HOLIDAYS[dateStr]}` : "";
+    return `${y}년 ${m}월 ${d}일 (${days[dow]})${hName}`;
+  }
+
+  function compressImageFile(file, maxWidth = 720, quality = 0.76) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth) {
+            h = Math.round((h * maxWidth) / w);
+            w = maxWidth;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function processMultipleFiles(fileList, existingArray, maxCount = 5) {
+    const files = Array.from(fileList || []);
+    const result = [...existingArray];
+    for (const file of files) {
+      if (result.length >= maxCount) {
+        alert(`사진은 항목당 최대 ${maxCount}장까지 첨부할 수 있습니다.`);
+        break;
+      }
+      const dataUrl = await compressImageFile(file);
+      result.push(dataUrl);
+    }
+    return result;
+  }
+
+  function yearSelectHtml(currentVal, onChangeFn, allLabel = `전체 연도 (${YEARS[0]}~${YEARS[YEARS.length - 1]})`) {
+    const normCur = currentVal === "all" ? "all" : normalizeYear(currentVal);
+    const opts = YEARS.map(y => `<option value="${y}" ${normCur === String(y) ? "selected" : ""}>${y}년</option>`).join("");
+    return `
+      <select class="year-select" onchange="${onChangeFn}(this.value)" aria-label="연도 선택">
+        <option value="all" ${normCur === "all" ? "selected" : ""}>${allLabel}</option>
+        ${opts}
       </select>
-    </div>
-    ${catManagerHtml}
-    ${cardsHtml}
-  `;
-
-  container.querySelectorAll("[data-arch-cat]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.selectedArchiveCat = btn.dataset.archCat;
-      saveState();
-      render();
-    });
-  });
-
-  document.getElementById("toggleCatManagerBtn").addEventListener("click", () => {
-    state.showCatManager = !state.showCatManager;
-    render();
-  });
-
-  document.getElementById("archiveSortSelect").addEventListener("change", (e) => {
-    state.archiveSort = e.target.value;
-    saveState();
-    render();
-  });
-
-  if (state.showCatManager) {
-    document.getElementById("addCatBtn").addEventListener("click", () => {
-      const inp = document.getElementById("newCatInput");
-      const val = inp.value.trim();
-      if (!val || state.archiveCategories.includes(val)) return;
-      state.archiveCategories.push(val);
-      saveState();
-      render();
-    });
-
-    container.querySelectorAll("[data-rename-arch-cat]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const oldName = btn.dataset.renameArchCat;
-        const nextName = prompt("새 카테고리 이름을 입력하세요.", oldName);
-        if (!nextName || !nextName.trim() || nextName.trim() === oldName) return;
-        const clean = nextName.trim();
-        state.archiveCategories = state.archiveCategories.map((c) => (c === oldName ? clean : c));
-        state.archives.forEach((a) => {
-          if (a.category === oldName) a.category = clean;
-        });
-        if (state.selectedArchiveCat === oldName) state.selectedArchiveCat = clean;
-        saveState();
-        render();
-      });
-    });
-
-    container.querySelectorAll("[data-del-arch-cat]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.delArchCat;
-        if (state.archiveCategories.length <= 1) {
-          alert("최소 1개의 카테고리가 필요합니다.");
-          return;
-        }
-        if (!confirm(`'${target}' 카테고리를 삭제할까요?`)) return;
-        const fallback = state.archiveCategories.find((c) => c !== target);
-        state.archiveCategories = state.archiveCategories.filter((c) => c !== target);
-        state.archives.forEach((a) => {
-          if (a.category === target) a.category = fallback;
-        });
-        if (state.selectedArchiveCat === target) state.selectedArchiveCat = "전체";
-        saveState();
-        render();
-      });
-    });
+    `;
   }
 
-  container.querySelectorAll("[data-open-archive]").forEach((card) => {
-    card.addEventListener("click", () => openArchiveModal(card.dataset.openArchive));
-  });
-}
+  function changeYearFilter(val) {
+    state.yearFilter = val;
+    saveState();
+    render();
+  }
 
-/* ---------------- 일기 탭 ---------------- */
-function shiftDate(iso, deltaDays) {
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(y, m - 1, d + deltaDays);
-  const ny = dt.getFullYear();
-  const nm = String(dt.getMonth() + 1).padStart(2, "0");
-  const nd = String(dt.getDate()).padStart(2, "0");
-  return `${ny}-${nm}-${nd}`;
-}
-
-function renderDiaryTab(container) {
-  const entry = state.diaries[state.diaryDate] || { summary: "", body: "" };
-
-  container.innerHTML = `
-    <div class="diary-header-bar">
-      <h1 class="top-title">하루 기록 · 일기</h1>
-      <div class="date-nav">
-        <button type="button" class="date-btn" id="prevDayBtn" aria-label="이전 날">&lt;</button>
-        <input type="date" class="date-picker-input" id="diaryDateInput" value="${state.diaryDate}" />
-        <button type="button" class="date-btn" id="nextDayBtn" aria-label="다음 날">&gt;</button>
-        <button type="button" class="btn-outline" id="todayDiaryBtn">오늘</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label" for="diarySummaryInput">연력 한 줄 요약</label>
-        <input
-          type="text"
-          id="diarySummaryInput"
-          class="input-sm"
-          placeholder="연력 칸에 표시될 오늘의 한 줄..."
-          value="${escapeHtml(entry.summary)}"
-        />
-      </div>
-
-      <div class="field-group" style="margin-bottom:0;">
-        <label class="field-label" for="diaryBodyInput">오늘의 긴 기록 · 일기</label>
-        <textarea
-          id="diaryBodyInput"
-          class="textarea-field diary-textarea"
-          placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..."
-        >${escapeHtml(entry.body)}</textarea>
-      </div>
-    </div>
-  `;
-
-  const saveDiary = () => {
-    const summary = document.getElementById("diarySummaryInput").value;
-    const body = document.getElementById("diaryBodyInput").value;
-    if (!summary.trim() && !body.trim()) {
-      delete state.diaries[state.diaryDate];
-    } else {
-      state.diaries[state.diaryDate] = { summary, body };
+  function isMobileViewport() {
+    try {
+      return window.matchMedia("(max-width: 860px)").matches;
+    } catch (_) {
+      return window.innerWidth <= 860;
     }
-    saveState();
-  };
+  }
 
-  document.getElementById("diarySummaryInput").addEventListener("input", saveDiary);
-  document.getElementById("diaryBodyInput").addEventListener("input", saveDiary);
+  function getYearViewMode() {
+    if (state.yearViewMode === "matrix" || state.yearViewMode === "months") return state.yearViewMode;
+    return isMobileViewport() ? "months" : "matrix";
+  }
 
-  document.getElementById("prevDayBtn").addEventListener("click", () => {
-    state.diaryDate = shiftDate(state.diaryDate, -1);
-    saveState();
-    render();
-  });
-
-  document.getElementById("nextDayBtn").addEventListener("click", () => {
-    state.diaryDate = shiftDate(state.diaryDate, 1);
+  function setYearViewMode(mode) {
+    state.yearViewMode = mode;
     saveState();
     render();
-  });
+  }
 
-  document.getElementById("diaryDateInput").addEventListener("change", (e) => {
-    if (e.target.value) {
-      state.diaryDate = e.target.value;
-      saveState();
-      render();
+  function jumpToMonthCard(year, month) {
+    const el = document.getElementById(`month-card-${year}-${month}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function setTab(tab) {
+    flushDiaryDraft();
+    state.activeTab = normalizeTab(tab);
+    saveState();
+    render();
+  }
+
+  function selectDate(dateStr, goDiary = false) {
+    flushDiaryDraft();
+    state.selectedDate = dateStr;
+    if (goDiary) state.activeTab = "diary";
+    saveState();
+    render();
+  }
+
+  // ---------- 공통 검색 ----------
+  function openSearch() {
+    searchOpen = true;
+    render();
+    const inp = document.getElementById("globalSearchInput");
+    if (inp) {
+      inp.focus();
+      const len = inp.value.length;
+      try { inp.setSelectionRange(len, len); } catch (_) {}
     }
-  });
+  }
 
-  document.getElementById("todayDiaryBtn").addEventListener("click", () => {
-    state.diaryDate = todayStr();
-    saveState();
+  function closeSearch() {
+    searchOpen = false;
+    searchQuery = "";
     render();
-  });
-}
+  }
 
-/* ---------------- 목표 탭 ---------------- */
-function renderGoalsTab(container) {
-  const counts = { 전체: state.goals.length };
-  state.goalCategories.forEach((c) => (counts[c] = 0));
-  state.goals.forEach((g) => {
-    counts[g.category] = (counts[g.category] || 0) + 1;
-  });
+  function updateSearchQuery(val) {
+    searchQuery = val;
+    const host = document.getElementById("searchPanelHost");
+    if (host) host.innerHTML = renderSearchPanel();
+  }
 
-  const list = state.selectedGoalCat === "전체"
-    ? state.goals
-    : state.goals.filter((g) => g.category === state.selectedGoalCat);
+  function findSearchResults(q) {
+    const term = String(q || "").trim().toLowerCase();
+    if (!term) return [];
+    const results = [];
+    const hits = text => String(text || "").toLowerCase().includes(term);
 
-  const chipsHtml = ["전체", ...state.goalCategories]
-    .map((cat) => {
-      const active = state.selectedGoalCat === cat ? "active" : "";
-      return `
-        <button type="button" class="chip ${active}" data-goal-cat="${escapeHtml(cat)}">
-          <span>${escapeHtml(cat)}</span>
-          <span class="chip-count">${counts[cat] || 0}</span>
-        </button>
-      `;
-    })
-    .join("");
+    Object.entries(state.logs || {}).forEach(([dateStr, log]) => {
+      const one = String(log && log.oneLine || "");
+      const diary = String(log && log.diary || "");
+      if (hits(one) || hits(diary)) {
+        const snippet = hits(one) ? one : diary.replace(/\s+/g, " ").slice(0, 90);
+        results.push({
+          type: "기록 · 일기",
+          title: one || `${dateStr} 일기`,
+          sub: `${dateStr} · ${snippet}`,
+          action: () => selectDate(dateStr, true)
+        });
+      }
+    });
 
-  const catManagerHtml = state.showCatManager
-    ? `
-      <div class="cat-manager">
-        <div class="cat-add-form">
-          <input type="text" class="input-sm" id="newGoalCatInput" placeholder="새 목표 카테고리 입력" />
-          <button type="button" class="btn-primary" id="addGoalCatBtn">추가</button>
+    (state.goals || []).forEach(g => {
+      if (hits(g.title) || hits(g.topic) || hits(g.note)) {
+        results.push({
+          type: "목표",
+          title: String(g.title || ""),
+          sub: `${g.topic || ""} · ${normalizeYear(g.year)}년 ${normalizePeriod(g.period)}`,
+          action: () => {
+            state.goalTopicFilter = "all";
+            state.goalYearFilter = "all";
+            state.goalPeriodFilter = "all";
+            setTab("goals");
+          }
+        });
+      }
+    });
+
+    (state.buckets || []).forEach(b => {
+      if (hits(b.title) || hits(b.note) || hits(b.category)) {
+        results.push({
+          type: "버킷리스트",
+          title: String(b.title || ""),
+          sub: `${b.category || ""}${b.note ? ` · ${b.note}` : ""}`,
+          action: () => {
+            state.bucketCatFilter = "all";
+            setTab("bucket");
+          }
+        });
+      }
+    });
+
+    (state.archives || []).forEach(a => {
+      if (hits(a.title) || hits(a.subtitle) || hits(a.note) || hits(a.category)) {
+        results.push({
+          type: `아카이브 · ${a.category || ""}`,
+          title: String(a.title || ""),
+          sub: `${a.date || ""}${a.subtitle ? ` · ${a.subtitle}` : ""}`,
+          action: () => {
+            state.archiveCatFilter = "all";
+            setTab("archive");
+          }
+        });
+      }
+    });
+
+    (state.todos || []).forEach(t => {
+      if (hits(t.title)) {
+        results.push({
+          type: "할일",
+          title: String(t.title || ""),
+          sub: t.date || "",
+          action: () => selectDate(t.date, true)
+        });
+      }
+    });
+
+    return results;
+  }
+
+  function renderSearchPanel() {
+    const term = searchQuery.trim();
+    if (!term) return "";
+    const list = findSearchResults(term);
+    currentSearchList = list;
+    return `
+      <section class="search-panel">
+        <div class="search-panel-header">
+          <strong style="font-size:14px;">“${escapeHtml(term)}” 검색 결과 (${list.length}건)</strong>
+          <button class="btn btn-sm" onclick="closeSearch()">닫기</button>
         </div>
-        <div class="cat-list">
-          ${state.goalCategories
-            .map(
-              (cat) => `
-            <div class="cat-item">
-              <span>${escapeHtml(cat)}</span>
-              <div class="cat-item-actions">
-                <button type="button" class="link-btn" data-rename-goal-cat="${escapeHtml(cat)}">이름 변경</button>
-                <button type="button" class="link-btn danger" data-del-goal-cat="${escapeHtml(cat)}">삭제</button>
+        ${list.length ? `
+          <div class="search-result-list">
+            ${list.map((item, i) => `
+              <div class="search-result-item" onclick="runSearchAction(${i})">
+                <div style="min-width:0;">
+                  <span class="pill">${escapeHtml(item.type)}</span>
+                  <strong style="font-size:13px; margin-left:4px;">${escapeHtml(item.title)}</strong>
+                  <div class="item-meta">${escapeHtml(item.sub)}</div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        ` : `<p style="font-size:13px; color:var(--text-sub); margin:0;">일치하는 기록이 없습니다.</p>`}
+      </section>
+    `;
+  }
+
+  function runSearchAction(idx) {
+    const item = currentSearchList[idx];
+    if (!item || typeof item.action !== "function") return;
+    searchOpen = false;
+    searchQuery = "";
+    item.action();
+  }
+
+  function renderGlobalTools() {
+    if (searchOpen) {
+      return `
+        <div class="global-tools search-open">
+          <div class="search-open-inner">
+            <input type="text" id="globalSearchInput" class="search-input" placeholder="기록·일기·목표·버킷·아카이브 검색" value="${escapeAttr(searchQuery)}" oninput="updateSearchQuery(this.value)" aria-label="전체 검색" />
+            <button class="icon-btn icon-btn-lg" onclick="closeSearch()" title="검색 닫기" aria-label="검색 닫기">${ICONS.close}</button>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="global-tools">
+        <button class="icon-btn icon-btn-lg" onclick="openSearch()" title="검색" aria-label="검색">${ICONS.search}</button>
+        <button class="icon-btn icon-btn-lg" onclick="openSettings()" title="설정 · 데이터 관리" aria-label="설정">${ICONS.settings}</button>
+      </div>
+    `;
+  }
+
+  function updateNavUI() {
+    document.querySelectorAll("[data-tab]").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === state.activeTab);
+    });
+    const label = document.getElementById("sidebarDateLabel");
+    if (label) label.textContent = `오늘: ${TODAY_STR} · 선택: ${state.selectedDate}`;
+  }
+
+  function render() {
+    if (diaryPending) flushDiaryDraft();
+    state.activeTab = normalizeTab(state.activeTab);
+    updateNavUI();
+    const main = document.getElementById("mainView");
+    let bodyHtml = "";
+    if (state.activeTab === "year") bodyHtml = renderYearView();
+    else if (state.activeTab === "diary") bodyHtml = renderDiaryView();
+    else if (state.activeTab === "goals") bodyHtml = renderGoalsView();
+    else if (state.activeTab === "bucket") bodyHtml = renderBucketView();
+    else if (state.activeTab === "archive") bodyHtml = renderArchiveView();
+    else bodyHtml = renderYearView();
+
+    main.innerHTML = `<div id="searchPanelHost">${renderSearchPanel()}</div>` + bodyHtml;
+  }
+
+  function getDayMeta(dateStr) {
+    const log = state.logs[dateStr] || {};
+    const hasDiary = Boolean(log.diary && log.diary.trim());
+    const hasAchieved =
+      state.goals.some(g => g.done && g.doneDate === dateStr) ||
+      state.buckets.some(b => b.done && b.doneDate === dateStr);
+    const hasArchive = state.archives.some(a => a.date === dateStr);
+    const hasTodo = state.todos.some(t => t.date === dateStr);
+    const hasAny = Boolean(log.oneLine || hasDiary || hasAchieved || hasArchive || hasTodo);
+    return { log, hasDiary, hasAchieved, hasArchive, hasTodo, hasAny };
+  }
+
+  // 1년 연력 뷰 (달별 모아보기는 '기록 있는 날만' 고정)
+  function renderYearView() {
+    const targetYears = state.yearFilter === "all" ? YEARS : [Number(normalizeYear(state.yearFilter))];
+    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+    const mode = getYearViewMode();
+
+    const legendBar = `
+      <div class="summary-strip">
+        <div class="legend-dots">
+          <span class="legend-item"><span class="badge-dot" style="background:var(--c-diary)"></span>일기</span>
+          <span class="legend-item"><span class="badge-dot" style="background:var(--c-goal)"></span>목표·버킷 달성</span>
+          <span class="legend-item"><span class="badge-dot" style="background:var(--c-archive)"></span>아카이브</span>
+          <span class="legend-item"><span class="badge-dot" style="background:var(--c-todo)"></span>할일</span>
+        </div>
+        <span style="font-size:12px; color:var(--text-sub);">날짜를 누르면 해당 날짜의 기록·일기로 이동합니다</span>
+      </div>
+    `;
+
+    const blocks = targetYears.map(year => {
+      if (mode === "months") {
+        const jumpButtons = Array.from({ length: 12 }, (_, i) =>
+          `<button class="month-jump-btn" onclick="jumpToMonthCard(${year}, ${i + 1})">${i + 1}월</button>`
+        ).join("");
+
+        const monthCards = Array.from({ length: 12 }, (_, idx) => {
+          const month = idx + 1;
+          const maxDay = new Date(year, month, 0).getDate();
+          const recordedDays = [];
+
+          for (let day = 1; day <= maxDay; day++) {
+            const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const meta = getDayMeta(dateStr);
+            if (meta.hasAny) recordedDays.push({ day, dateStr, ...meta });
+          }
+
+          const innerBody = recordedDays.length ? `
+            <div class="month-highlights">
+              ${recordedDays.map(item => {
+                const dow = getDayOfWeek(item.dateStr);
+                const dCol = getDateColor(item.dateStr);
+                const summary = item.log.oneLine || (item.hasArchive ? "아카이브 기록" : item.hasAchieved ? "목표·버킷 달성" : item.hasDiary ? "일기 작성됨" : "할일 등록됨");
+                return `
+                  <div class="highlight-row" onclick="selectDate('${item.dateStr}', true)">
+                    <strong style="width:52px; flex-shrink:0; color:${dCol};">${item.day}일(${dayNames[dow]})</strong>
+                    <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(summary)}</span>
+                    <span class="cell-badges">
+                      ${item.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)"></span>` : ""}
+                      ${item.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)"></span>` : ""}
+                      ${item.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)"></span>` : ""}
+                      ${item.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)"></span>` : ""}
+                    </span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          ` : `<p style="font-size:12px; color:var(--text-sub); margin:6px 0;">기록 있는 날이 없습니다.</p>`;
+
+          return `
+            <div class="month-card" id="month-card-${year}-${month}">
+              <div class="month-card-header">
+                <span class="month-card-title">${month}월</span>
+                <span class="month-card-count">기록 ${recordedDays.length}일</span>
+              </div>
+              ${innerBody}
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <section class="year-block">
+            <div class="month-toolbar">
+              <h2 class="year-heading" style="margin:0;">${year}년 달별 모아보기 · 기록 있는 날</h2>
+              <div class="month-jump-bar">${jumpButtons}</div>
+            </div>
+            <div class="months-grid">${monthCards}</div>
+          </section>
+        `;
+      }
+
+      let rows = "";
+      for (let day = 1; day <= 31; day++) {
+        let cells = `<td class="day-axis-cell">${day}일</td>`;
+        for (let month = 1; month <= 12; month++) {
+          const maxDay = new Date(year, month, 0).getDate();
+          if (day > maxDay) {
+            cells += `<td class="empty-cell"></td>`;
+            continue;
+          }
+          const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const dow = getDayOfWeek(dateStr);
+          const hol = isHoliday(dateStr);
+          const dayCls = hol ? "holiday" : dow === 0 ? "sun" : dow === 6 ? "sat" : "";
+          const meta = getDayMeta(dateStr);
+
+          const isSelected = state.selectedDate === dateStr;
+          const isToday = TODAY_STR === dateStr;
+          const isWeekend = dow === 0 || dow === 6;
+          const tdCls = [
+            isWeekend ? "weekend-bg" : "",
+            isSelected ? "selected-day" : "",
+            isToday ? "today-cell" : ""
+          ].filter(Boolean).join(" ");
+          const tip = `${dateStr} (${dayNames[dow]})${HOLIDAYS[dateStr] ? ` · ${HOLIDAYS[dateStr]}` : ""}${meta.log.oneLine ? `\n${meta.log.oneLine}` : ""}`;
+          const showHolidayText = !meta.log.oneLine && hol;
+
+          cells += `
+            <td class="${tdCls}" onclick="selectDate('${dateStr}', true)" title="${escapeAttr(tip)}">
+              <div class="cell-top">
+                <span class="day-num ${dayCls}">${dayNames[dow]}</span>
+                <span class="cell-badges">
+                  ${meta.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)" title="일기 있음"></span>` : ""}
+                  ${meta.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)" title="목표/버킷 달성"></span>` : ""}
+                  ${meta.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)" title="아카이브 있음"></span>` : ""}
+                  ${meta.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)" title="할일 있음"></span>` : ""}
+                </span>
+              </div>
+              <div class="cell-line ${showHolidayText ? "holiday-label" : ""}">${escapeHtml(meta.log.oneLine || (hol ? HOLIDAYS[dateStr] : ""))}</div>
+            </td>
+          `;
+        }
+        rows += `<tr>${cells}</tr>`;
+      }
+
+      return `
+        <section class="year-block">
+          <h2 class="year-heading">${year}년 한눈에 보기</h2>
+          <div class="matrix-wrap">
+            <table class="year-table">
+              <thead>
+                <tr>
+                  <th class="day-axis-col">일</th>
+                  ${Array.from({ length: 12 }, (_, i) => `<th>${i + 1}월</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }).join("");
+
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-year">${ICONS.year} 1년 연력</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="segmented">
+            <button class="${mode === "matrix" ? "active" : ""}" onclick="setYearViewMode('matrix')">연간 표</button>
+            <button class="${mode === "months" ? "active" : ""}" onclick="setYearViewMode('months')">달별 모아보기</button>
+          </div>
+          ${yearSelectHtml(state.yearFilter, "changeYearFilter")}
+          <button class="btn btn-primary" onclick="selectDate('${TODAY_STR}', true)">오늘 (${TODAY_STR})</button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+      ${legendBar}
+      ${blocks}
+    `;
+  }
+
+  // 하루 기록 · 일기 뷰 (할일 항목을 탭하면 바로 수정 모달 열림)
+  function renderDiaryView() {
+    const d = state.selectedDate;
+    const prevDate = shiftDate(d, -1);
+    const nextDate = shiftDate(d, 1);
+    const dateColor = getDateColor(d);
+    const log = state.logs[d] || { oneLine: "", diary: "" };
+
+    const dayTodos = state.todos.filter(t => t.date === d);
+    const doneGoals = state.goals.filter(g => g.done && g.doneDate === d);
+    const doneBuckets = state.buckets.filter(b => b.done && b.doneDate === d);
+    const dayArchives = state.archives.filter(a => a.date === d);
+
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-diary">${ICONS.diary} 하루 기록 · 일기</h1>
+          <span class="diary-date-badge" style="color:${dateColor}">${formatDateKo(d)}</span>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-nav-arrow" onclick="selectDate('${prevDate}', false)" title="이전 날" aria-label="이전 날">${ICONS.chevLeft}</button>
+          <input type="date" value="${d}" onchange="if (this.value) selectDate(this.value, false)" aria-label="날짜 선택" />
+          <button class="btn btn-nav-arrow" onclick="selectDate('${nextDate}', false)" title="다음 날" aria-label="다음 날">${ICONS.chevRight}</button>
+          <button class="btn btn-primary" onclick="selectDate('${TODAY_STR}', false)">오늘</button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">연력 한 줄 요약</label>
+          <input type="text" id="oneLineInput" style="width:100%; margin-bottom:16px;" placeholder="연력 칸에 표시될 오늘의 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" />
+
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
+          <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="onDiaryInput()">${escapeHtml(log.diary || "")}</textarea>
+          <div class="diary-save-line">
+            <span id="saveStatus" class="save-status">입력하면 자동으로 저장됩니다</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-todo);">이 날의 할일</h3>
+            <div class="form-row">
+              <input type="text" id="dayTodoInput" style="flex:1; min-width:0;" placeholder="이 날짜에 할일 추가..." onkeydown="if (event.key === 'Enter') addDayTodo()" />
+              <button class="btn" onclick="addDayTodo()">추가</button>
+            </div>
+            <div class="item-list">
+              ${dayTodos.length ? dayTodos.map(t => `
+                <div class="list-item ${t.done ? "done" : ""}">
+                  <div class="item-left">
+                    <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" />
+                    <div class="item-title tap-edit-target" onclick="openEditTodo('${t.id}')" title="탭하여 수정">${escapeHtml(t.title)}</div>
+                  </div>
+                  <button class="icon-btn danger" onclick="deleteItem('todos', '${t.id}')" title="삭제" aria-label="할일 삭제">${ICONS.trash}</button>
+                </div>
+              `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 할일이 없습니다.</p>`}
+            </div>
+          </div>
+
+          ${(doneGoals.length + doneBuckets.length + dayArchives.length) > 0 ? `
+            <div class="card">
+              <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">이 날의 달성 · 아카이브</h3>
+              <div class="item-list">
+                ${doneGoals.map(g => `<div class="list-item tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} 목표 · ${escapeHtml(g.topic)}</span>${escapeHtml(g.title)}</div>`).join("")}
+                ${doneBuckets.map(b => `<div class="list-item tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} 버킷 · ${escapeHtml(b.category)}</span>${escapeHtml(b.title)}</div>`).join("")}
+                ${dayArchives.map(a => `<div class="list-item tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span>${escapeHtml(a.title)}</div>`).join("")}
               </div>
             </div>
-          `
-            )
-            .join("")}
+          ` : ""}
         </div>
       </div>
-    `
-    : "";
-
-  const itemsHtml = list.length
-    ? list
-        .map(
-          (g) => `
-        <div class="list-item" data-open-goal="${g.id}">
-          <div>
-            <div class="archive-meta"><span class="badge">${escapeHtml(g.category)}</span></div>
-            <p class="list-item-title">${escapeHtml(g.title)}</p>
-            ${g.detail ? `<p class="list-item-desc">${escapeHtml(g.detail)}</p>` : ""}
-          </div>
-          <button type="button" class="check-pill ${g.done ? "done" : ""}" data-toggle-goal="${g.id}">
-            ${g.done ? "완료" : "진행중"}
-          </button>
-        </div>
-      `
-        )
-        .join("")
-    : `<div class="empty-state">등록된 목표가 없습니다. 우측 하단 + 버튼으로 추가해 보세요.</div>`;
-
-  container.innerHTML = `
-    <div class="top-header">
-      <h1 class="top-title">목표</h1>
-      <span class="top-sub">총 ${state.goals.length}개 · 탭해서 수정</span>
-    </div>
-    <div class="chip-row">${chipsHtml}</div>
-    <div class="toolbar-row">
-      <button type="button" class="btn-outline" id="toggleGoalCatBtn">
-        ${state.showCatManager ? "카테고리 관리 닫기" : "카테고리 관리"}
-      </button>
-    </div>
-    ${catManagerHtml}
-    ${itemsHtml}
-  `;
-
-  container.querySelectorAll("[data-goal-cat]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.selectedGoalCat = btn.dataset.goalCat;
-      saveState();
-      render();
-    });
-  });
-
-  document.getElementById("toggleGoalCatBtn").addEventListener("click", () => {
-    state.showCatManager = !state.showCatManager;
-    render();
-  });
-
-  if (state.showCatManager) {
-    document.getElementById("addGoalCatBtn").addEventListener("click", () => {
-      const inp = document.getElementById("newGoalCatInput");
-      const val = inp.value.trim();
-      if (!val || state.goalCategories.includes(val)) return;
-      state.goalCategories.push(val);
-      saveState();
-      render();
-    });
-
-    container.querySelectorAll("[data-rename-goal-cat]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const oldName = btn.dataset.renameGoalCat;
-        const nextName = prompt("새 카테고리 이름을 입력하세요.", oldName);
-        if (!nextName || !nextName.trim() || nextName.trim() === oldName) return;
-        const clean = nextName.trim();
-        state.goalCategories = state.goalCategories.map((c) => (c === oldName ? clean : c));
-        state.goals.forEach((g) => {
-          if (g.category === oldName) g.category = clean;
-        });
-        if (state.selectedGoalCat === oldName) state.selectedGoalCat = clean;
-        saveState();
-        render();
-      });
-    });
-
-    container.querySelectorAll("[data-del-goal-cat]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.delGoalCat;
-        if (state.goalCategories.length <= 1) {
-          alert("최소 1개의 카테고리가 필요합니다.");
-          return;
-        }
-        if (!confirm(`'${target}' 카테고리를 삭제할까요?`)) return;
-        const fallback = state.goalCategories.find((c) => c !== target);
-        state.goalCategories = state.goalCategories.filter((c) => c !== target);
-        state.goals.forEach((g) => {
-          if (g.category === target) g.category = fallback;
-        });
-        if (state.selectedGoalCat === target) state.selectedGoalCat = "전체";
-        saveState();
-        render();
-      });
-    });
+    `;
   }
 
-  container.querySelectorAll("[data-toggle-goal]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const target = state.goals.find((g) => g.id === btn.dataset.toggleGoal);
-      if (target) {
-        target.done = !target.done;
-        saveState();
-        render();
-      }
-    });
-  });
+  function onDiaryInput() {
+    diaryPending = true;
+    const st = document.getElementById("saveStatus");
+    if (st) {
+      st.textContent = "저장 중…";
+      st.classList.add("saving");
+    }
+    clearTimeout(diaryTimer);
+    diaryTimer = setTimeout(() => {
+      diaryPending = false;
+      saveDiaryDraft();
+    }, 450);
+  }
 
-  container.querySelectorAll("[data-open-goal]").forEach((row) => {
-    row.addEventListener("click", () => openGoalModal(row.dataset.openGoal));
-  });
-}
+  function flushDiaryDraft() {
+    if (!diaryPending) return;
+    clearTimeout(diaryTimer);
+    diaryPending = false;
+    saveDiaryDraft();
+  }
 
-/* ---------------- 버킷 탭 ---------------- */
-function renderBucketTab(container) {
-  const itemsHtml = state.buckets.length
-    ? state.buckets
-        .map(
-          (b) => `
-        <div class="list-item" data-open-bucket="${b.id}">
-          <div>
-            <p class="list-item-title">${escapeHtml(b.title)}</p>
-            ${b.detail ? `<p class="list-item-desc">${escapeHtml(b.detail)}</p>` : ""}
-          </div>
-          <button type="button" class="check-pill ${b.done ? "done" : ""}" data-toggle-bucket="${b.id}">
-            ${b.done ? "달성" : "예정"}
-          </button>
-        </div>
-      `
-        )
-        .join("")
-    : `<div class="empty-state">등록된 버킷 리스트가 없습니다. 우측 하단 + 버튼으로 추가해 보세요.</div>`;
+  function saveDiaryDraft() {
+    const oneEl = document.getElementById("oneLineInput");
+    const diaryEl = document.getElementById("diaryInput");
+    if (!oneEl || !diaryEl) return;
+    state.logs[state.selectedDate] = { oneLine: oneEl.value, diary: diaryEl.value };
+    const ok = saveState();
+    const st = document.getElementById("saveStatus");
+    if (st) {
+      st.classList.remove("saving");
+      st.textContent = ok
+        ? `자동 저장됨 · ${timeStr(lastSavedAt)}`
+        : "저장 실패 · 설정에서 백업을 확인해 주세요";
+    }
+  }
 
-  container.innerHTML = `
-    <div class="top-header">
-      <h1 class="top-title">버킷 리스트</h1>
-      <span class="top-sub">총 ${state.buckets.length}개 · 탭해서 수정</span>
-    </div>
-    ${itemsHtml}
-  `;
+  function addDayTodo() {
+    const inp = document.getElementById("dayTodoInput");
+    if (!inp) return;
+    const title = inp.value.trim();
+    if (!title) return;
+    state.todos.unshift({ id: uid(), date: state.selectedDate, title, done: false });
+    saveState();
+    render();
+  }
 
-  container.querySelectorAll("[data-toggle-bucket]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const target = state.buckets.find((b) => b.id === btn.dataset.toggleBucket);
-      if (target) {
-        target.done = !target.done;
-        saveState();
-        render();
-      }
-    });
-  });
-
-  container.querySelectorAll("[data-open-bucket]").forEach((row) => {
-    row.addEventListener("click", () => openBucketModal(row.dataset.openBucket));
-  });
-}
-
-/* ---------------- 1년 연력 탭 ---------------- */
-function collectEntriesByYear(year) {
-  const map = {}; // dateStr -> { diarySummary, archives: [] }
-  const add = (dateStr) => {
-    if (!dateStr || !dateStr.startsWith(`${year}-`)) return;
-    if (!map[dateStr]) map[dateStr] = { diarySummary: "", archives: [] };
-    return map[dateStr];
+  // ---------- 카테고리 관리 ----------
+  const CAT_KINDS = {
+    goals: { label: "목표", filterKey: "goalTopicFilter", itemKey: "topic", iconFallback: "target", addIconDefault: "target" },
+    bucket: { label: "버킷리스트", filterKey: "bucketCatFilter", itemKey: "category", iconFallback: "star", addIconDefault: "star" },
+    archive: { label: "아카이브", filterKey: "archiveCatFilter", itemKey: "category", iconFallback: "folder", addIconDefault: "folder" }
   };
 
-  Object.entries(state.diaries).forEach(([dStr, val]) => {
-    if (dStr.startsWith(`${year}-`) && ((val.summary && val.summary.trim()) || (val.body && val.body.trim()))) {
-      const slot = add(dStr);
-      slot.diarySummary = val.summary || val.body.slice(0, 40);
-    }
-  });
-
-  state.archives.forEach((a) => {
-    if (a.date && a.date.startsWith(`${year}-`)) {
-      const slot = add(a.date);
-      slot.archives.push(a);
-    }
-  });
-
-  return map;
-}
-
-function renderCalendarTab(container) {
-  const year = state.calYear;
-  const entryMap = collectEntriesByYear(year);
-  const q = state.calSearch.trim().toLowerCase();
-
-  const monthNames = Array.from({ length: 12 }, (_, i) => `${i + 1}월`);
-  const monthJumpHtml = monthNames
-    .map((mLabel, idx) => {
-      const mNum = idx + 1;
-      const prefix = `${year}-${String(mNum).padStart(2, "0")}-`;
-      const hasAny = Object.keys(entryMap).some((d) => d.startsWith(prefix));
-      const isSelected = state.calSelectedMonth === mNum;
-      return `
-        <button
-          type="button"
-          class="month-pill ${hasAny ? "has-entry" : ""} ${isSelected ? "active" : ""}"
-          data-jump-month="${mNum}"
-        >${mLabel}</button>
-      `;
-    })
-    .join("");
-
-  let bodyHtml = "";
-
-  if (state.calMode === "monthly") {
-    const monthCards = [];
-    for (let m = 1; m <= 12; m++) {
-      if (state.calSelectedMonth && state.calSelectedMonth !== m) continue;
-      const prefix = `${year}-${String(m).padStart(2, "0")}-`;
-      const dates = Object.keys(entryMap)
-        .filter((d) => d.startsWith(prefix))
-        .sort()
-        .filter((d) => {
-          if (!q) return true;
-          const slot = entryMap[d];
-          const text = `${d} ${slot.diarySummary} ${slot.archives.map((x) => x.title + " " + x.note).join(" ")}`.toLowerCase();
-          return text.includes(q);
-        });
-
-      if (dates.length === 0 && !state.calShowEmptyMonths && !state.calSelectedMonth) {
-        continue;
-      }
-
-      const rowsHtml = dates.length
-        ? dates
-            .map((d) => {
-              const slot = entryMap[d];
-              const labels = [];
-              if (slot.diarySummary) labels.push(`일기: ${slot.diarySummary}`);
-              slot.archives.forEach((a) => labels.push(`아카이브(${a.category}): ${a.title}`));
-              return `
-                <div class="day-entry-row" data-jump-diary="${d}">
-                  <div>
-                    <strong>${escapeHtml(formatDotDate(d))}</strong>
-                    <div class="list-item-desc">${escapeHtml(labels.join(" · "))}</div>
-                  </div>
-                </div>
-              `;
-            })
-            .join("")
-        : `<div class="list-item-desc">기록이 없습니다.</div>`;
-
-      monthCards.push(`
-        <section class="month-card">
-          <div class="month-card-head">
-            <h2 class="month-card-title">${m}월</h2>
-            <span class="top-sub">기록 ${dates.length}일</span>
-          </div>
-          ${rowsHtml}
-        </section>
-      `);
-    }
-
-    bodyHtml = monthCards.length
-      ? monthCards.join("")
-      : `<div class="empty-state">표시할 기록이 없습니다. '빈 달 보기'를 켜거나 다른 월을 선택해 보세요.</div>`;
-  } else {
-    // 연간 표(12개월 그리드)
-    const today = todayStr();
-    const gridCards = [];
-    for (let m = 1; m <= 12; m++) {
-      if (state.calSelectedMonth && state.calSelectedMonth !== m) continue;
-      const firstDay = new Date(year, m - 1, 1).getDay();
-      const lastDate = new Date(year, m, 0).getDate();
-      const cells = [];
-      for (let i = 0; i < firstDay; i++) cells.push(`<span></span>`);
-      for (let day = 1; day <= lastDate; day++) {
-        const dStr = `${year}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        const has = Boolean(entryMap[dStr]);
-        const isToday = dStr === today;
-        cells.push(`
-          <button
-            type="button"
-            class="mini-day ${has ? "has-entry" : ""} ${isToday ? "today" : ""}"
-            data-jump-diary="${dStr}"
-            title="${dStr}"
-          >${day}</button>
-        `);
-      }
-      gridCards.push(`
-        <div class="month-card" style="margin-bottom:0;">
-          <div class="month-card-head" style="margin-bottom:6px;">
-            <strong>${m}월</strong>
-          </div>
-          <div class="mini-cal-days">${cells.join("")}</div>
-        </div>
-      `);
-    }
-    bodyHtml = `<div class="year-grid">${gridCards.join("")}</div>`;
+  function categoryListOf(kind) {
+    if (kind === "goals") return state.topics;
+    if (kind === "bucket") return state.bucketCategories;
+    return state.archiveCategories;
   }
 
-  container.innerHTML = `
-    <div class="top-header">
-      <h1 class="top-title">1년 연력</h1>
-      <button type="button" class="btn-outline" id="calTodayBtn">오늘 (${todayStr()})</button>
-    </div>
+  function collectionOf(kind) {
+    if (kind === "goals") return state.goals;
+    if (kind === "bucket") return state.buckets;
+    return state.archives;
+  }
 
-    <div class="cal-controls">
-      <div class="cal-top-row">
-        <input
-          type="text"
-          class="input-sm"
-          id="calSearchInput"
-          placeholder="기록·아카이브 검색..."
-          value="${escapeHtml(state.calSearch)}"
-        />
-        <div class="seg-group">
-          <button type="button" class="seg-btn ${state.calMode === "yearly" ? "active" : ""}" data-cal-mode="yearly">연간 표</button>
-          <button type="button" class="seg-btn ${state.calMode === "monthly" ? "active" : ""}" data-cal-mode="monthly">달별 모아보기</button>
+  function openCategoryManager(kind) {
+    if (!CAT_KINDS[kind]) return;
+    catManagerKind = kind;
+    renderCategoryManager();
+    document.getElementById("catModal").classList.add("open");
+  }
+
+  function closeCategoryManager() {
+    catManagerKind = null;
+    document.getElementById("catModal").classList.remove("open");
+  }
+
+  function refreshCategoryManager() {
+    if (!catManagerKind) return;
+    if (document.getElementById("catModal").classList.contains("open")) renderCategoryManager();
+  }
+
+  function renderCategoryManager() {
+    const kind = catManagerKind;
+    if (!kind) return;
+    const cfg = CAT_KINDS[kind];
+    const list = categoryListOf(kind);
+    const items = collectionOf(kind);
+    document.getElementById("catModalTitle").textContent = `${cfg.label} 카테고리 관리`;
+    document.getElementById("catModalBody").innerHTML = `
+      <p class="settings-hint" style="margin:0 0 10px;">이름이나 아이콘을 바꾸면 기존 항목에도 함께 반영됩니다.</p>
+      <div class="cat-manage-list">
+        ${list.length ? list.map((cat, idx) => {
+          const count = items.filter(it => it[cfg.itemKey] === cat.name).length;
+          return `
+            <div class="cat-manage-row">
+              <span class="cat-manage-name">${renderPictogram(cat.icon, 14)} ${escapeHtml(cat.name)} <span class="cat-manage-count">${count}</span></span>
+              <span class="cat-manage-actions">
+                <button class="btn btn-sm" onclick="openCategoryEdit('${kind}', ${idx})">수정</button>
+                <button class="btn btn-sm btn-danger-outline" onclick="deleteCategory('${kind}', ${idx})">삭제</button>
+              </span>
+            </div>
+          `;
+        }).join("") : `<p class="settings-hint" style="margin:0;">아직 카테고리가 없습니다. 아래에서 추가하세요.</p>`}
+      </div>
+      <div class="cat-add-card">
+        <h4>새 카테고리 추가</h4>
+        ${renderIconPickerHtml("catAddIcon", cfg.addIconDefault)}
+        <div class="cat-add-row">
+          <input type="text" id="catAddName" placeholder="카테고리 이름" onkeydown="if (event.key === 'Enter') addCategoryFromManager()" />
+          <button class="btn btn-primary" onclick="addCategoryFromManager()">추가</button>
         </div>
-        <select class="select-sm" id="calYearSelect" aria-label="연도 선택">
-          ${[2025, 2026, 2027]
-            .map((y) => `<option value="${y}" ${year === y ? "selected" : ""}>${y}년</option>`)
-            .join("")}
+      </div>
+    `;
+  }
+
+  function openCategoryEdit(kind, idx) {
+    const cfg = CAT_KINDS[kind];
+    const list = categoryListOf(kind);
+    const target = list[idx];
+    if (!target) return;
+    openModal(`${cfg.label} 카테고리 수정`, `
+      <div class="modal-field">
+        <label>픽토그램 선택</label>
+        ${renderIconPickerHtml("mCatIcon", target.icon)}
+      </div>
+      <div class="modal-field">
+        <label>카테고리 이름 (기존 항목의 분류명도 함께 변경됩니다)</label>
+        <input type="text" id="mCatName" value="${escapeAttr(target.name)}" />
+      </div>
+    `, () => {
+      const newIcon = resolveIconKey(document.getElementById("mCatIcon").value, target.icon);
+      const newName = document.getElementById("mCatName").value.trim();
+      if (!newName) {
+        alert("카테고리 이름을 입력해 주세요.");
+        return false;
+      }
+      if (newName !== target.name && list.some(c => c.name === newName)) {
+        alert("이미 같은 이름의 카테고리가 있습니다.");
+        return false;
+      }
+      const oldName = target.name;
+      list[idx] = { name: newName, icon: newIcon };
+      if (state[cfg.filterKey] === oldName) state[cfg.filterKey] = newName;
+      collectionOf(kind).forEach(item => {
+        if (item[cfg.itemKey] === oldName) item[cfg.itemKey] = newName;
+      });
+      return true;
+    });
+  }
+
+  function deleteCategory(kind, idx) {
+    const cfg = CAT_KINDS[kind];
+    const list = categoryListOf(kind);
+    const target = list[idx];
+    if (!target) return;
+    const count = collectionOf(kind).filter(it => it[cfg.itemKey] === target.name).length;
+    const msg = count > 0
+      ? `‘${target.name}’ 카테고리를 삭제할까요? 이 카테고리에 속한 항목 ${count}개도 함께 삭제됩니다.`
+      : `‘${target.name}’ 카테고리를 삭제할까요?`;
+    if (!confirm(msg)) return;
+    list.splice(idx, 1);
+    if (state[cfg.filterKey] === target.name) state[cfg.filterKey] = "all";
+    if (kind === "goals") state.goals = state.goals.filter(g => g.topic !== target.name);
+    else if (kind === "bucket") state.buckets = state.buckets.filter(b => b.category !== target.name);
+    else state.archives = state.archives.filter(a => a.category !== target.name);
+    saveState();
+    render();
+    refreshCategoryManager();
+  }
+
+  function addCategoryFromManager() {
+    const kind = catManagerKind;
+    if (!kind) return;
+    const cfg = CAT_KINDS[kind];
+    const iconEl = document.getElementById("catAddIcon");
+    const nameEl = document.getElementById("catAddName");
+    const icon = resolveIconKey(iconEl ? iconEl.value : cfg.addIconDefault, cfg.iconFallback);
+    const name = (nameEl ? nameEl.value : "").trim();
+    if (!name) {
+      if (nameEl) nameEl.focus();
+      return;
+    }
+    const list = categoryListOf(kind);
+    if (list.some(c => c.name === name)) {
+      alert("이미 같은 이름의 카테고리가 있습니다.");
+      return;
+    }
+    list.push({ name, icon });
+    saveState();
+    render();
+    renderCategoryManager();
+    const next = document.getElementById("catAddName");
+    if (next) next.focus();
+  }
+
+  function ensureCategory(kind, name, icon) {
+    const cfg = CAT_KINDS[kind];
+    const list = categoryListOf(kind);
+    const clean = String(name || "").trim() || "기타";
+    const found = list.find(c => c.name === clean);
+    if (!found) list.push({ name: clean, icon: resolveIconKey(icon || cfg.addIconDefault, cfg.iconFallback) });
+    return clean;
+  }
+
+  function ensureTopicExists(name, icon = "target") {
+    return ensureCategory("goals", name, icon);
+  }
+
+  // ---------- 목표 ----------
+  function changeGoalTopicFilter(val) {
+    state.goalTopicFilter = val;
+    saveState();
+    render();
+  }
+
+  function changeGoalYearFilter(val) {
+    state.goalYearFilter = val === "all" ? "all" : normalizeYear(val);
+    saveState();
+    render();
+  }
+
+  function changeGoalPeriodFilter(val) {
+    state.goalPeriodFilter = val;
+    saveState();
+    render();
+  }
+
+  function changeGoalSort(val) {
+    state.goalSort = val;
+    saveState();
+    render();
+  }
+
+  function toggleGoalComposer() {
+    showGoalComposer = !showGoalComposer;
+    render();
+  }
+
+  function renderDoneDateControl(collection, id, doneDate) {
+    return `
+      <span class="done-date-inline" onclick="event.stopPropagation()">
+        달성일:
+        <input type="date" value="${escapeAttr(doneDate || TODAY_STR)}" onchange="updateDoneDate('${collection}', '${id}', this.value)" />
+      </span>
+    `;
+  }
+
+  function renderThumbList(images, removeFnName) {
+    if (!images || images.length === 0) return `<span style="font-size:12px; color:var(--text-sub);">등록된 사진 없음</span>`;
+    return images.map((src, i) => `
+      <span class="thumb-wrap">
+        <img src="${src}" alt="미리보기 ${i + 1}" />
+        <button type="button" class="thumb-del-btn" onclick="${removeFnName}(${i})" title="삭제" aria-label="사진 삭제">&times;</button>
+      </span>
+    `).join("");
+  }
+
+  async function handleNewGoalImages(event) {
+    try {
+      draftGoalImages = await processMultipleFiles(event.target.files, draftGoalImages, 5);
+      event.target.value = "";
+      const prev = document.getElementById("newGoalImgPreview");
+      if (prev) prev.innerHTML = renderThumbList(draftGoalImages, "removeDraftGoalImage");
+    } catch (_) {
+      alert("이미지를 불러오는 중 오류가 발생했습니다.");
+    }
+  }
+
+  function removeDraftGoalImage(idx) {
+    draftGoalImages.splice(idx, 1);
+    const prev = document.getElementById("newGoalImgPreview");
+    if (prev) prev.innerHTML = renderThumbList(draftGoalImages, "removeDraftGoalImage");
+  }
+
+  // 통합 목표 뷰 (기간 설정 + 카테고리 관리 모달 + 탭 시 바로 수정 모달)
+  function renderGoalsView() {
+    let filtered = state.goals.filter(g => {
+      const topicOk = state.goalTopicFilter === "all" || g.topic === state.goalTopicFilter;
+      const yearOk = state.goalYearFilter === "all" || normalizeYear(g.year) === normalizeYear(state.goalYearFilter);
+      const periodOk = state.goalPeriodFilter === "all" || normalizePeriod(g.period) === state.goalPeriodFilter;
+      return topicOk && yearOk && periodOk;
+    });
+
+    if (state.goalSort === "undone") {
+      filtered = [...filtered].sort((a, b) => Number(a.done) - Number(b.done));
+    } else if (state.goalSort === "done") {
+      filtered = [...filtered].sort((a, b) => Number(b.done) - Number(a.done));
+    } else if (state.goalSort === "oldest") {
+      filtered = [...filtered].reverse();
+    }
+
+    const totalCnt = filtered.length;
+    const doneCnt = filtered.filter(g => g.done).length;
+    const pct = totalCnt > 0 ? Math.round((doneCnt / totalCnt) * 100) : 0;
+
+    const defaultAddTopic = state.goalTopicFilter === "all"
+      ? (state.topics[0] ? state.topics[0].name : "")
+      : state.goalTopicFilter;
+    const defaultAddYear = state.goalYearFilter === "all" ? "2026" : normalizeYear(state.goalYearFilter);
+    const defaultAddPeriod = state.goalPeriodFilter === "all" ? "연간" : state.goalPeriodFilter;
+
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-goal">${ICONS.goals} 목표</h1>
+          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
+        </div>
+        <div class="topbar-right">
+          ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 연도")}
+          <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
+            <option value="all" ${state.goalPeriodFilter === "all" ? "selected" : ""}>전체 기간</option>
+            ${PERIODS.map(p => `<option value="${p}" ${state.goalPeriodFilter === p ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+          <select class="year-select" onchange="changeGoalSort(this.value)" aria-label="정렬">
+            <option value="newest" ${state.goalSort === "newest" ? "selected" : ""}>최신순</option>
+            <option value="oldest" ${state.goalSort === "oldest" ? "selected" : ""}>오래된순</option>
+            <option value="undone" ${state.goalSort === "undone" ? "selected" : ""}>미달성 우선</option>
+            <option value="done" ${state.goalSort === "done" ? "selected" : ""}>달성 완료 우선</option>
+          </select>
+          <button class="btn btn-primary" onclick="toggleGoalComposer()">
+            ${showGoalComposer ? "닫기" : "+ 새 목표 추가"}
+          </button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+
+      <div class="summary-strip">
+        <div class="summary-metrics">
+          <span>현재 필터 목표 <strong>${totalCnt}개</strong></span>
+          <span>달성 완료 <strong style="color:var(--c-goal);">${doneCnt}개</strong></span>
+          <span>달성률 <strong>${pct}%</strong></span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pct}%;"></div>
+        </div>
+      </div>
+
+      <div class="filter-bar-wrap">
+        <div class="filter-chips">
+          <button class="chip-btn ${state.goalTopicFilter === "all" ? "active" : ""}" onclick="changeGoalTopicFilter('all')">
+            전체 <span class="chip-count">${state.goals.length}</span>
+          </button>
+          ${state.topics.map(t => {
+            const cnt = state.goals.filter(g => g.topic === t.name).length;
+            const isAct = state.goalTopicFilter === t.name;
+            return `
+              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter(${jsArg(t.name)})">
+                ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} <span class="chip-count">${cnt}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('goals')">${ICONS.sliders} 카테고리 관리</button>
+      </div>
+
+      ${showGoalComposer ? `
+        <div class="card composer-card">
+          <div class="composer-header">
+            <h3 style="color:var(--c-goal);">새 목표 등록</h3>
+          </div>
+          <div class="form-row">
+            <select id="goalTopicSel" aria-label="목표 카테고리">
+              ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
+            </select>
+            <select id="goalYearSel" aria-label="목표 연도">
+              ${YEARS.map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
+            </select>
+            <select id="goalPeriodSel" aria-label="목표 기간">
+              ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
+            </select>
+            <input type="text" id="goalTitleInp" style="flex:1; min-width:190px;" placeholder="목표 제목 입력..." onkeydown="if (event.key === 'Enter') addGoal()" />
+          </div>
+          <div class="form-row">
+            <textarea id="goalNoteInp" style="width:100%; min-height:70px; resize:vertical;" placeholder="목표의 구체적인 실행 계획, 다짐, 기준 등 본문 내용을 작성하세요..."></textarea>
+          </div>
+          <div class="composer-footer">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+              <label class="btn" style="cursor:pointer;">
+                사진 추가 (최대 5장)
+                <input type="file" id="goalImgInp" accept="image/*" multiple style="display:none" onchange="handleNewGoalImages(event)" />
+              </label>
+              <div id="newGoalImgPreview" class="img-preview-box">${renderThumbList(draftGoalImages, "removeDraftGoalImage")}</div>
+            </div>
+            <div class="composer-actions">
+              <button class="btn btn-primary" onclick="addGoal()">목표 저장</button>
+            </div>
+          </div>
+        </div>
+      ` : ""}
+
+      ${filtered.length ? `
+        <div class="media-grid">
+          ${filtered.map(g => {
+            const iconKey = getTopicIconKey(g.topic);
+            const yr = normalizeYear(g.year);
+            const pr = normalizePeriod(g.period);
+            const imgs = normalizeImages(g);
+            return `
+              <article class="media-card ${g.done ? "done" : ""}">
+                <div class="media-cover" onclick="openCardCover('goal', '${g.id}')" title="${imgs.length ? "사진 크게 보기" : "탭하여 수정"}">
+                  ${imgs.length > 0
+                    ? `<img src="${imgs[0]}" alt="${escapeAttr(g.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
+                    : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(g.topic)}</span></div>`
+                  }
+                </div>
+                <div class="media-body">
+                  <div class="media-top">
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; min-width:0;">
+                      <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
+                      <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
+                    </div>
+                    <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
+                  </div>
+                  <div class="media-title-row">
+                    <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
+                    <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
+                  </div>
+                  ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
+                  ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      ` : `
+        <div class="card">
+          <p style="font-size:13px; color:var(--text-sub); margin:0;">해당 조건에 맞는 목표가 없습니다. 상단의 ‘+ 새 목표 추가’ 버튼으로 목표를 등록해 보세요.</p>
+        </div>
+      `}
+    `;
+  }
+
+  function addGoal() {
+    const topicSel = document.getElementById("goalTopicSel");
+    let topic = topicSel && topicSel.value ? topicSel.value : ensureTopicExists("기타", "target");
+    if (!topic) topic = "기타";
+    const year = normalizeYear(document.getElementById("goalYearSel").value);
+    const period = normalizePeriod(document.getElementById("goalPeriodSel").value);
+    const titleEl = document.getElementById("goalTitleInp");
+    const title = titleEl.value.trim();
+    if (!title) {
+      titleEl.focus();
+      return;
+    }
+    state.goals.unshift({
+      id: uid(),
+      topic,
+      year,
+      period,
+      title,
+      note: document.getElementById("goalNoteInp").value.trim(),
+      images: [...draftGoalImages],
+      done: false,
+      doneDate: ""
+    });
+    draftGoalImages = [];
+    showGoalComposer = false;
+    saveState();
+    render();
+  }
+
+  let modalGoalImages = [];
+  async function handleModalGoalImages(event) {
+    try {
+      modalGoalImages = await processMultipleFiles(event.target.files, modalGoalImages, 5);
+      event.target.value = "";
+      const box = document.getElementById("mGoalImgBox");
+      if (box) box.innerHTML = renderThumbList(modalGoalImages, "removeModalGoalImage");
+    } catch (_) {
+      alert("이미지를 불러오는 중 오류가 발생했습니다.");
+    }
+  }
+
+  function removeModalGoalImage(idx) {
+    modalGoalImages.splice(idx, 1);
+    const box = document.getElementById("mGoalImgBox");
+    if (box) box.innerHTML = renderThumbList(modalGoalImages, "removeModalGoalImage");
+  }
+
+  function openEditGoal(id) {
+    const g = state.goals.find(x => x.id === id);
+    if (!g) return;
+    modalGoalImages = [...normalizeImages(g)];
+    const curYear = normalizeYear(g.year);
+    const curPeriod = normalizePeriod(g.period);
+    openModal("목표 수정", `
+      <div class="modal-field">
+        <label>카테고리</label>
+        <select id="mGoalTopic">
+          ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${g.topic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
         </select>
       </div>
-
-      <div class="month-jump-bar">
-        <button type="button" class="month-pill ${state.calSelectedMonth === null ? "active" : ""}" data-jump-month="">전체</button>
-        ${monthJumpHtml}
+      <div class="modal-field">
+        <label>연도</label>
+        <select id="mGoalYear">
+          ${YEARS.map(y => `<option value="${y}" ${curYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
+        </select>
       </div>
-    </div>
-
-    <div class="legend-bar">
-      <div class="legend-dots">
-        <span class="dot-item"><i class="dot" style="background:var(--dot-diary)"></i>일기</span>
-        <span class="dot-item"><i class="dot" style="background:var(--dot-archive)"></i>아카이브</span>
+      <div class="modal-field">
+        <label>기간</label>
+        <select id="mGoalPeriod">
+          ${PERIODS.map(p => `<option value="${p}" ${curPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
+        </select>
       </div>
-      ${
-        state.calMode === "monthly" && !state.calSelectedMonth
-          ? `<button type="button" class="link-btn" id="toggleEmptyMonthsBtn">${state.calShowEmptyMonths ? "기록 있는 달만 보기" : "빈 달 보기"}</button>`
-          : `<span class="top-sub">날짜 탭 시 일기로 이동</span>`
+      <div class="modal-field">
+        <label>목표 제목</label>
+        <input type="text" id="mGoalTitle" value="${escapeAttr(g.title)}" />
+      </div>
+      <div class="modal-field">
+        <label>본문 내용 · 실행 메모</label>
+        <textarea id="mGoalNote" style="min-height:100px;">${escapeHtml(g.note || "")}</textarea>
+      </div>
+      <div class="modal-field">
+        <label>사진 (최대 5장)</label>
+        <input type="file" accept="image/*" multiple onchange="handleModalGoalImages(event)" />
+        <div id="mGoalImgBox" class="img-preview-box">
+          ${renderThumbList(modalGoalImages, "removeModalGoalImage")}
+        </div>
+      </div>
+    `, () => {
+      const topicSel = document.getElementById("mGoalTopic");
+      if (topicSel && topicSel.value) g.topic = topicSel.value;
+      g.year = normalizeYear(document.getElementById("mGoalYear").value);
+      g.period = normalizePeriod(document.getElementById("mGoalPeriod").value);
+      g.title = document.getElementById("mGoalTitle").value.trim() || g.title;
+      g.note = document.getElementById("mGoalNote").value.trim();
+      g.images = [...modalGoalImages];
+      delete g.image;
+      return true;
+    });
+  }
+
+  // ---------- 버킷리스트 ----------
+  function changeBucketCatFilter(cat) {
+    state.bucketCatFilter = cat;
+    saveState();
+    render();
+  }
+
+  function changeBucketSort(val) {
+    state.bucketSort = val;
+    saveState();
+    render();
+  }
+
+  function toggleBucketComposer() {
+    showBucketComposer = !showBucketComposer;
+    render();
+  }
+
+  function renderBucketView() {
+    let filtered = state.buckets.filter(b => state.bucketCatFilter === "all" || b.category === state.bucketCatFilter);
+    if (state.bucketSort === "undone") {
+      filtered = [...filtered].sort((a, b) => Number(a.done) - Number(b.done));
+    } else if (state.bucketSort === "done") {
+      filtered = [...filtered].sort((a, b) => Number(b.done) - Number(a.done));
+    } else if (state.bucketSort === "oldest") {
+      filtered = [...filtered].reverse();
+    }
+
+    const totalCnt = filtered.length;
+    const doneCnt = filtered.filter(b => b.done).length;
+    const pct = totalCnt > 0 ? Math.round((doneCnt / totalCnt) * 100) : 0;
+
+    const defaultCat = state.bucketCatFilter === "all"
+      ? (state.bucketCategories[0] ? state.bucketCategories[0].name : "경험")
+      : state.bucketCatFilter;
+
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-bucket">${ICONS.bucket} 버킷리스트</h1>
+          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
+        </div>
+        <div class="topbar-right">
+          <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
+            <option value="newest" ${state.bucketSort === "newest" ? "selected" : ""}>최신순</option>
+            <option value="oldest" ${state.bucketSort === "oldest" ? "selected" : ""}>오래된순</option>
+            <option value="undone" ${state.bucketSort === "undone" ? "selected" : ""}>미달성 우선</option>
+            <option value="done" ${state.bucketSort === "done" ? "selected" : ""}>달성 완료 우선</option>
+          </select>
+          <button class="btn btn-primary" onclick="toggleBucketComposer()">
+            ${showBucketComposer ? "닫기" : "+ 새 버킷 추가"}
+          </button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+
+      <div class="summary-strip">
+        <div class="summary-metrics">
+          <span>현재 목록 <strong>${totalCnt}개</strong></span>
+          <span>달성 완료 <strong style="color:var(--c-bucket);">${doneCnt}개</strong></span>
+          <span>달성률 <strong>${pct}%</strong></span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pct}%; background:var(--c-bucket);"></div>
+        </div>
+      </div>
+
+      <div class="filter-bar-wrap">
+        <div class="filter-chips">
+          <button class="chip-btn ${state.bucketCatFilter === "all" ? "active" : ""}" onclick="changeBucketCatFilter('all')">
+            전체 <span class="chip-count">${state.buckets.length}</span>
+          </button>
+          ${state.bucketCategories.map(cat => {
+            const cnt = state.buckets.filter(b => b.category === cat.name).length;
+            const isAct = state.bucketCatFilter === cat.name;
+            return `
+              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeBucketCatFilter(${jsArg(cat.name)})">
+                ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} <span class="chip-count">${cnt}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('bucket')">${ICONS.sliders} 카테고리 관리</button>
+      </div>
+
+      ${showBucketComposer ? `
+        <div class="card composer-card">
+          <div class="composer-header">
+            <h3 style="color:var(--c-bucket);">새 버킷리스트 등록</h3>
+          </div>
+          <div class="form-row">
+            <select id="bucketCatSel" aria-label="버킷 카테고리">
+              ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+            </select>
+            <input type="text" id="bucketTitleInp" style="flex:1; min-width:190px;" placeholder="언젠가 꼭 해보고 싶은 버킷리스트..." onkeydown="if (event.key === 'Enter') addBucket()" />
+            <input type="text" id="bucketNoteInp" style="flex:1; min-width:150px;" placeholder="세부 메모 (선택)" onkeydown="if (event.key === 'Enter') addBucket()" />
+          </div>
+          <div class="composer-footer">
+            <span style="font-size:12px; color:var(--text-sub);">Enter 키로 바로 저장할 수 있습니다</span>
+            <div class="composer-actions">
+              <button class="btn btn-primary" onclick="addBucket()">버킷 저장</button>
+            </div>
+          </div>
+        </div>
+      ` : ""}
+
+      <div class="card">
+        <div class="item-list">
+          ${filtered.length ? filtered.map(b => `
+            <div class="list-item ${b.done ? "done" : ""}">
+              <div class="item-left">
+                <input type="checkbox" class="chk" ${b.done ? "checked" : ""} onchange="toggleAchieve('buckets', '${b.id}')" aria-label="달성 체크" />
+                <div class="tap-edit-target" style="flex:1; min-width:0;" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
+                  <div class="item-title">${escapeHtml(b.title)}</div>
+                  <div class="item-meta">
+                    <span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span>
+                    ${b.note ? `<span>${escapeHtml(b.note)}</span>` : ""}
+                    ${b.done ? renderDoneDateControl("buckets", b.id, b.doneDate) : ""}
+                  </div>
+                </div>
+              </div>
+              <button class="icon-btn danger" onclick="deleteItem('buckets', '${b.id}')" title="삭제" aria-label="버킷리스트 삭제">${ICONS.trash}</button>
+            </div>
+          `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 버킷리스트가 없습니다. 상단의 ‘+ 새 버킷 추가’ 버튼으로 등록해 보세요.</p>`}
+        </div>
+      </div>
+    `;
+  }
+
+  function addBucket() {
+    const sel = document.getElementById("bucketCatSel");
+    const category = sel && sel.value ? sel.value : ensureCategory("bucket", "경험", "star");
+    const titleEl = document.getElementById("bucketTitleInp");
+    const title = titleEl.value.trim();
+    if (!title) {
+      titleEl.focus();
+      return;
+    }
+    state.buckets.unshift({
+      id: uid(),
+      category,
+      title,
+      note: document.getElementById("bucketNoteInp").value.trim(),
+      done: false,
+      doneDate: ""
+    });
+    showBucketComposer = false;
+    saveState();
+    render();
+  }
+
+  // ---------- 아카이브 ----------
+  function changeArchiveCatFilter(cat) {
+    state.archiveCatFilter = cat;
+    saveState();
+    render();
+  }
+
+  function changeArchiveSort(val) {
+    state.archiveSort = val;
+    saveState();
+    render();
+  }
+
+  function toggleArchiveComposer() {
+    showArchiveComposer = !showArchiveComposer;
+    render();
+  }
+
+  async function handleNewArchiveImages(event) {
+    try {
+      draftArchiveImages = await processMultipleFiles(event.target.files, draftArchiveImages, 5);
+      event.target.value = "";
+      const prev = document.getElementById("newArchiveImgPreview");
+      if (prev) prev.innerHTML = renderThumbList(draftArchiveImages, "removeDraftArchiveImage");
+    } catch (_) {
+      alert("이미지를 불러오는 중 오류가 발생했습니다.");
+    }
+  }
+
+  function removeDraftArchiveImage(idx) {
+    draftArchiveImages.splice(idx, 1);
+    const prev = document.getElementById("newArchiveImgPreview");
+    if (prev) prev.innerHTML = renderThumbList(draftArchiveImages, "removeDraftArchiveImage");
+  }
+
+  function addArchiveItem() {
+    const catSel = document.getElementById("archiveCatSel");
+    const category = catSel && catSel.value ? catSel.value : ensureCategory("archive", "기타", "folder");
+    const date = document.getElementById("archiveDateInp").value || state.selectedDate || TODAY_STR;
+    const titleEl = document.getElementById("archiveTitleInp");
+    const title = titleEl.value.trim();
+    if (!title) {
+      titleEl.focus();
+      return;
+    }
+    state.archives.unshift({
+      id: uid(),
+      category,
+      date,
+      title,
+      subtitle: document.getElementById("archiveSubInp").value.trim(),
+      note: document.getElementById("archiveNoteInp").value.trim(),
+      images: [...draftArchiveImages]
+    });
+    draftArchiveImages = [];
+    showArchiveComposer = false;
+    saveState();
+    render();
+  }
+
+  function renderArchiveView() {
+    let filtered = state.archives.filter(a => state.archiveCatFilter === "all" || a.category === state.archiveCatFilter);
+    if (state.archiveSort === "date_desc") {
+      filtered = [...filtered].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    } else if (state.archiveSort === "date_asc") {
+      filtered = [...filtered].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    } else if (state.archiveSort === "oldest") {
+      filtered = [...filtered].reverse();
+    }
+
+    const defaultCat = state.archiveCatFilter === "all"
+      ? (state.archiveCategories[0] ? state.archiveCategories[0].name : "")
+      : state.archiveCatFilter;
+
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-archive">${ICONS.archive} 아카이브</h1>
+          <span class="topbar-sub">총 ${filtered.length}개 · 항목을 탭하면 바로 수정</span>
+        </div>
+        <div class="topbar-right">
+          <select class="year-select" onchange="changeArchiveSort(this.value)" aria-label="아카이브 정렬">
+            <option value="newest" ${state.archiveSort === "newest" ? "selected" : ""}>등록 최신순</option>
+            <option value="oldest" ${state.archiveSort === "oldest" ? "selected" : ""}>등록 오래된순</option>
+            <option value="date_desc" ${state.archiveSort === "date_desc" ? "selected" : ""}>기록 날짜 최신순</option>
+            <option value="date_asc" ${state.archiveSort === "date_asc" ? "selected" : ""}>기록 날짜 오래된순</option>
+          </select>
+          <button class="btn btn-primary" onclick="toggleArchiveComposer()">
+            ${showArchiveComposer ? "닫기" : "+ 새 아카이브 추가"}
+          </button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+
+      <div class="filter-bar-wrap">
+        <div class="filter-chips">
+          <button class="chip-btn ${state.archiveCatFilter === "all" ? "active" : ""}" onclick="changeArchiveCatFilter('all')">
+            전체 <span class="chip-count">${state.archives.length}</span>
+          </button>
+          ${state.archiveCategories.map(cat => {
+            const cnt = state.archives.filter(a => a.category === cat.name).length;
+            const isAct = state.archiveCatFilter === cat.name;
+            return `
+              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeArchiveCatFilter(${jsArg(cat.name)})">
+                ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} <span class="chip-count">${cnt}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('archive')">${ICONS.sliders} 카테고리 관리</button>
+      </div>
+
+      ${showArchiveComposer ? `
+        <div class="card composer-card">
+          <div class="composer-header">
+            <h3 style="color:var(--c-archive);">새 아카이브 등록</h3>
+          </div>
+          <div class="form-row">
+            <select id="archiveCatSel" aria-label="아카이브 분류">
+              ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+            </select>
+            <input type="date" id="archiveDateInp" value="${state.selectedDate}" aria-label="기록 날짜" />
+            <input type="text" id="archiveTitleInp" style="flex:1; min-width:170px;" placeholder="제목 (책 제목, 공부 주제, 여행지, 전시명, 차 이름 등)" />
+            <input type="text" id="archiveSubInp" style="flex:1; min-width:140px;" placeholder="세부 정보 (저자, 장소, 다구 등 · 선택)" />
+          </div>
+          <div class="form-row">
+            <textarea id="archiveNoteInp" style="width:100%; min-height:74px; resize:vertical;" placeholder="감상, 배운 내용, 시음 메모 등 글을 자유롭게 남겨보세요..."></textarea>
+          </div>
+          <div class="composer-footer">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+              <label class="btn" style="cursor:pointer;">
+                사진 추가 (최대 5장)
+                <input type="file" id="archiveImgInp" accept="image/*" multiple style="display:none" onchange="handleNewArchiveImages(event)" />
+              </label>
+              <div id="newArchiveImgPreview" class="img-preview-box">${renderThumbList(draftArchiveImages, "removeDraftArchiveImage")}</div>
+            </div>
+            <div class="composer-actions">
+              <button class="btn btn-primary" onclick="addArchiveItem()">아카이브 저장</button>
+            </div>
+          </div>
+        </div>
+      ` : ""}
+
+      ${filtered.length ? `
+        <div class="media-grid">
+          ${filtered.map(a => {
+            const iconKey = getArchiveCatIconKey(a.category);
+            const imgs = normalizeImages(a);
+            return `
+              <article class="media-card">
+                <div class="media-cover" onclick="openCardCover('archive', '${a.id}')" title="${imgs.length ? "사진 크게 보기" : "탭하여 수정"}">
+                  ${imgs.length > 0
+                    ? `<img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
+                    : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(a.category)}</span></div>`
+                  }
+                </div>
+                <div class="media-body">
+                  <div class="media-top">
+                    <button class="pill" onclick="event.stopPropagation(); selectDate('${a.date}', true)" style="cursor:pointer; border:none; font-family:inherit;" title="해당 날짜 일기로 이동">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category)} · ${a.date}</button>
+                    <button class="icon-btn danger" onclick="event.stopPropagation(); deleteItem('archives', '${a.id}')" title="삭제" aria-label="아카이브 삭제">${ICONS.trash}</button>
+                  </div>
+                  <div class="tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정">
+                    <h3 class="media-title">${escapeHtml(a.title)}</h3>
+                    ${a.subtitle ? `<div class="media-sub">${escapeHtml(a.subtitle)}</div>` : ""}
+                    ${a.note ? `<div class="media-note" style="margin-top:6px;">${escapeHtml(a.note)}</div>` : ""}
+                  </div>
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      ` : `
+        <div class="card">
+          <p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 아카이브 기록이 없습니다. 상단의 ‘+ 새 아카이브 추가’ 버튼으로 첫 기록을 남겨보세요.</p>
+        </div>
+      `}
+    `;
+  }
+
+  let modalArchiveImages = [];
+  async function handleModalArchiveImages(event) {
+    try {
+      modalArchiveImages = await processMultipleFiles(event.target.files, modalArchiveImages, 5);
+      event.target.value = "";
+      const box = document.getElementById("mArchiveImgBox");
+      if (box) box.innerHTML = renderThumbList(modalArchiveImages, "removeModalArchiveImage");
+    } catch (_) {
+      alert("이미지를 불러오는 중 오류가 발생했습니다.");
+    }
+  }
+
+  function removeModalArchiveImage(idx) {
+    modalArchiveImages.splice(idx, 1);
+    const box = document.getElementById("mArchiveImgBox");
+    if (box) box.innerHTML = renderThumbList(modalArchiveImages, "removeModalArchiveImage");
+  }
+
+  function openEditArchive(id) {
+    const a = state.archives.find(x => x.id === id);
+    if (!a) return;
+    modalArchiveImages = [...normalizeImages(a)];
+    openModal("아카이브 수정", `
+      <div class="modal-field">
+        <label>분류</label>
+        <select id="mArchiveCat">
+          ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${a.category === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>날짜</label>
+        <input type="date" id="mArchiveDate" value="${escapeAttr(a.date)}" />
+      </div>
+      <div class="modal-field">
+        <label>제목</label>
+        <input type="text" id="mArchiveTitle" value="${escapeAttr(a.title)}" />
+      </div>
+      <div class="modal-field">
+        <label>세부 정보 (저자, 장소, 다구 등)</label>
+        <input type="text" id="mArchiveSub" value="${escapeAttr(a.subtitle || "")}" />
+      </div>
+      <div class="modal-field">
+        <label>글 · 메모</label>
+        <textarea id="mArchiveNote" style="min-height:110px;">${escapeHtml(a.note || "")}</textarea>
+      </div>
+      <div class="modal-field">
+        <label>사진 (최대 5장)</label>
+        <input type="file" accept="image/*" multiple onchange="handleModalArchiveImages(event)" />
+        <div id="mArchiveImgBox" class="img-preview-box">
+          ${renderThumbList(modalArchiveImages, "removeModalArchiveImage")}
+        </div>
+      </div>
+    `, () => {
+      const catSel = document.getElementById("mArchiveCat");
+      if (catSel && catSel.value) a.category = catSel.value;
+      a.date = document.getElementById("mArchiveDate").value || a.date;
+      a.title = document.getElementById("mArchiveTitle").value.trim() || a.title;
+      a.subtitle = document.getElementById("mArchiveSub").value.trim();
+      a.note = document.getElementById("mArchiveNote").value.trim();
+      a.images = [...modalArchiveImages];
+      delete a.image;
+      return true;
+    });
+  }
+
+  function openEditBucket(id) {
+    const b = state.buckets.find(x => x.id === id);
+    if (!b) return;
+    openModal("버킷리스트 수정", `
+      <div class="modal-field">
+        <label>분류</label>
+        <select id="mBucketCat">
+          ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${b.category === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>버킷리스트 내용</label>
+        <input type="text" id="mBucketTitle" value="${escapeAttr(b.title)}" />
+      </div>
+      <div class="modal-field">
+        <label>세부 메모</label>
+        <input type="text" id="mBucketNote" value="${escapeAttr(b.note || "")}" />
+      </div>
+      <div class="modal-field">
+        <label>달성 날짜 (달성 시)</label>
+        <input type="date" id="mBucketDoneDate" value="${escapeAttr(b.doneDate || "")}" />
+      </div>
+    `, () => {
+      const catSel = document.getElementById("mBucketCat");
+      if (catSel && catSel.value) b.category = catSel.value;
+      b.title = document.getElementById("mBucketTitle").value.trim() || b.title;
+      b.note = document.getElementById("mBucketNote").value.trim();
+      b.doneDate = document.getElementById("mBucketDoneDate").value;
+      if (b.doneDate) b.done = true;
+      return true;
+    });
+  }
+
+  function openEditTodo(id) {
+    const t = state.todos.find(x => x.id === id);
+    if (!t) return;
+    openModal("할일 수정", `
+      <div class="modal-field">
+        <label>날짜</label>
+        <input type="date" id="mTodoDate" value="${escapeAttr(t.date)}" />
+      </div>
+      <div class="modal-field">
+        <label>할일 내용</label>
+        <input type="text" id="mTodoTitle" value="${escapeAttr(t.title)}" />
+      </div>
+    `, () => {
+      t.date = document.getElementById("mTodoDate").value || t.date;
+      t.title = document.getElementById("mTodoTitle").value.trim() || t.title;
+      return true;
+    });
+  }
+
+  function toggleAchieve(collection, id) {
+    const item = state[collection].find(x => x.id === id);
+    if (!item) return;
+    item.done = !item.done;
+    item.doneDate = item.done ? (item.doneDate || state.selectedDate || TODAY_STR) : "";
+    saveState();
+    render();
+  }
+
+  function updateDoneDate(collection, id, newDate) {
+    const item = state[collection].find(x => x.id === id);
+    if (!item) return;
+    item.doneDate = newDate;
+    item.done = true;
+    saveState();
+    render();
+  }
+
+  function toggleTodo(id) {
+    const item = state.todos.find(x => x.id === id);
+    if (!item) return;
+    item.done = !item.done;
+    saveState();
+    render();
+  }
+
+  function deleteItem(collection, id) {
+    const messages = {
+      goals: "이 목표를 삭제할까요?",
+      buckets: "이 버킷리스트를 삭제할까요?",
+      archives: "이 아카이브 기록을 삭제할까요?"
+    };
+    if (messages[collection] && !confirm(messages[collection])) return;
+    state[collection] = state[collection].filter(x => x.id !== id);
+    saveState();
+    render();
+    refreshCategoryManager();
+  }
+
+  // ---------- 사진 크게 보기 (라이트박스) ----------
+  function openCardCover(kind, id) {
+    const list = kind === "goal" ? state.goals : state.archives;
+    const item = list.find(x => x.id === id);
+    if (!item) return;
+    const images = normalizeImages(item);
+    if (images.length) {
+      openLightbox(images, 0, item.title || "");
+    } else if (kind === "goal") {
+      openEditGoal(id);
+    } else {
+      openEditArchive(id);
+    }
+  }
+
+  function openLightbox(images, index = 0, caption = "") {
+    if (!Array.isArray(images) || images.length === 0) return;
+    lightboxImages = [...images];
+    lightboxIndex = Math.max(0, Math.min(index, images.length - 1));
+    lightboxCaption = caption || "";
+    updateLightbox();
+    document.getElementById("lightbox").classList.add("open");
+  }
+
+  function updateLightbox() {
+    const img = document.getElementById("lightboxImg");
+    if (!img) return;
+    img.src = lightboxImages[lightboxIndex] || "";
+    img.alt = lightboxCaption || "사진";
+    const caption = document.getElementById("lightboxCaption");
+    if (caption) {
+      caption.textContent = `${lightboxCaption}${lightboxImages.length > 1 ? ` (${lightboxIndex + 1}/${lightboxImages.length})` : ""}`;
+    }
+    const multi = lightboxImages.length > 1;
+    document.querySelectorAll(".lightbox-nav").forEach(el => {
+      el.style.display = multi ? "flex" : "none";
+    });
+  }
+
+  function lightboxStep(delta) {
+    if (!lightboxImages.length) return;
+    lightboxIndex = (lightboxIndex + delta + lightboxImages.length) % lightboxImages.length;
+    updateLightbox();
+  }
+
+  function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("open");
+    const img = document.getElementById("lightboxImg");
+    if (img) img.src = "";
+    lightboxImages = [];
+  }
+
+  // ---------- 설정 (데이터 관리) ----------
+  function openSettings() {
+    renderSettingsBody();
+    document.getElementById("settingsModal").classList.add("open");
+  }
+
+  function closeSettings() {
+    document.getElementById("settingsModal").classList.remove("open");
+  }
+
+  function refreshSettingsIfOpen() {
+    const modal = document.getElementById("settingsModal");
+    if (modal && modal.classList.contains("open")) renderSettingsBody();
+  }
+
+  function renderSettingsBody() {
+    const body = document.getElementById("settingsBody");
+    if (!body) return;
+    const usage = getStorageUsage();
+    const limit = 5 * 1024 * 1024;
+    const pct = Math.min(100, Math.round((usage.bytes / limit) * 100));
+    const photos = getPhotoCount();
+    const totalItems = (state.logs ? Object.keys(state.logs).length : 0) + (state.goals ? state.goals.length : 0) +
+      (state.buckets ? state.buckets.length : 0) + (state.archives ? state.archives.length : 0) +
+      (state.todos ? state.todos.length : 0);
+    body.innerHTML = `
+      <div class="settings-section">
+        <h4>저장 공간</h4>
+        <div class="storage-line"><strong>사용 중 약 ${formatBytes(usage.bytes)}</strong><span>/ 권장 한도 약 4~5MB</span></div>
+        <div class="storage-track"><div class="storage-fill ${pct >= 80 ? "warn" : ""}" style="width:${pct}%;"></div></div>
+        <p class="settings-hint">사진 ${photos}장 · 기록 ${totalItems}건. 모든 기록은 이 브라우저(localStorage)에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 두세요.</p>
+        ${lastSavedAt ? `<p class="settings-hint">마지막 저장: ${timeStr(lastSavedAt)}</p>` : ""}
+        <p class="settings-hint">공간이 부족하면 저장이 되지 않을 수 있고, 그때는 사진을 줄이거나 백업 후 오래된 사진을 삭제해 주세요.</p>
+      </div>
+      <div class="settings-section">
+        <h4>데이터 관리</h4>
+        <div class="settings-actions">
+          <button class="btn" onclick="exportBackup()">데이터 백업 (JSON)</button>
+          <label class="btn" style="cursor:pointer;">백업 복원<input type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)" /></label>
+          <button class="btn btn-danger-outline" onclick="clearSamples()">예시 지우기 · 전체 삭제</button>
+        </div>
+        <p class="settings-hint">‘예시 지우기’는 기본 예시뿐 아니라 모든 기록을 지웁니다. 되돌릴 수 없으니 먼저 백업을 권장합니다.</p>
+      </div>
+      <div class="settings-section">
+        <h4>앱 정보</h4>
+        <p class="settings-hint">아카이브 &amp; 플래너 v${APP_VERSION} · 저장 키 <code>${STORAGE_KEY}</code></p>
+        ${state.migratedFrom ? `<p class="settings-hint">이전 버전(<code>${escapeHtml(state.migratedFrom)}</code>)의 기록을 안전하게 옮겨 왔습니다.</p>` : ""}
+      </div>
+    `;
+  }
+
+  function exportBackup() {
+    try {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `archive_planner_backup_${TODAY_STR}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (_) {
+      alert("백업 파일을 만드는 중 오류가 발생했습니다.");
+    }
+  }
+
+  function importBackup(event) {
+    const input = event.target;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const parsed = JSON.parse(String(e.target.result));
+        const isLegacy = !parsed.logs && !parsed.topics && looksLikeLegacyIndex(parsed);
+        state = isLegacy ? (migrateLegacyIndex(parsed) || clone(defaultState)) : normalizeState(parsed);
+        saveState();
+        render();
+        refreshSettingsIfOpen();
+        alert("백업 데이터를 복원했습니다.");
+      } catch (_) {
+        alert("올바른 JSON 백업 파일이 아닙니다.");
       }
-    </div>
-
-    ${bodyHtml}
-  `;
-
-  document.getElementById("calTodayBtn").addEventListener("click", () => {
-    state.diaryDate = todayStr();
-    state.activeTab = "diary";
-    saveState();
-    render();
-  });
-
-  document.getElementById("calSearchInput").addEventListener("input", (e) => {
-    state.calSearch = e.target.value;
-    saveState();
-    render();
-  });
-
-  document.getElementById("calYearSelect").addEventListener("change", (e) => {
-    state.calYear = Number(e.target.value);
-    state.calSelectedMonth = null;
-    saveState();
-    render();
-  });
-
-  container.querySelectorAll("[data-cal-mode]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.calMode = btn.dataset.calMode;
-      saveState();
-      render();
-    });
-  });
-
-  container.querySelectorAll("[data-jump-month]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const val = btn.dataset.jumpMonth;
-      state.calSelectedMonth = val ? Number(val) : null;
-      saveState();
-      render();
-    });
-  });
-
-  const emptyBtn = document.getElementById("toggleEmptyMonthsBtn");
-  if (emptyBtn) {
-    emptyBtn.addEventListener("click", () => {
-      state.calShowEmptyMonths = !state.calShowEmptyMonths;
-      saveState();
-      render();
-    });
+      input.value = "";
+    };
+    reader.onerror = () => {
+      alert("파일을 읽는 중 오류가 발생했습니다.");
+      input.value = "";
+    };
+    reader.readAsText(file);
   }
 
-  container.querySelectorAll("[data-jump-diary]").forEach((el) => {
-    el.addEventListener("click", () => {
-      state.diaryDate = el.dataset.jumpDiary;
-      state.activeTab = "diary";
+  // ---------- 공통 모달 ----------
+  function openModal(title, bodyHtml, onSave) {
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("modalBody").innerHTML = bodyHtml;
+    document.getElementById("modalActions").innerHTML = `
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="modalSaveBtn">저장</button>
+    `;
+    const modal = document.getElementById("editModal");
+    modal.classList.add("open");
+    document.getElementById("modalSaveBtn").onclick = () => {
+      const result = typeof onSave === "function" ? onSave() : true;
+      if (result === false) return;
+      closeModal();
       saveState();
       render();
-    });
+      refreshCategoryManager();
+      refreshSettingsIfOpen();
+    };
+  }
+
+  function closeModal() {
+    document.getElementById("editModal").classList.remove("open");
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str).replace(/'/g, "&#39;");
+  }
+
+  // onclick 등 인라인 JS 문자열 인자용 (따옴표 안전 처리)
+  function jsArg(val) {
+    return escapeAttr(JSON.stringify(String(val == null ? "" : val)));
+  }
+
+  document.querySelectorAll("[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => setTab(btn.dataset.tab));
   });
-}
 
-/* ---------------- 모달 (추가 / 수정 / 삭제) ---------------- */
-const backdrop = document.getElementById("modalBackdrop");
-const sheet = document.getElementById("modalSheet");
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      if (document.getElementById("lightbox").classList.contains("open")) { closeLightbox(); return; }
+      if (document.getElementById("editModal").classList.contains("open")) { closeModal(); return; }
+      if (document.getElementById("catModal").classList.contains("open")) { closeCategoryManager(); return; }
+      if (document.getElementById("settingsModal").classList.contains("open")) { closeSettings(); return; }
+      if (searchOpen) { closeSearch(); return; }
+    }
+    if (document.getElementById("lightbox").classList.contains("open")) {
+      if (event.key === "ArrowLeft") lightboxStep(-1);
+      else if (event.key === "ArrowRight") lightboxStep(1);
+    }
+  });
 
-function closeModal() {
-  backdrop.classList.remove("open");
-  sheet.innerHTML = "";
-}
+  const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
+  if (mobileMq) {
+    const onMqChange = () => {
+      if (state.yearViewMode === "auto") render();
+    };
+    if (mobileMq.addEventListener) mobileMq.addEventListener("change", onMqChange);
+    else if (mobileMq.addListener) mobileMq.addListener(onMqChange);
+  }
 
-backdrop.addEventListener("click", (e) => {
-  if (e.target === backdrop) closeModal();
-});
-
-function openArchiveModal(id = null) {
-  const existing = id ? state.archives.find((a) => a.id === id) : null;
-  const item = existing || {
-    id: `arc-${Date.now()}`,
-    category: state.archiveCategories[0] || "독서",
-    date: todayStr(),
-    title: "",
-    subtitle: "",
-    note: "",
-    coverUrl: ""
+  // 테스트/디버깅용 (화면에는 영향 없음)
+  window.__planner = {
+    version: APP_VERSION,
+    getState: () => state,
+    getYearViewMode,
+    getStorageUsage,
+    getPhotoCount,
+    render,
+    openSearch,
+    closeSearch,
+    openSettings,
+    closeSettings,
+    openCategoryManager,
+    closeCategoryManager,
+    openLightbox,
+    closeLightbox,
+    errors: () => window.__errors
   };
 
-  sheet.innerHTML = `
-    <div class="modal-head">
-      <h2 class="modal-title">${existing ? "아카이브 수정" : "새 아카이브 추가"}</h2>
-      <button type="button" class="link-btn" id="closeModalBtn">닫기</button>
-    </div>
-    <div class="field-group">
-      <label class="field-label">카테고리</label>
-      <select class="input-sm" id="mArchCat">
-        ${state.archiveCategories.map((c) => `<option value="${escapeHtml(c)}" ${item.category === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
-      </select>
-    </div>
-    <div class="field-group">
-      <label class="field-label">날짜</label>
-      <input type="date" class="input-sm" id="mArchDate" value="${escapeHtml(item.date)}" />
-    </div>
-    <div class="field-group">
-      <label class="field-label">제목</label>
-      <input type="text" class="input-sm" id="mArchTitle" value="${escapeHtml(item.title)}" placeholder="제목 입력" />
-    </div>
-    <div class="field-group">
-      <label class="field-label">부제 / 출처</label>
-      <input type="text" class="input-sm" id="mArchSub" value="${escapeHtml(item.subtitle)}" placeholder="저자, 장소, 다구 등" />
-    </div>
-    <div class="field-group">
-      <label class="field-label">메모</label>
-      <textarea class="textarea-field" id="mArchNote" rows="4" placeholder="기록할 내용">${escapeHtml(item.note)}</textarea>
-    </div>
-    <div class="modal-actions">
-      ${existing ? `<button type="button" class="btn-danger" id="mArchDelete">삭제</button>` : `<span></span>`}
-      <button type="button" class="btn-primary" id="mArchSave">저장</button>
-    </div>
-  `;
-
-  backdrop.classList.add("open");
-  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-
-  document.getElementById("mArchSave").addEventListener("click", () => {
-    const title = document.getElementById("mArchTitle").value.trim();
-    if (!title) {
-      alert("제목을 입력해 주세요.");
-      return;
-    }
-    const updated = {
-      ...item,
-      category: document.getElementById("mArchCat").value,
-      date: document.getElementById("mArchDate").value || todayStr(),
-      title,
-      subtitle: document.getElementById("mArchSub").value.trim(),
-      note: document.getElementById("mArchNote").value
-    };
-    if (existing) {
-      state.archives = state.archives.map((a) => (a.id === id ? updated : a));
-    } else {
-      state.archives.unshift(updated);
-    }
-    saveState();
-    closeModal();
-    render();
-  });
-
-  if (existing) {
-    document.getElementById("mArchDelete").addEventListener("click", () => {
-      if (!confirm("이 아카이브를 삭제할까요?")) return;
-      state.archives = state.archives.filter((a) => a.id !== id);
-      saveState();
-      closeModal();
-      render();
-    });
-  }
-}
-
-function openGoalModal(id = null) {
-  const existing = id ? state.goals.find((g) => g.id === id) : null;
-  const item = existing || {
-    id: `goal-${Date.now()}`,
-    category: state.goalCategories[0] || "학업",
-    title: "",
-    detail: "",
-    done: false
-  };
-
-  sheet.innerHTML = `
-    <div class="modal-head">
-      <h2 class="modal-title">${existing ? "목표 수정" : "새 목표 추가"}</h2>
-      <button type="button" class="link-btn" id="closeModalBtn">닫기</button>
-    </div>
-    <div class="field-group">
-      <label class="field-label">카테고리</label>
-      <select class="input-sm" id="mGoalCat">
-        ${state.goalCategories.map((c) => `<option value="${escapeHtml(c)}" ${item.category === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
-      </select>
-    </div>
-    <div class="field-group">
-      <label class="field-label">목표명</label>
-      <input type="text" class="input-sm" id="mGoalTitle" value="${escapeHtml(item.title)}" placeholder="목표 입력" />
-    </div>
-    <div class="field-group">
-      <label class="field-label">세부 내용</label>
-      <textarea class="textarea-field" id="mGoalDetail" rows="3" placeholder="실행 기준이나 메모">${escapeHtml(item.detail)}</textarea>
-    </div>
-    <div class="modal-actions">
-      ${existing ? `<button type="button" class="btn-danger" id="mGoalDelete">삭제</button>` : `<span></span>`}
-      <button type="button" class="btn-primary" id="mGoalSave">저장</button>
-    </div>
-  `;
-
-  backdrop.classList.add("open");
-  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-
-  document.getElementById("mGoalSave").addEventListener("click", () => {
-    const title = document.getElementById("mGoalTitle").value.trim();
-    if (!title) {
-      alert("목표명을 입력해 주세요.");
-      return;
-    }
-    const updated = {
-      ...item,
-      category: document.getElementById("mGoalCat").value,
-      title,
-      detail: document.getElementById("mGoalDetail").value
-    };
-    if (existing) {
-      state.goals = state.goals.map((g) => (g.id === id ? updated : g));
-    } else {
-      state.goals.push(updated);
-    }
-    saveState();
-    closeModal();
-    render();
-  });
-
-  if (existing) {
-    document.getElementById("mGoalDelete").addEventListener("click", () => {
-      if (!confirm("이 목표를 삭제할까요?")) return;
-      state.goals = state.goals.filter((g) => g.id !== id);
-      saveState();
-      closeModal();
-      render();
-    });
-  }
-}
-
-function openBucketModal(id = null) {
-  const existing = id ? state.buckets.find((b) => b.id === id) : null;
-  const item = existing || {
-    id: `bkt-${Date.now()}`,
-    title: "",
-    detail: "",
-    done: false
-  };
-
-  sheet.innerHTML = `
-    <div class="modal-head">
-      <h2 class="modal-title">${existing ? "버킷 수정" : "새 버킷 추가"}</h2>
-      <button type="button" class="link-btn" id="closeModalBtn">닫기</button>
-    </div>
-    <div class="field-group">
-      <label class="field-label">버킷 항목</label>
-      <input type="text" class="input-sm" id="mBktTitle" value="${escapeHtml(item.title)}" placeholder="하고 싶은 일 입력" />
-    </div>
-    <div class="field-group">
-      <label class="field-label">메모</label>
-      <textarea class="textarea-field" id="mBktDetail" rows="3" placeholder="시기나 조건 등 메모">${escapeHtml(item.detail)}</textarea>
-    </div>
-    <div class="modal-actions">
-      ${existing ? `<button type="button" class="btn-danger" id="mBktDelete">삭제</button>` : `<span></span>`}
-      <button type="button" class="btn-primary" id="mBktSave">저장</button>
-    </div>
-  `;
-
-  backdrop.classList.add("open");
-  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-
-  document.getElementById("mBktSave").addEventListener("click", () => {
-    const title = document.getElementById("mBktTitle").value.trim();
-    if (!title) {
-      alert("버킷 항목을 입력해 주세요.");
-      return;
-    }
-    const updated = {
-      ...item,
-      title,
-      detail: document.getElementById("mBktDetail").value
-    };
-    if (existing) {
-      state.buckets = state.buckets.map((b) => (b.id === id ? updated : b));
-    } else {
-      state.buckets.push(updated);
-    }
-    saveState();
-    closeModal();
-    render();
-  });
-
-  if (existing) {
-    document.getElementById("mBktDelete").addEventListener("click", () => {
-      if (!confirm("이 버킷 항목을 삭제할까요?")) return;
-      state.buckets = state.buckets.filter((b) => b.id !== id);
-      saveState();
-      closeModal();
-      render();
-    });
-  }
-}
-
-document.getElementById("fabBtn").addEventListener("click", () => {
-  if (state.activeTab === "archive") openArchiveModal(null);
-  else if (state.activeTab === "goals") openGoalModal(null);
-  else if (state.activeTab === "bucket") openBucketModal(null);
-});
-
-document.querySelectorAll(".nav-item").forEach((btn) => {
-  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-});
-
-function render() {
-  renderNav();
-  const main = document.getElementById("app");
-  if (state.activeTab === "archive") renderArchiveTab(main);
-  else if (state.activeTab === "diary") renderDiaryTab(main);
-  else if (state.activeTab === "goals") renderGoalsTab(main);
-  else if (state.activeTab === "bucket") renderBucketTab(main);
-  else if (state.activeTab === "calendar") renderCalendarTab(main);
-}
-
-render();
+  mountNavIcons();
+  render();
 </script>
 </body>
 </html>
