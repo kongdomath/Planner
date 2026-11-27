@@ -1728,13 +1728,13 @@
     }
 
     /* 책장 */
-    .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 6px 0 0; }
+    .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 0; }
     .nb-shelf-track {
-      --cover-w: 164px;
+      --cover-w: 176px;
       --cover-gap: 12px;
       display: flex; align-items: flex-end; justify-content: flex-start; gap: var(--cover-gap);
       flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
-      padding: 30px 0 26px;
+      padding: 26px 0 24px;
       scrollbar-width: none; -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
       cursor: grab;
@@ -1761,7 +1761,7 @@
     .nb-cover-btn:hover { filter: brightness(1) saturate(1); }
     .nb-cover {
       position: relative; display: block;
-      width: 164px; height: 228px;
+      width: 176px; height: 246px;
       border-radius: 3px 8px 8px 3px;
       background: linear-gradient(160deg, rgba(255,255,255,.26), rgba(0,0,0,.22)), var(--spine, #2f3e5c);
       box-shadow: 0 12px 22px rgba(10,13,22,.42), 0 1px 0 rgba(255,255,255,.22) inset;
@@ -1804,12 +1804,13 @@
     .nb-shelf-empty h3 { margin: 0 0 6px; font-size: 16px; }
     .nb-shelf-empty p { margin: 0 0 16px; font-size: 12.5px; color: rgba(232,235,244,.66); line-height: 1.6; }
 
-    .nb-book-meta { text-align: center; padding: 4px 0 0; }
+    .nb-stage--shelf { padding: 22px 16px 20px; }
+    .nb-book-meta { text-align: center; padding: 0 0 2px; }
     .nb-book-meta h3 {
-      margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em;
+      margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .nb-book-info { margin-top: 5px; font-size: 12px; color: rgba(232,235,244,.66); }
+    .nb-book-info { margin-top: 5px; font-size: 12.5px; color: rgba(232,235,244,.62); }
     .nb-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 20px; margin-top: 18px; }
     .nb-action {
       display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -2089,15 +2090,16 @@
     }
 
     @media (max-width: 760px) {
-      .nb-stage { padding: 16px 12px 20px; border-radius: 16px; }
+      .nb-stage { padding: 16px 8px 20px; border-radius: 16px; }
+      .nb-stage--shelf { padding: 18px 4px 16px; }
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-shelf-track { --cover-w: 142px; --cover-gap: 10px; padding: 22px 0 20px; }
-      .nb-cover { width: 142px; height: 198px; }
-      .nb-cover-label { left: 22px; right: 12px; top: 24px; padding: 10px 9px 11px; }
-      .nb-cover-label b { font-size: 13.5px; }
-      .nb-book-meta h3 { font-size: 17px; }
+      .nb-shelf-track { --cover-w: 190px; --cover-gap: 10px; padding: 20px 0 18px; }
+      .nb-cover { width: 190px; height: 264px; }
+      .nb-cover-label { left: 30px; right: 16px; top: 30px; padding: 13px 11px 14px; }
+      .nb-cover-label b { font-size: 16px; }
+      .nb-book-meta h3 { font-size: 20px; }
       .nb-actions { gap: 14px; margin-top: 14px; }
       .nb-action { font-size: 10px; }
       .nb-action-icon { width: 40px; height: 40px; }
@@ -3658,18 +3660,12 @@
     yearShelfIndex = Math.min(Math.max(yearShelfIndex, 0), yearBooks.length - 1);
     const activeYear = yearBooks[yearShelfIndex] ? yearBooks[yearShelfIndex].year : YEARS[0];
     return `
-      <div class="nb-stage">
-        <div class="stage-bar">
-          <div class="stage-bar-lead">
-            <div class="nb-stage-title">연도별 책장</div>
-          </div>
-          <span class="nb-stage-count">12개월 × ${yearBooks.length}년</span>
-        </div>
+      <div class="nb-stage nb-stage--shelf">
+        <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
         <div class="nb-shelf">
           <div class="nb-shelf-track" id="nbYearShelfTrack">${yearBooks.map((b, i) => renderYearCover(b.year, i === yearShelfIndex)).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
-        <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
         ${renderYearLegend()}
       </div>
@@ -4769,18 +4765,10 @@
 
   function renderNotebookShelf() {
     const books = getBooks();
-    const bar = `
-      <div class="stage-bar">
-        <div class="stage-bar-lead">
-          <div class="nb-stage-title">주제별 책장</div>
-        </div>
-        <span class="nb-stage-count">책 ${books.length}권 · 기록 ${state.archives.length}개</span>
-      </div>
-    `;
+    const bar = "";
     if (!books.length) {
       return `
-        <div class="nb-stage">
-          ${bar}
+        <div class="nb-stage nb-stage--shelf">
           <div class="nb-shelf-empty">
             <h3>아직 책장이 비어 있습니다</h3>
             <p>주제별로 책을 만들고 기록을 페이지처럼 모아 보세요.<br />독서 기록, 여행 노트, 공부 노트 무엇이든 좋습니다.</p>
@@ -4792,13 +4780,12 @@
     clampShelfIndex();
     const active = books[notebookShelfIndex];
     return `
-      <div class="nb-stage">
-        ${bar}
+      <div class="nb-stage nb-stage--shelf">
+        <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
         <div class="nb-shelf">
           <div class="nb-shelf-track" id="nbShelfTrack">${books.map((b, i) => renderShelfCover(b, i === notebookShelfIndex)).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
-        <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
         <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
       </div>
     `;
