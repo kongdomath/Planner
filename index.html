@@ -1432,6 +1432,66 @@
     }
     .stage-summary .progress-fill { background: #a9cbb8; }
 
+    /* 스테이지 상단: 달성률 + 필터 버튼 */
+    .stage-rate { display: inline-flex; align-items: baseline; gap: 5px; color: rgba(232,235,244,.55); font-size: 11px; }
+    .stage-rate b { font-size: 16px; font-weight: 700; color: #f2f4fa; letter-spacing: -0.01em; }
+    .stage-icon-btn {
+      width: 32px; height: 32px; border-radius: 9px; padding: 0;
+      border: 1px solid var(--stage-line); background: var(--stage-chip);
+      color: rgba(232,235,244,.8); display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background .15s, color .15s;
+    }
+    .stage-icon-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+    .stage-icon-btn.on { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+    .stage-meter { height: 3px; border-radius: 3px; background: rgba(255,255,255,.12); margin: -6px 0 14px; overflow: hidden; }
+    .stage-meter i { display: block; height: 100%; border-radius: 3px; background: #a9cbb8; transition: width .25s ease; }
+
+    /* 접이식 필터 패널 */
+    .filter-panel {
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--stage-line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .filter-selects { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+    .filter-panel .stage-chips { margin-bottom: 0; }
+
+    /* 한 장의 노트(체크리스트) 시트 */
+    .sheet { padding: 4px 18px; }
+    .sheet-row {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 14px 0; border-bottom: 1px dashed rgba(120,126,140,.3);
+    }
+    .sheet-row:last-child { border-bottom: 0; }
+    .sheet-row .chk { margin-top: 3px; }
+    .sheet-main { flex: 1; min-width: 0; }
+    .sheet-title { font-size: 14.5px; font-weight: 600; color: #2f343d; word-break: break-word; line-height: 1.5; }
+    .sheet-row.done .sheet-title { color: #9aa0a9; text-decoration: line-through; }
+    .sheet-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; font-size: 11.5px; color: var(--paper-sub); }
+    .sheet-meta .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+    .sheet-dim { color: var(--paper-sub); }
+    .sheet-note {
+      margin-top: 6px; font-size: 12.5px; line-height: 1.6; color: #3f444e;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      white-space: pre-line;
+    }
+
+    /* 우측 하단 FAB */
+    .fab {
+      position: fixed; right: 26px; bottom: 26px; z-index: 45;
+      width: 58px; height: 58px; border-radius: 50%;
+      border: 0; background: #2f3542; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 16px 28px -12px rgba(12,16,28,.65), inset 0 1px 0 rgba(255,255,255,.12);
+      transition: transform .15s ease, background .15s ease;
+    }
+    .fab:hover { background: #252a36; transform: translateY(-2px); }
+    .fab svg { width: 22px; height: 22px; }
+    .modal-row { display: flex; gap: 10px; }
+    .modal-row .modal-field { flex: 1; min-width: 0; }
+
     /* 일기: 날짜 컨트롤 */
     .diary-controls {
       display: grid;
@@ -2188,6 +2248,8 @@
       textarea.diary-area { min-height: 200px; }
 
       .paper { padding: 15px 16px; margin-bottom: 12px; }
+      .sheet { padding: 2px 14px; }
+      .fab { right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
       .goal-list { gap: 10px; }
       .goal-card { padding: 13px 14px 14px; }
       .bucket-sheet { padding: 4px 16px; }
@@ -2678,8 +2740,8 @@
   let state = normalizeState(loadState());
   let searchQuery = "";
   let searchOpen = false;
-  let showGoalComposer = false;
-  let showBucketComposer = false;
+  let goalFiltersOpen = false;
+  let bucketFiltersOpen = false;
   let lastSavedAt = null;
   let quotaWarned = false;
   let diaryTimer = null;
@@ -4237,11 +4299,6 @@
     render();
   }
 
-  function toggleGoalComposer() {
-    showGoalComposer = !showGoalComposer;
-    render();
-  }
-
   function renderDoneDateControl(collection, id, doneDate) {
     return `
       <span class="done-date-inline" onclick="event.stopPropagation()">
@@ -4261,7 +4318,7 @@
     `).join("");
   }
 
-  // 목표 뷰 (스테이지 + 종이 카드)
+  // 목표 뷰 (한 장의 노트 + 접이식 필터 + FAB)
   function renderGoalsView() {
     let filtered = state.goals.filter(g => {
       const topicOk = state.goalTopicFilter === "all" || g.topic === state.goalTopicFilter;
@@ -4282,124 +4339,148 @@
     const doneCnt = filtered.filter(g => g.done).length;
     const pct = totalCnt > 0 ? Math.round((doneCnt / totalCnt) * 100) : 0;
 
-    const defaultAddTopic = state.goalTopicFilter === "all"
-      ? (state.topics[0] ? state.topics[0].name : "")
-      : state.goalTopicFilter;
-    const defaultAddYear = state.goalYearFilter === "all" ? "2026" : normalizeYear(state.goalYearFilter);
-    const defaultAddPeriod = state.goalPeriodFilter === "all" ? "연간" : state.goalPeriodFilter;
-
     return `
       <div class="nb-stage">
         <div class="stage-bar">
           <div class="stage-bar-lead">
             <div class="nb-stage-title">목표</div>
           </div>
-          <span class="nb-stage-count">총 ${totalCnt}개</span>
-        </div>
-
-        <div class="stage-summary">
-          <div class="summary-metrics">
-            <span>현재 목표 <strong>${totalCnt}개</strong></span>
-            <span>달성 완료 <strong>${doneCnt}개</strong></span>
-            <span>달성률 <strong>${pct}%</strong></span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" style="width:${pct}%;"></div>
+          <div class="stage-bar-side">
+            <span class="stage-rate"><b>${pct}%</b><span>${doneCnt}/${totalCnt}</span></span>
+            <button class="stage-icon-btn ${goalFiltersOpen ? "on" : ""}" onclick="toggleGoalFilters()" title="필터" aria-label="필터">${ICONS.sliders}</button>
           </div>
         </div>
+        <div class="stage-meter"><i style="width:${pct}%;"></i></div>
 
-        <div class="stage-chips">
-          <button class="chip-btn ${state.goalTopicFilter === "all" ? "active" : ""}" onclick="changeGoalTopicFilter('all')">
-            전체 <span class="chip-count">${state.goals.length}</span>
-          </button>
-          ${state.topics.map(t => {
-            const cnt = state.goals.filter(g => g.topic === t.name).length;
-            const isAct = state.goalTopicFilter === t.name;
-            return `
-              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter(${jsArg(t.name)})">
-                ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} <span class="chip-count">${cnt}</span>
+        ${goalFiltersOpen ? `
+          <div class="filter-panel">
+            <div class="filter-selects">
+              ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 연도")}
+              <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
+                <option value="all" ${state.goalPeriodFilter === "all" ? "selected" : ""}>전체 기간</option>
+                ${PERIODS.map(p => `<option value="${p}" ${state.goalPeriodFilter === p ? "selected" : ""}>${p}</option>`).join("")}
+              </select>
+              <select class="year-select" onchange="changeGoalSort(this.value)" aria-label="정렬">
+                <option value="newest" ${state.goalSort === "newest" ? "selected" : ""}>최신순</option>
+                <option value="oldest" ${state.goalSort === "oldest" ? "selected" : ""}>오래된순</option>
+                <option value="undone" ${state.goalSort === "undone" ? "selected" : ""}>미달성 우선</option>
+                <option value="done" ${state.goalSort === "done" ? "selected" : ""}>달성 완료 우선</option>
+              </select>
+            </div>
+            <div class="stage-chips">
+              <button class="chip-btn ${state.goalTopicFilter === "all" ? "active" : ""}" onclick="changeGoalTopicFilter('all')">
+                전체 <span class="chip-count">${state.goals.length}</span>
               </button>
-            `;
-          }).join("")}
-          <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('goals')">${ICONS.sliders} 카테고리 관리</button>
-        </div>
-
-        <div class="stage-tools">
-          ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 연도")}
-          <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
-            <option value="all" ${state.goalPeriodFilter === "all" ? "selected" : ""}>전체 기간</option>
-            ${PERIODS.map(p => `<option value="${p}" ${state.goalPeriodFilter === p ? "selected" : ""}>${p}</option>`).join("")}
-          </select>
-          <select class="year-select" onchange="changeGoalSort(this.value)" aria-label="정렬">
-            <option value="newest" ${state.goalSort === "newest" ? "selected" : ""}>최신순</option>
-            <option value="oldest" ${state.goalSort === "oldest" ? "selected" : ""}>오래된순</option>
-            <option value="undone" ${state.goalSort === "undone" ? "selected" : ""}>미달성 우선</option>
-            <option value="done" ${state.goalSort === "done" ? "selected" : ""}>달성 완료 우선</option>
-          </select>
-          <button class="btn btn-primary" onclick="toggleGoalComposer()">
-            ${showGoalComposer ? "닫기" : "+ 새 목표 추가"}
-          </button>
-        </div>
-
-        ${showGoalComposer ? `
-          <div class="card composer-card">
-            <div class="composer-header">
-              <h3 style="color:var(--c-goal);">새 목표 등록</h3>
-            </div>
-            <div class="form-row">
-              <select id="goalTopicSel" aria-label="목표 카테고리">
-                ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
-              </select>
-              <select id="goalYearSel" aria-label="목표 연도">
-                ${getYearOptions().map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
-              </select>
-              <select id="goalPeriodSel" aria-label="목표 기간">
-                ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
-              </select>
-              <input type="text" id="goalTitleInp" style="flex:1; min-width:190px;" placeholder="목표 제목 입력..." onkeydown="if (event.key === 'Enter') addGoal()" />
-            </div>
-            <div class="form-row">
-              <textarea id="goalNoteInp" style="width:100%; min-height:70px; resize:vertical;" placeholder="목표의 구체적인 실행 계획, 다짐, 기준 등 본문 내용을 작성하세요..."></textarea>
-            </div>
-            <div class="composer-footer">
-              <div class="composer-actions">
-                <button class="btn btn-primary" onclick="addGoal()">목표 저장</button>
-              </div>
+              ${state.topics.map(t => {
+                const cnt = state.goals.filter(g => g.topic === t.name).length;
+                const isAct = state.goalTopicFilter === t.name;
+                return `
+                  <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter(${jsArg(t.name)})">
+                    ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} <span class="chip-count">${cnt}</span>
+                  </button>
+                `;
+              }).join("")}
+              <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('goals')">${ICONS.sliders} 카테고리 관리</button>
             </div>
           </div>
         ` : ""}
 
         ${filtered.length ? `
-          <div class="goal-list">
+          <section class="paper sheet">
             ${filtered.map(g => {
               const iconKey = getTopicIconKey(g.topic);
               const yr = normalizeYear(g.year);
               const pr = normalizePeriod(g.period);
               return `
-                <article class="goal-card ${g.done ? "done" : ""}">
-                  <div class="goal-card-top">
-                    <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
-                    <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
-                    <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
+                <div class="sheet-row ${g.done ? "done" : ""}">
+                  <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
+                  <div class="sheet-main tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">
+                    <div class="sheet-title">${escapeHtml(g.title)}</div>
+                    <div class="sheet-meta">
+                      <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
+                      <span class="sheet-dim">${yr}년 · ${escapeHtml(pr)}</span>
+                      ${g.done ? renderDoneDateControl("goals", g.id, g.doneDate) : ""}
+                    </div>
+                    ${g.note ? `<div class="sheet-note">${escapeHtml(g.note)}</div>` : ""}
                   </div>
-                  <div class="media-title-row">
-                    <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
-                    <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
-                  </div>
-                  ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
-                  ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
-                </article>
+                  <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
+                </div>
               `;
             }).join("")}
-          </div>
+          </section>
         ` : `
           <div class="stage-empty">
-            <strong>이 조건에 맞는 목표가 없습니다</strong>
-            위의 ‘+ 새 목표 추가’로 목표를 등록해 보세요.
+            <strong>표시할 목표가 없습니다</strong>
+            오른쪽 아래 + 버튼으로 새 목표를 추가해 보세요.
           </div>
         `}
+        <button class="fab" onclick="openGoalModal()" title="새 목표" aria-label="새 목표 추가">${NB_ICONS.plus}</button>
       </div>
     `;
+  }
+
+  // FAB용 새 목표 작성 모달
+  function openGoalModal() {
+    const defaultAddTopic = state.goalTopicFilter === "all"
+      ? (state.topics[0] ? state.topics[0].name : "")
+      : state.goalTopicFilter;
+    const defaultAddYear = state.goalYearFilter === "all" ? "2026" : normalizeYear(state.goalYearFilter);
+    const defaultAddPeriod = state.goalPeriodFilter === "all" ? "연간" : state.goalPeriodFilter;
+    openModal("새 목표", `
+      <div class="modal-field">
+        <label>카테고리</label>
+        <select id="mNewGoalTopic">
+          ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>연도</label>
+          <select id="mNewGoalYear">
+            ${getYearOptions().map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>기간</label>
+          <select id="mNewGoalPeriod">
+            ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>목표 제목</label>
+        <input type="text" id="mNewGoalTitle" placeholder="이루고 싶은 목표" />
+      </div>
+      <div class="modal-field">
+        <label>본문 · 실행 메모</label>
+        <textarea id="mNewGoalNote" style="min-height:90px;" placeholder="구체적인 계획, 다짐, 기준"></textarea>
+      </div>
+    `, () => {
+      const titleEl = document.getElementById("mNewGoalTitle");
+      const title = (titleEl && titleEl.value || "").trim();
+      if (!title) {
+        alert("목표 제목을 입력해 주세요.");
+        if (titleEl) titleEl.focus();
+        return false;
+      }
+      state.goals.unshift({
+        id: uid(),
+        topic: document.getElementById("mNewGoalTopic").value || defaultAddTopic,
+        year: normalizeYear(document.getElementById("mNewGoalYear").value),
+        period: normalizePeriod(document.getElementById("mNewGoalPeriod").value),
+        title,
+        note: document.getElementById("mNewGoalNote").value.trim(),
+        images: [],
+        done: false,
+        doneDate: ""
+      });
+      return true;
+    });
+  }
+
+  function toggleGoalFilters() {
+    goalFiltersOpen = !goalFiltersOpen;
+    render();
   }
 
   function addGoal() {
@@ -4425,7 +4506,6 @@
       done: false,
       doneDate: ""
     });
-    showGoalComposer = false;
     saveState();
     render();
   }
@@ -4486,11 +4566,6 @@
     render();
   }
 
-  function toggleBucketComposer() {
-    showBucketComposer = !showBucketComposer;
-    render();
-  }
-
   function renderBucketView() {
     let filtered = state.buckets.filter(b => state.bucketCatFilter === "all" || b.category === state.bucketCatFilter);
     if (state.bucketSort === "undone") {
@@ -4505,88 +4580,57 @@
     const doneCnt = filtered.filter(b => b.done).length;
     const pct = totalCnt > 0 ? Math.round((doneCnt / totalCnt) * 100) : 0;
 
-    const defaultCat = state.bucketCatFilter === "all"
-      ? (state.bucketCategories[0] ? state.bucketCategories[0].name : "경험")
-      : state.bucketCatFilter;
-
     return `
       <div class="nb-stage">
         <div class="stage-bar">
           <div class="stage-bar-lead">
             <div class="nb-stage-title">버킷리스트</div>
           </div>
-          <span class="nb-stage-count">총 ${totalCnt}개</span>
-        </div>
-
-        <div class="stage-summary">
-          <div class="summary-metrics">
-            <span>현재 목록 <strong>${totalCnt}개</strong></span>
-            <span>달성 완료 <strong>${doneCnt}개</strong></span>
-            <span>달성률 <strong>${pct}%</strong></span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" style="width:${pct}%; background:#e3bb94;"></div>
+          <div class="stage-bar-side">
+            <span class="stage-rate"><b>${pct}%</b><span>${doneCnt}/${totalCnt}</span></span>
+            <button class="stage-icon-btn ${bucketFiltersOpen ? "on" : ""}" onclick="toggleBucketFilters()" title="필터" aria-label="필터">${ICONS.sliders}</button>
           </div>
         </div>
+        <div class="stage-meter"><i style="width:${pct}%; background:#e3bb94;"></i></div>
 
-        <div class="stage-chips">
-          <button class="chip-btn ${state.bucketCatFilter === "all" ? "active" : ""}" onclick="changeBucketCatFilter('all')">
-            전체 <span class="chip-count">${state.buckets.length}</span>
-          </button>
-          ${state.bucketCategories.map(cat => {
-            const cnt = state.buckets.filter(b => b.category === cat.name).length;
-            const isAct = state.bucketCatFilter === cat.name;
-            return `
-              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeBucketCatFilter(${jsArg(cat.name)})">
-                ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} <span class="chip-count">${cnt}</span>
-              </button>
-            `;
-          }).join("")}
-          <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('bucket')">${ICONS.sliders} 카테고리 관리</button>
-        </div>
-
-        <div class="stage-tools">
-          <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
-            <option value="newest" ${state.bucketSort === "newest" ? "selected" : ""}>최신순</option>
-            <option value="oldest" ${state.bucketSort === "oldest" ? "selected" : ""}>오래된순</option>
-            <option value="undone" ${state.bucketSort === "undone" ? "selected" : ""}>미달성 우선</option>
-            <option value="done" ${state.bucketSort === "done" ? "selected" : ""}>달성 완료 우선</option>
-          </select>
-          <button class="btn btn-primary" onclick="toggleBucketComposer()">
-            ${showBucketComposer ? "닫기" : "+ 새 버킷 추가"}
-          </button>
-        </div>
-
-        ${showBucketComposer ? `
-          <div class="card composer-card">
-            <div class="composer-header">
-              <h3 style="color:var(--c-bucket);">새 버킷리스트 등록</h3>
-            </div>
-            <div class="form-row">
-              <select id="bucketCatSel" aria-label="버킷 카테고리">
-                ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+        ${bucketFiltersOpen ? `
+          <div class="filter-panel">
+            <div class="filter-selects">
+              <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
+                <option value="newest" ${state.bucketSort === "newest" ? "selected" : ""}>최신순</option>
+                <option value="oldest" ${state.bucketSort === "oldest" ? "selected" : ""}>오래된순</option>
+                <option value="undone" ${state.bucketSort === "undone" ? "selected" : ""}>미달성 우선</option>
+                <option value="done" ${state.bucketSort === "done" ? "selected" : ""}>달성 완료 우선</option>
               </select>
-              <input type="text" id="bucketTitleInp" style="flex:1; min-width:190px;" placeholder="언젠가 꼭 해보고 싶은 버킷리스트..." onkeydown="if (event.key === 'Enter') addBucket()" />
-              <input type="text" id="bucketNoteInp" style="flex:1; min-width:150px;" placeholder="세부 메모 (선택)" onkeydown="if (event.key === 'Enter') addBucket()" />
             </div>
-            <div class="composer-footer">
-              <div class="composer-actions">
-                <button class="btn btn-primary" onclick="addBucket()">버킷 저장</button>
-              </div>
+            <div class="stage-chips">
+              <button class="chip-btn ${state.bucketCatFilter === "all" ? "active" : ""}" onclick="changeBucketCatFilter('all')">
+                전체 <span class="chip-count">${state.buckets.length}</span>
+              </button>
+              ${state.bucketCategories.map(cat => {
+                const cnt = state.buckets.filter(b => b.category === cat.name).length;
+                const isAct = state.bucketCatFilter === cat.name;
+                return `
+                  <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeBucketCatFilter(${jsArg(cat.name)})">
+                    ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} <span class="chip-count">${cnt}</span>
+                  </button>
+                `;
+              }).join("")}
+              <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('bucket')">${ICONS.sliders} 카테고리 관리</button>
             </div>
           </div>
         ` : ""}
 
         ${filtered.length ? `
-          <section class="paper bucket-sheet">
+          <section class="paper sheet">
             ${filtered.map(b => `
-              <div class="paper-row ${b.done ? "done" : ""}">
+              <div class="sheet-row ${b.done ? "done" : ""}">
                 <input type="checkbox" class="chk" ${b.done ? "checked" : ""} onchange="toggleAchieve('buckets', '${b.id}')" aria-label="달성 체크" />
-                <div class="bucket-main tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
-                  <div class="bucket-title">${escapeHtml(b.title)}</div>
-                  <div class="bucket-meta">
+                <div class="sheet-main tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
+                  <div class="sheet-title">${escapeHtml(b.title)}</div>
+                  <div class="sheet-meta">
                     <span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span>
-                    ${b.note ? `<span>${escapeHtml(b.note)}</span>` : ""}
+                    ${b.note ? `<span class="sheet-dim">${escapeHtml(b.note)}</span>` : ""}
                     ${b.done ? renderDoneDateControl("buckets", b.id, b.doneDate) : ""}
                   </div>
                 </div>
@@ -4597,11 +4641,56 @@
         ` : `
           <div class="stage-empty">
             <strong>등록된 버킷리스트가 없습니다</strong>
-            위의 ‘+ 새 버킷 추가’로 첫 버킷을 남겨 보세요.
+            오른쪽 아래 + 버튼으로 첫 버킷을 남겨 보세요.
           </div>
         `}
+        <button class="fab" onclick="openBucketModal()" title="새 버킷" aria-label="새 버킷 추가">${NB_ICONS.plus}</button>
       </div>
     `;
+  }
+
+  function openBucketModal() {
+    const defaultCat = state.bucketCatFilter === "all"
+      ? (state.bucketCategories[0] ? state.bucketCategories[0].name : "경험")
+      : state.bucketCatFilter;
+    openModal("새 버킷리스트", `
+      <div class="modal-field">
+        <label>카테고리</label>
+        <select id="mNewBucketCat">
+          ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>버킷리스트</label>
+        <input type="text" id="mNewBucketTitle" placeholder="언젠가 꼭 해보고 싶은 일" />
+      </div>
+      <div class="modal-field">
+        <label>메모 (선택)</label>
+        <input type="text" id="mNewBucketNote" placeholder="세부 메모" />
+      </div>
+    `, () => {
+      const titleEl = document.getElementById("mNewBucketTitle");
+      const title = (titleEl && titleEl.value || "").trim();
+      if (!title) {
+        alert("버킷리스트를 입력해 주세요.");
+        if (titleEl) titleEl.focus();
+        return false;
+      }
+      state.buckets.unshift({
+        id: uid(),
+        category: document.getElementById("mNewBucketCat").value || defaultCat,
+        title,
+        note: document.getElementById("mNewBucketNote").value.trim(),
+        done: false,
+        doneDate: ""
+      });
+      return true;
+    });
+  }
+
+  function toggleBucketFilters() {
+    bucketFiltersOpen = !bucketFiltersOpen;
+    render();
   }
 
   function addBucket() {
@@ -4621,7 +4710,6 @@
       done: false,
       doneDate: ""
     });
-    showBucketComposer = false;
     saveState();
     render();
   }
@@ -6089,8 +6177,10 @@
     render,
     setTab,
     selectDate,
-    toggleGoalComposer,
-    toggleBucketComposer,
+    toggleGoalFilters,
+    toggleBucketFilters,
+    openGoalModal,
+    openBucketModal,
     openSearch,
     closeSearch,
     openSettings,
