@@ -1139,6 +1139,433 @@
     .lightbox-nav.prev { left: 10px; }
     .lightbox-nav.next { right: 10px; }
 
+    /* 목표: 텍스트 중심 카드 (사진 UI 없음) */
+    .goal-list { display: flex; flex-direction: column; gap: 10px; }
+    .goal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px 15px;
+    }
+    .goal-card.done { background: var(--surface-muted); }
+    .goal-card.done .media-title { color: var(--text-sub); text-decoration: line-through; }
+    .goal-card-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 9px; }
+    .goal-card-top .icon-btn { margin-left: auto; }
+    .goal-card .media-note { margin-top: 7px; }
+
+    /* ===== 주제별 책장 + 스프링 노트북 뷰 ===== */
+    .nb-stage {
+      position: relative;
+      border-radius: 20px;
+      padding: 20px 22px 24px;
+      color: #e8ebf4;
+      background:
+        radial-gradient(120% 90% at 50% -10%, rgba(128,138,182,.38) 0%, rgba(128,138,182,0) 62%),
+        linear-gradient(168deg, #383f5b 0%, #2d334b 54%, #262b40 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 34px rgba(28,32,48,.22);
+      overflow: hidden;
+    }
+    .nb-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 26px 26px;
+      opacity: .5;
+      pointer-events: none;
+    }
+    .nb-stage > * { position: relative; z-index: 1; }
+    .nb-stage-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .nb-stage-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .nb-stage-sub { font-size: 11.5px; color: rgba(232,235,244,.6); margin-top: 3px; line-height: 1.5; }
+    .nb-stage-count {
+      flex-shrink: 0;
+      font-size: 11.5px; font-weight: 600; color: rgba(232,235,244,.86);
+      border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08);
+      border-radius: 999px; padding: 4px 10px; white-space: nowrap;
+    }
+
+    /* 책장 */
+    .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 6px 0 0; }
+    .nb-shelf-track {
+      display: flex; align-items: flex-end; justify-content: center; justify-content: safe center; gap: 12px;
+      flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
+      padding: 30px 6px 26px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .nb-shelf-track::-webkit-scrollbar { display: none; }
+    .nb-shelf-rail {
+      position: absolute; left: 4%; right: 4%; bottom: 12px; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.16) 18%, rgba(255,255,255,.16) 82%, rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    .nb-shelf-arrow {
+      width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08);
+      color: #e8ebf4; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0; z-index: 2;
+    }
+    .nb-shelf-arrow:hover { background: rgba(255,255,255,.18); }
+    .nb-cover-btn {
+      flex: 0 0 auto; background: none; border: 0; padding: 0; cursor: pointer;
+      transition: transform .26s ease, filter .26s ease;
+      transform: translateY(0) scale(.9);
+      filter: brightness(.82) saturate(.92);
+    }
+    .nb-cover-btn.is-active { transform: translateY(-10px) scale(1); filter: none; }
+    .nb-cover-btn:hover { filter: brightness(1) saturate(1); }
+    .nb-cover {
+      position: relative; display: block;
+      width: 128px; height: 178px;
+      border-radius: 3px 8px 8px 3px;
+      background: linear-gradient(160deg, rgba(255,255,255,.26), rgba(0,0,0,.22)), var(--spine, #2f3e5c);
+      box-shadow: 0 12px 22px rgba(10,13,22,.42), 0 1px 0 rgba(255,255,255,.22) inset;
+      overflow: hidden;
+    }
+    .nb-cover-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nb-cover-label {
+      position: absolute; left: 22px; right: 14px; top: 26px;
+      background: rgba(252,251,247,.95); border-radius: 3px;
+      padding: 10px 9px 11px; box-shadow: 0 2px 6px rgba(0,0,0,.16);
+      text-align: left;
+    }
+    .nb-cover-label b {
+      font-size: 13.5px; line-height: 1.35; letter-spacing: -0.02em; font-weight: 700;
+      color: #23262d; word-break: keep-all;
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .nb-cover-label span { display: block; margin-top: 6px; font-size: 9.5px; letter-spacing: .04em; color: #767a84; }
+    .nb-cover-plate {
+      position: absolute; left: 20px; right: 10px; bottom: 10px;
+      background: rgba(18,21,30,.62); color: #fff; border-radius: 3px;
+      padding: 5px 7px; font-size: 10.5px; font-weight: 600; line-height: 1.3;
+      text-align: left; word-break: keep-all;
+    }
+    .nb-cover-spine {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 11px;
+      background: linear-gradient(90deg, rgba(0,0,0,.32), rgba(255,255,255,.12) 55%, rgba(0,0,0,.18)), var(--spine, #2f3e5c);
+      box-shadow: inset -1px 0 0 rgba(0,0,0,.22);
+    }
+    .nb-cover-shine {
+      position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(104deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,.16) 100%);
+    }
+    .nb-cover-chip {
+      position: absolute; right: 7px; top: 7px; font-size: 9.5px; font-weight: 700;
+      color: rgba(255,255,255,.92); background: rgba(18,21,30,.45);
+      border-radius: 999px; padding: 2px 6px; letter-spacing: .02em;
+    }
+    .nb-shelf-empty { text-align: center; padding: 46px 16px 40px; }
+    .nb-shelf-empty h3 { margin: 0 0 6px; font-size: 16px; }
+    .nb-shelf-empty p { margin: 0 0 16px; font-size: 12.5px; color: rgba(232,235,244,.66); line-height: 1.6; }
+
+    .nb-book-meta { text-align: center; padding: 4px 0 0; }
+    .nb-book-meta h3 {
+      margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nb-book-info { margin-top: 5px; font-size: 12px; color: rgba(232,235,244,.66); }
+    .nb-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 20px; margin-top: 18px; }
+    .nb-action {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      background: none; border: 0; padding: 0; cursor: pointer;
+      color: rgba(232,235,244,.88); font-size: 11px; font-weight: 600; letter-spacing: -0.01em;
+      font-family: inherit;
+    }
+    .nb-action-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16);
+      transition: background .16s ease, transform .16s ease;
+    }
+    .nb-action:hover .nb-action-icon { background: rgba(255,255,255,.2); transform: translateY(-1px); }
+    .nb-action.primary .nb-action-icon { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+    .nb-action.primary:hover .nb-action-icon { background: #ffffff; }
+
+    /* 펼친 노트 */
+    .nb-reader-head {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center; gap: 10px; margin-bottom: 6px;
+    }
+    .nb-back {
+      display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 11px 0 8px;
+      border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.08);
+      color: #e8ebf4; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .nb-back:hover { background: rgba(255,255,255,.17); }
+    .nb-reader-title { text-align: center; min-width: 0; }
+    .nb-reader-title b { display: block; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-reader-title span { display: block; margin-top: 2px; font-size: 11px; color: rgba(232,235,244,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-book { position: relative; display: flex; align-items: center; justify-content: center; padding: 16px 46px 4px; }
+    .nb-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 38px; height: 38px; border-radius: 50%; z-index: 6;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.12);
+      color: #f2f4fa; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0;
+    }
+    .nb-nav:hover { background: rgba(255,255,255,.24); }
+    .nb-nav[disabled] { opacity: .25; cursor: default; }
+    .nb-nav.prev { left: 2px; }
+    .nb-nav.next { right: 2px; }
+    .nb-spread {
+      position: relative; isolation: isolate;
+      display: grid; grid-template-columns: 1fr 1fr;
+      width: 100%; max-width: 880px;
+      border-radius: 6px;
+      filter: drop-shadow(0 20px 30px rgba(8,11,20,.45));
+    }
+    .nb-edge {
+      position: absolute; top: 10px; bottom: 10px; width: 13px; z-index: 0;
+      background-image: repeating-linear-gradient(to right, #f7f5ee 0 1px, #d7d3c6 1px 2px);
+      border-radius: 3px;
+    }
+    .nb-edge--left { left: -10px; transform: rotate(-.6deg); }
+    .nb-edge--right { right: -10px; transform: rotate(.6deg); }
+    .nb-page {
+      position: relative; z-index: 1;
+      min-height: 420px; max-height: 560px; overflow-y: auto;
+      padding: 32px 32px 34px;
+      background-color: #fcfbf6;
+      color: #2b2f37;
+    }
+    .nb-page--left {
+      border-radius: 6px 2px 2px 8px;
+      background-image: linear-gradient(90deg, rgba(120,110,86,.10), rgba(120,110,86,0) 26%);
+      box-shadow: inset -22px 0 26px -26px rgba(30,34,44,.5);
+    }
+    .nb-page--right {
+      border-radius: 2px 6px 8px 2px;
+      background-image: radial-gradient(rgba(122,128,142,.17) 1px, transparent 1px);
+      background-size: 19px 19px;
+      background-position: 12px 14px;
+      box-shadow: inset 22px 0 26px -26px rgba(30,34,44,.5);
+    }
+    .nb-page::-webkit-scrollbar { width: 6px; }
+    .nb-page::-webkit-scrollbar-thumb { background: rgba(120,126,140,.35); border-radius: 3px; }
+    .nb-spine {
+      position: absolute; left: 50%; top: -4px; bottom: -4px; width: 34px; z-index: 3;
+      transform: translateX(-50%); pointer-events: none;
+      background: linear-gradient(90deg, rgba(24,28,40,.18), rgba(24,28,40,.02) 30%, rgba(255,255,255,.32) 50%, rgba(24,28,40,.02) 70%, rgba(24,28,40,.18));
+    }
+    .nb-rings {
+      position: absolute; left: 50%; top: 12px; bottom: 12px; width: 34px; z-index: 4;
+      transform: translateX(-50%); pointer-events: none;
+      background-image: repeating-linear-gradient(to bottom,
+        rgba(255,255,255,0) 0 9px,
+        rgba(249,250,252,.98) 9px 14px,
+        rgba(150,156,170,.95) 14px 18px,
+        rgba(255,255,255,0) 18px 30px);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent);
+      mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent);
+      border-radius: 4px;
+    }
+    .nb-page-inner { display: flex; flex-direction: column; gap: 14px; min-height: 100%; }
+    .nb-page-no {
+      position: absolute; bottom: 12px; right: 18px;
+      font-size: 10.5px; letter-spacing: .04em; color: #a7abb3;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+    .nb-photo-frame {
+      position: relative; background: #fff; border-radius: 2px;
+      padding: 9px 9px 30px;
+      box-shadow: 0 10px 20px rgba(30,34,44,.18), 0 1px 0 rgba(0,0,0,.04);
+      transform: rotate(-1.2deg);
+      cursor: zoom-in;
+    }
+    .nb-photo-frame img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #eceade; border-radius: 1px; }
+    .nb-photo-tape {
+      position: absolute; top: -9px; left: 50%; width: 78px; height: 20px;
+      transform: translateX(-50%) rotate(-1.6deg);
+      background: rgba(208,190,146,.55);
+      box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    }
+    .nb-photo-count {
+      position: absolute; right: 14px; bottom: 8px;
+      font-size: 10px; font-weight: 600; color: #8a8d95; letter-spacing: .02em;
+    }
+    .nb-thumbs { display: flex; gap: 7px; flex-wrap: wrap; }
+    .nb-thumb {
+      width: 40px; height: 40px; border-radius: 4px; overflow: hidden; padding: 0;
+      border: 1px solid rgba(120,126,140,.28); background: #fff; cursor: pointer;
+    }
+    .nb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nb-visual {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; text-align: center; flex: 1; min-height: 236px;
+      border: 1px dashed rgba(120,126,140,.35); border-radius: 6px;
+      background: rgba(255,255,255,.45);
+    }
+    .nb-visual-icon { color: #5b6478; }
+    .nb-visual-date { font-family: Georgia, "Times New Roman", serif; font-size: 34px; letter-spacing: .02em; color: #3a4152; }
+    .nb-visual-sub { font-size: 12px; color: #7d818b; letter-spacing: .04em; }
+    .nb-stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: auto; }
+    .nb-stamp {
+      display: inline-flex; flex-direction: column; align-items: center; gap: 1px;
+      border: 1.5px solid rgba(43,76,126,.5); border-radius: 4px;
+      padding: 5px 9px; color: #2b4c7e; transform: rotate(-2deg);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+    .nb-stamp b { font-size: 12.5px; letter-spacing: .05em; font-weight: 700; }
+    .nb-stamp span { font-size: 8.5px; letter-spacing: .14em; }
+    .nb-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: #4a5162;
+      background: rgba(120,126,140,.12); border-radius: 999px; padding: 4px 9px;
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .nb-badge svg { flex-shrink: 0; }
+    .nb-badge--ghost { background: transparent; border: 1px dashed rgba(120,126,140,.42); color: #6b707a; }
+    .nb-note-title { margin: 0 0 6px; font-size: 20px; line-height: 1.4; font-weight: 700; letter-spacing: -0.02em; color: #23262d; word-break: keep-all; }
+    .nb-note-sub { font-size: 12px; color: #82868f; letter-spacing: .01em; }
+    .nb-note-rule { height: 1px; margin: 14px 0 16px; background: linear-gradient(90deg, rgba(120,126,140,.42), rgba(120,126,140,0)); }
+    .nb-note-body { font-size: 13.5px; line-height: 2.05; color: #3b404a; white-space: pre-wrap; word-break: break-word; letter-spacing: -0.004em; }
+    .nb-note-empty { color: #a0a4ad; font-size: 12.5px; }
+    .nb-guide { align-items: center; justify-content: center; text-align: center; gap: 12px; }
+    .nb-guide-plus {
+      width: 58px; height: 58px; border-radius: 50%; cursor: pointer;
+      border: 1.5px dashed rgba(90,98,116,.45); background: rgba(255,255,255,.5);
+      color: #3a4152; display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    .nb-guide-plus:hover { background: #fff; }
+    .nb-guide-title { font-size: 15.5px; font-weight: 700; color: #2b2f37; letter-spacing: -0.01em; }
+    .nb-guide-sub { margin: 0; font-size: 12px; line-height: 1.75; color: #7d818b; max-width: 260px; }
+    .nb-summary-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #2b2f37; }
+    .nb-summary-list { list-style: none; margin: 4px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+    .nb-summary-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 12px; color: #7d818b; border-bottom: 1px dashed rgba(120,126,140,.28); padding-bottom: 8px; }
+    .nb-summary-list b { font-size: 12.5px; color: #33383f; font-weight: 700; }
+    .nb-side-toggle { display: none; }
+
+    /* 책 설정 모달 */
+    .spine-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+    .spine-swatch { width: 30px; height: 30px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; padding: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+    .spine-swatch.selected { border-color: #1f2421; box-shadow: inset 0 0 0 2px #fff; }
+    .book-cover-preview { display: flex; align-items: center; gap: 14px; }
+    .book-cover-preview .nb-cover { width: 92px; height: 128px; box-shadow: 0 8px 16px rgba(10,13,22,.22); }
+    .book-cover-preview .nb-cover-label { left: 18px; right: 10px; top: 18px; padding: 7px 7px 8px; }
+    .book-cover-preview .nb-cover-label b { font-size: 11px; }
+    .book-cover-preview .nb-cover-label span { font-size: 8px; margin-top: 4px; }
+    .modal-danger-row { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+    /* 연도별 책 */
+    .nb-cover--year { background: linear-gradient(155deg, rgba(255,255,255,.16), rgba(0,0,0,.34)), var(--spine, #33415c); }
+    .nb-year-plate { position: absolute; left: 18px; right: 12px; top: 50%; transform: translateY(-50%); text-align: center; color: #f7f2e6; }
+    .nb-year-plate b { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 29px; letter-spacing: .06em; font-weight: 700; }
+    .nb-year-plate i { display: block; width: 26px; height: 1px; margin: 9px auto; background: rgba(247,242,230,.42); }
+    .nb-year-plate span { display: block; font-size: 7.5px; letter-spacing: .26em; opacity: .62; }
+    .nb-year-now {
+      position: absolute; left: 20px; top: 12px; font-size: 9px; font-weight: 700; letter-spacing: .08em;
+      color: #2b3145; background: #f7f2e6; border-radius: 999px; padding: 2px 7px;
+    }
+    .nb-legend {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+      margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 11px; color: rgba(232,235,244,.72);
+    }
+    .nb-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .nb-legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .nb-legend-hint { color: rgba(232,235,244,.48); }
+
+    /* 월 점프 바 */
+    .nb-jumpbar {
+      display: flex; gap: 4px; overflow-x: auto; padding: 8px 0 12px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .nb-jumpbar::-webkit-scrollbar { display: none; }
+    .nb-jump {
+      flex: 0 0 auto; height: 28px; padding: 0 11px; border-radius: 999px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06);
+      color: rgba(232,235,244,.78); font-size: 11.5px; font-weight: 600; font-family: inherit;
+    }
+    .nb-jump:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .nb-jump.active { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+
+    /* 월 페이지 (달력 + 기록 목록) */
+    .nb-month-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .nb-month-name { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.1; letter-spacing: .01em; color: #2b3141; }
+    .nb-month-year { margin-top: 4px; font-size: 10.5px; letter-spacing: .12em; color: #9297a1; }
+    .nb-month-badge {
+      flex-shrink: 0; font-size: 10.5px; font-weight: 600; color: #5b6478;
+      background: rgba(120,126,140,.12); border-radius: 999px; padding: 4px 9px;
+    }
+    .nb-cal { margin-top: 14px; }
+    .nb-cal-head, .nb-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+    .nb-cal-head span { text-align: center; font-size: 9px; font-weight: 700; color: #a0a5ae; letter-spacing: .06em; padding-bottom: 5px; }
+    .nb-cal-head .sun { color: #c05a60; }
+    .nb-cal-head .sat { color: #4e6f9a; }
+    .nb-day {
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      min-height: 38px; padding: 5px 0 4px; border-radius: 6px;
+      border: 1px solid transparent; background: transparent; cursor: pointer;
+      font-family: inherit; color: inherit;
+    }
+    .nb-day:hover { background: rgba(120,126,140,.11); }
+    .nb-day--empty { pointer-events: none; }
+    .nb-day-num { font-size: 12px; color: #3b404a; font-variant-numeric: tabular-nums; }
+    .nb-day.is-sun .nb-day-num, .nb-day.is-holiday .nb-day-num { color: #c05a60; }
+    .nb-day.is-sat .nb-day-num { color: #4e6f9a; }
+    .nb-day.is-today { background: #2f3a52; border-color: #2f3a52; }
+    .nb-day.is-today .nb-day-num { color: #fff; font-weight: 700; }
+    .nb-day-dots { display: flex; gap: 2px; height: 4px; }
+    .nb-day-dots i { width: 4px; height: 4px; border-radius: 50%; display: block; }
+    .nb-month-foot { margin-top: auto; padding-top: 12px; font-size: 10.5px; color: #9aa0a9; }
+    .nb-month-list-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(120,126,140,.28); }
+    .nb-month-list-head b { font-size: 13.5px; letter-spacing: -0.01em; color: #33383f; }
+    .nb-month-list-head span { font-size: 11px; color: #8d929b; }
+    .nb-month-list { display: flex; flex-direction: column; margin-top: 2px; }
+    .nb-month-row {
+      display: flex; align-items: center; gap: 10px; padding: 9px 2px;
+      border: 0; border-bottom: 1px dashed rgba(120,126,140,.22);
+      background: none; cursor: pointer; text-align: left; font-family: inherit;
+    }
+    .nb-month-row:hover { background: rgba(120,126,140,.07); }
+    .nb-month-row b { width: 54px; flex-shrink: 0; font-size: 11.5px; color: #4a505c; }
+    .nb-month-row .txt { flex: 1; min-width: 0; font-size: 12.5px; color: #3f444e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-month-row .dots { display: flex; gap: 3px; flex-shrink: 0; }
+    .nb-month-row .dots i { width: 5px; height: 5px; border-radius: 50%; display: block; }
+    .nb-month-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 10px; text-align: center; }
+    .nb-month-empty p { margin: 0; font-size: 12.5px; color: #8d929b; }
+
+    @media (max-width: 760px) {
+      .nb-stage { padding: 16px 12px 20px; border-radius: 16px; }
+      .nb-stage-head { gap: 8px; }
+      .nb-stage-title { font-size: 14px; }
+      .nb-stage-sub { font-size: 11px; }
+      .nb-shelf-track { padding: 22px 0 20px; gap: 8px; justify-content: flex-start; }
+      .nb-cover { width: 108px; height: 150px; }
+      .nb-cover-label { left: 20px; right: 11px; top: 20px; padding: 8px 7px; }
+      .nb-cover-label b { font-size: 12px; }
+      .nb-shelf-arrow { width: 30px; height: 30px; }
+      .nb-book-meta h3 { font-size: 17px; }
+      .nb-actions { gap: 14px; margin-top: 14px; }
+      .nb-action { font-size: 10px; }
+      .nb-action-icon { width: 40px; height: 40px; }
+      .nb-reader-head { grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+      .nb-reader-head .nb-stage-count { display: none; }
+      .nb-book { padding: 10px 30px 0; }
+      .nb-spread { grid-template-columns: 1fr; max-width: 100%; }
+      .nb-spine, .nb-rings, .nb-edge { display: none; }
+      .nb-page { border-radius: 8px !important; min-height: 360px; max-height: none; padding: 24px 20px 28px; }
+      .nb-spread[data-side="left"] .nb-page--right { display: none; }
+      .nb-spread[data-side="right"] .nb-page--left { display: none; }
+      .nb-side-toggle { display: flex; justify-content: center; gap: 6px; margin: 12px 0 2px; }
+      .nb-side-toggle button {
+        height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer;
+        border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08);
+        color: rgba(232,235,244,.82); font-size: 11.5px; font-weight: 600; font-family: inherit;
+      }
+      .nb-side-toggle button.active { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+      .nb-nav { width: 32px; height: 32px; }
+      .nb-nav.prev { left: -2px; }
+      .nb-nav.next { right: -2px; }
+      .nb-jumpbar { padding: 6px 0 10px; }
+      .nb-month-name { font-size: 26px; }
+      .nb-day { min-height: 34px; }
+      .nb-day-num { font-size: 11.5px; }
+      .nb-legend { gap: 6px 10px; font-size: 10px; margin-top: 14px; }
+      .nb-legend-hint { display: none; }
+    }
+
     @media (max-width: 1060px) {
       .months-grid, .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -1284,7 +1711,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "2.4";
+  const APP_VERSION = "2.5";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -1295,6 +1722,7 @@
   const LEGACY_INDEX_KEY = "archive_planner_index_v2_3";
   const YEARS = [2026, 2027, 2028, 2029, 2030];
   const PERIODS = ["연간", "상반기", "하반기", "1분기", "2분기", "3분기", "4분기"];
+  const BOOK_SPINE_PALETTE = ["#b23a48", "#2f3e5c", "#6b7350", "#c9b79c", "#3f6f6a", "#6d4b6b", "#c39340", "#3a3f4b"];
 
   window.__errors = [];
   window.addEventListener("error", event => {
@@ -1560,6 +1988,10 @@
     bucketSort: "newest",
     archiveCatFilter: "all",
     archiveSort: "newest",
+    archiveViewMode: "card",
+    shelfSelectedBookId: "",
+    books: [],
+    booksSeeded: false,
     selectedDate: TODAY_STR,
     logs: {
       "2026-11-27": {
@@ -1668,14 +2100,13 @@
     ]
   };
 
-  let state = loadState();
+  let state = normalizeState(loadState());
   let searchQuery = "";
   let searchOpen = false;
   let showGoalComposer = false;
   let showBucketComposer = false;
   let showArchiveComposer = false;
   let draftArchiveImages = [];
-  let draftGoalImages = [];
   let lastSavedAt = null;
   let quotaWarned = false;
   let diaryTimer = null;
@@ -1685,6 +2116,13 @@
   let lightboxIndex = 0;
   let lightboxCaption = "";
   let currentSearchList = [];
+  let notebookBookId = "";
+  let notebookShelfIndex = 0;
+  let notebookPageIndex = 0;
+  let notebookMobileSide = "left";
+  let notebookFocusId = "";
+  let draftBookCover = "";
+  let draftBookSpine = "";
 
   function normalizeTab(tab) {
     if (!tab || tab === "todos" || tab === "plans") return "goals";
@@ -1722,6 +2160,76 @@
     return [];
   }
 
+  // ---------- 주제별 책(Books) 데이터 모델 ----------
+
+  function normalizeSpineColor(val, fallback) {
+    const s = String(val || "").trim();
+    return /^#[0-9a-fA-F]{6}$/.test(s) ? s.toLowerCase() : fallback;
+  }
+
+  function seedBooksFromCategories(cats) {
+    const list = (Array.isArray(cats) ? cats : []).filter(c => c && String(c.name || "").trim());
+    if (!list.length) {
+      return [{ id: "bk_" + uid().slice(3), title: "나의 기록", category: "", subject: "", spine: BOOK_SPINE_PALETTE[0], cover: "", createdAt: TODAY_STR }];
+    }
+    return list.map((c, i) => ({
+      id: "bk_" + uid().slice(3),
+      title: String(c.name).trim(),
+      category: String(c.name).trim(),
+      subject: "",
+      spine: BOOK_SPINE_PALETTE[i % BOOK_SPINE_PALETTE.length],
+      cover: "",
+      createdAt: TODAY_STR
+    }));
+  }
+
+  // 책 목록 정리 · 이전 기록을 책에 매칭 · 미분류 책 보장
+  function applyBookModel(s) {
+    const seen = new Set();
+    s.books = (Array.isArray(s.books) ? s.books : []).filter(b => {
+      if (!b || !b.id || !String(b.title || "").trim()) return false;
+      if (seen.has(b.id)) return false;
+      seen.add(b.id);
+      return true;
+    }).map((b, i) => ({
+      id: String(b.id),
+      title: String(b.title).trim(),
+      category: String(b.category || "").trim(),
+      subject: String(b.subject || "").trim(),
+      spine: normalizeSpineColor(b.spine, BOOK_SPINE_PALETTE[i % BOOK_SPINE_PALETTE.length]),
+      cover: typeof b.cover === "string" ? b.cover : "",
+      auto: Boolean(b.auto),
+      createdAt: b.createdAt || TODAY_STR
+    }));
+
+    if (!s.booksSeeded) {
+      if (!s.books.length) s.books = seedBooksFromCategories(s.archiveCategories);
+      s.booksSeeded = true;
+    }
+    s.archiveViewMode = s.archiveViewMode === "notebook" ? "notebook" : "card";
+
+    const ids = new Set(s.books.map(b => b.id));
+    (s.archives || []).forEach(a => {
+      if (a.bookId && ids.has(a.bookId)) return;
+      const byCat = s.books.find(b => b.category && b.category === a.category);
+      a.bookId = byCat ? byCat.id : "";
+    });
+
+    const orphans = (s.archives || []).filter(a => !a.bookId);
+    let inbox = s.books.find(b => b.id === "book_inbox");
+    if (orphans.length) {
+      if (!inbox) {
+        inbox = { id: "book_inbox", title: "미분류 기록", category: "", subject: "", spine: "#5b6478", cover: "", auto: true, createdAt: TODAY_STR };
+        s.books.push(inbox);
+      }
+      orphans.forEach(a => { a.bookId = inbox.id; });
+    } else if (inbox && !s.archives.some(a => a.bookId === inbox.id)) {
+      s.books = s.books.filter(b => b.id !== "book_inbox");
+    }
+
+    if (s.shelfSelectedBookId && !s.books.some(b => b.id === s.shelfSelectedBookId)) s.shelfSelectedBookId = "";
+  }
+
   function normalizeState(parsed) {
     const merged = { ...clone(defaultState), ...parsed };
     merged.activeTab = normalizeTab(merged.activeTab);
@@ -1755,6 +2263,7 @@
       merged.yearFilter = defaultState.yearFilter;
     }
     if (!["year", "diary", "goals", "bucket", "archive"].includes(merged.activeTab)) merged.activeTab = "year";
+    applyBookModel(merged);
     return merged;
   }
 
@@ -2021,6 +2530,11 @@
     state.buckets = [];
     state.archives = [];
     state.todos = [];
+    state.books = [];
+    state.booksSeeded = true;
+    state.shelfSelectedBookId = "";
+    notebookBookId = "";
+    notebookPageIndex = 0;
     saveState();
     render();
     refreshSettingsIfOpen();
@@ -2258,6 +2772,12 @@
           sub: `${a.date || ""}${a.subtitle ? ` · ${a.subtitle}` : ""}`,
           action: () => {
             state.archiveCatFilter = "all";
+            if (state.archiveViewMode === "notebook" && a.bookId) {
+              notebookBookId = a.bookId;
+              const recs = bookArchives(a.bookId);
+              notebookPageIndex = Math.max(0, recs.findIndex(r => r.id === a.id));
+              notebookMobileSide = "left";
+            }
             setTab("archive");
           }
         });
@@ -2355,6 +2875,7 @@
     else bodyHtml = renderYearView();
 
     main.innerHTML = `<div id="searchPanelHost">${renderSearchPanel()}</div>` + bodyHtml;
+    bindNotebookGestures();
   }
 
   function getDayMeta(dateStr) {
@@ -2370,164 +2891,360 @@
   }
 
   // 1년 연력 뷰 (달별 모아보기는 '기록 있는 날만' 고정)
-  function renderYearView() {
-    const targetYears = state.yearFilter === "all" ? YEARS : [Number(normalizeYear(state.yearFilter))];
-    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-    const mode = getYearViewMode();
+  // ---------- 1년 연력: 연도별 책장 + 12개월 스프링 노트 ----------
+  let yearShelfIndex = 0;
+  let yearBookYear = 0;   // 0이면 책장 화면
+  let yearPageIndex = 0;  // 0 ~ 11 (1월 ~ 12월)
+  let yearMobileSide = "left";
 
-    const legendBar = `
-      <div class="summary-strip">
-        <div class="legend-dots">
-          <span class="legend-item"><span class="badge-dot" style="background:var(--c-diary)"></span>일기</span>
-          <span class="legend-item"><span class="badge-dot" style="background:var(--c-goal)"></span>목표·버킷 달성</span>
-          <span class="legend-item"><span class="badge-dot" style="background:var(--c-archive)"></span>아카이브</span>
-          <span class="legend-item"><span class="badge-dot" style="background:var(--c-todo)"></span>할일</span>
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function yearSpineColor(year) {
+    const idx = Math.max(0, YEARS.indexOf(Number(year)));
+    return BOOK_SPINE_PALETTE[idx % BOOK_SPINE_PALETTE.length];
+  }
+
+  function countYearDays(year) {
+    let days = 0;
+    for (let m = 1; m <= 12; m++) {
+      const maxDay = new Date(year, m, 0).getDate();
+      for (let d = 1; d <= maxDay; d++) {
+        if (getDayMeta(`${year}-${pad2(m)}-${pad2(d)}`).hasAny) days += 1;
+      }
+    }
+    return days;
+  }
+
+  function daySummaryText(dateStr, meta) {
+    const one = (meta && meta.log && meta.log.oneLine) ? String(meta.log.oneLine).trim() : "";
+    if (one) return one;
+    const arch = (state.archives || []).find(a => a.date === dateStr);
+    if (arch && arch.title) return arch.title;
+    if (meta && meta.hasAchieved) return "목표 · 버킷 달성";
+    if (meta && meta.hasDiary) return "일기 기록";
+    if (meta && meta.hasTodo) return "할일 기록";
+    return "기록";
+  }
+
+  function dayDotsHtml(meta) {
+    return [
+      meta.hasDiary ? "var(--c-diary)" : "",
+      meta.hasAchieved ? "var(--c-goal)" : "",
+      meta.hasArchive ? "var(--c-archive)" : "",
+      meta.hasTodo ? "var(--c-todo)" : ""
+    ].filter(Boolean).map(c => `<i style="background:${c}"></i>`).join("");
+  }
+
+  function renderYearLegend() {
+    return `
+      <div class="nb-legend">
+        <span><i style="background:var(--c-diary)"></i>일기</span>
+        <span><i style="background:var(--c-goal)"></i>목표·버킷 달성</span>
+        <span><i style="background:var(--c-archive)"></i>아카이브</span>
+        <span><i style="background:var(--c-todo)"></i>할일</span>
+        <span class="nb-legend-hint">날짜를 누르면 하루 기록으로 이동합니다</span>
+      </div>
+    `;
+  }
+
+  function renderYearCover(year, isActive) {
+    const y = Number(year);
+    const days = countYearDays(y);
+    const isThisYear = String(y) === TODAY_STR.slice(0, 4);
+    return `
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" onclick="openYearBook(${y})" aria-label="${y}년 노트 펼치기" title="${y}년 노트 펼치기">
+        <span class="nb-cover nb-cover--year" style="--spine:${yearSpineColor(y)}">
+          ${isThisYear ? `<span class="nb-year-now">올해</span>` : ""}
+          <span class="nb-year-plate"><b>${y}</b><i></i><span>MONTHLY NOTES</span></span>
+          <span class="nb-cover-spine"></span>
+          <span class="nb-cover-shine"></span>
+          <span class="nb-cover-chip">${days}일</span>
+        </span>
+      </button>
+    `;
+  }
+
+  function renderYearShelfMeta(year) {
+    const y = Number(year);
+    const days = countYearDays(y);
+    const monthNow = String(y) === TODAY_STR.slice(0, 4) ? Number(TODAY_STR.slice(5, 7)) : 0;
+    return `
+      <div class="nb-book-meta">
+        <h3>${y}년</h3>
+        <div class="nb-book-info">기록 있는 날 ${days}일 · 12개월 노트${monthNow ? ` · 이번 달 ${monthNow}월` : ""}</div>
+      </div>
+    `;
+  }
+
+  function renderYearShelfActions(year) {
+    const y = Number(year);
+    const isThis = String(y) === TODAY_STR.slice(0, 4);
+    const monthIdx = isThis ? Number(TODAY_STR.slice(5, 7)) - 1 : 0;
+    return `
+      <button class="nb-action primary" onclick="openYearBook(${y})"><span class="nb-action-icon">${NB_ICONS.book}</span>연도 책 펼치기</button>
+      <button class="nb-action" onclick="openYearBook(${y}, ${monthIdx})"><span class="nb-action-icon">${NB_ICONS.calendar}</span>${isThis ? "이번 달 열기" : "1월 열기"}</button>
+      <button class="nb-action" onclick="selectDate('${TODAY_STR}', true)"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
+    `;
+  }
+
+  function renderYearShelf() {
+    yearShelfIndex = Math.min(Math.max(yearShelfIndex, 0), YEARS.length - 1);
+    const activeYear = YEARS[yearShelfIndex];
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-year">${ICONS.year} 1년 연력</h1>
+          <span class="topbar-sub">연도별 책을 펼쳐 1월부터 12월까지 넘겨 봅니다</span>
         </div>
-        <span style="font-size:12px; color:var(--text-sub);">날짜를 누르면 해당 날짜의 기록·일기로 이동합니다</span>
+        <div class="topbar-right">
+          <button class="btn" onclick="openTodayYearBook()">오늘 (${TODAY_STR})</button>
+        </div>
+        ${renderGlobalTools()}
+      </div>
+
+      <div class="nb-stage">
+        <div class="nb-stage-head">
+          <div>
+            <div class="nb-stage-title">연도별 책장</div>
+            <div class="nb-stage-sub">책을 누르면 그 해의 1월~12월 노트가 펼쳐집니다</div>
+          </div>
+          <span class="nb-stage-count">12개월 × ${YEARS.length}년</span>
+        </div>
+        <div class="nb-shelf">
+          <button class="nb-shelf-arrow prev" onclick="yearShelfStep(-1)" aria-label="이전 연도">${ICONS.chevLeft}</button>
+          <div class="nb-shelf-track" id="nbYearShelfTrack">${YEARS.map((y, i) => renderYearCover(y, i === yearShelfIndex)).join("")}</div>
+          <button class="nb-shelf-arrow next" onclick="yearShelfStep(1)" aria-label="다음 연도">${ICONS.chevRight}</button>
+          <div class="nb-shelf-rail"></div>
+        </div>
+        <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
+        <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
+        ${renderYearLegend()}
+      </div>
+    `;
+  }
+
+  function yearShelfStep(delta) {
+    yearShelfIndex = (yearShelfIndex + delta + YEARS.length) % YEARS.length;
+    const activeYear = YEARS[yearShelfIndex];
+    const track = document.getElementById("nbYearShelfTrack");
+    if (!track) { render(); return; }
+    Array.from(track.children).forEach(el => el.classList.toggle("is-active", Number(el.dataset.year) === activeYear));
+    const meta = document.getElementById("nbYearShelfMeta");
+    if (meta) meta.innerHTML = renderYearShelfMeta(activeYear);
+    const actions = document.getElementById("nbYearShelfActions");
+    if (actions) actions.innerHTML = renderYearShelfActions(activeYear);
+    scrollShelfCenter(track.querySelector(".nb-cover-btn.is-active"));
+  }
+
+  function openYearBook(year, monthIndex) {
+    const y = Number(year);
+    if (!YEARS.includes(y)) return;
+    yearBookYear = y;
+    yearShelfIndex = Math.max(0, YEARS.indexOf(y));
+    yearPageIndex = Number.isInteger(monthIndex) ? Math.min(11, Math.max(0, monthIndex)) : 0;
+    yearMobileSide = "left";
+    render();
+  }
+
+  function openTodayYearBook() {
+    const todayYear = Number(TODAY_STR.slice(0, 4));
+    const year = YEARS.includes(todayYear) ? todayYear : (todayYear < YEARS[0] ? YEARS[0] : YEARS[YEARS.length - 1]);
+    const monthIdx = year === todayYear ? Number(TODAY_STR.slice(5, 7)) - 1 : 0;
+    openYearBook(year, monthIdx);
+  }
+
+  function closeYearBook() {
+    yearBookYear = 0;
+    yearPageIndex = 0;
+    render();
+  }
+
+  function openYearPage(idx, side) {
+    yearPageIndex = Math.min(11, Math.max(0, Number(idx) || 0));
+    if (side === "right" || side === "left") yearMobileSide = side;
+    render();
+  }
+
+  function yearPageStep(delta) {
+    yearPageIndex = Math.min(11, Math.max(0, yearPageIndex + delta));
+    yearMobileSide = "left";
+    render();
+  }
+
+  function setYearMobileSide(side) {
+    yearMobileSide = side === "right" ? "right" : "left";
+    const spread = document.getElementById("nbYearSpread");
+    if (spread) spread.dataset.side = yearMobileSide;
+    document.querySelectorAll("#nbYearSpread ~ .nb-side-toggle button, .nb-side-toggle button[data-year-side]").forEach(b => {
+      b.classList.toggle("active", b.dataset.yearSide === yearMobileSide);
+    });
+  }
+
+  function collectMonthDays(year, month) {
+    const maxDay = new Date(year, month, 0).getDate();
+    const out = [];
+    for (let d = 1; d <= maxDay; d++) {
+      const ds = `${year}-${pad2(month)}-${pad2(d)}`;
+      const meta = getDayMeta(ds);
+      if (!meta.hasAny) continue;
+      out.push({ dateStr: ds, day: d, dow: getDayOfWeek(ds), meta });
+    }
+    return out;
+  }
+
+  function renderMonthCalendar(year, month) {
+    const firstDow = new Date(year, month - 1, 1).getDay();
+    const maxDay = new Date(year, month, 0).getDate();
+    const heads = ["일", "월", "화", "수", "목", "금", "토"];
+    let cells = "";
+    for (let i = 0; i < firstDow; i++) cells += `<span class="nb-day nb-day--empty" aria-hidden="true"></span>`;
+    for (let d = 1; d <= maxDay; d++) {
+      const ds = `${year}-${pad2(month)}-${pad2(d)}`;
+      const dow = getDayOfWeek(ds);
+      const hol = isHoliday(ds);
+      const meta = getDayMeta(ds);
+      const cls = [
+        "nb-day",
+        dow === 0 ? "is-sun" : dow === 6 ? "is-sat" : "",
+        hol ? "is-holiday" : "",
+        ds === TODAY_STR ? "is-today" : "",
+        meta.hasAny ? "has-rec" : ""
+      ].filter(Boolean).join(" ");
+      cells += `
+        <button class="${cls}" onclick="selectDate('${ds}', true)" title="${escapeAttr(formatDateKo(ds))}" aria-label="${escapeAttr(formatDateKo(ds))}">
+          <span class="nb-day-num">${d}</span>
+          <span class="nb-day-dots">${dayDotsHtml(meta)}</span>
+        </button>
+      `;
+    }
+    return `
+      <div class="nb-cal">
+        <div class="nb-cal-head">
+          ${heads.map((h, i) => `<span class="${i === 0 ? "sun" : i === 6 ? "sat" : ""}">${h}</span>`).join("")}
+        </div>
+        <div class="nb-cal-grid">${cells}</div>
+      </div>
+    `;
+  }
+
+  function renderMonthRow(item) {
+    const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
+    return `
+      <button class="nb-month-row" onclick="selectDate('${item.dateStr}', true)" title="이 날의 하루 기록 열기">
+        <b>${item.day}일(${dowNames[item.dow]})</b>
+        <span class="txt">${escapeHtml(daySummaryText(item.dateStr, item.meta))}</span>
+        <span class="dots">${dayDotsHtml(item.meta)}</span>
+      </button>
+    `;
+  }
+
+  function renderYearReader(year) {
+    const month = Math.min(11, Math.max(0, yearPageIndex)) + 1;
+    const monthRecords = collectMonthDays(year, month);
+    const totalDays = countYearDays(year);
+    const monthIdx = month - 1;
+    const isThisMonth = `${year}-${pad2(month)}` === TODAY_STR.slice(0, 7);
+    const monthHeads = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+
+    const jumpBar = `
+      <div class="nb-jumpbar" role="tablist" aria-label="월 빠른 이동">
+        ${Array.from({ length: 12 }, (_, i) => `
+          <button class="nb-jump ${i === monthIdx ? "active" : ""}" onclick="openYearPage(${i})" role="tab" aria-selected="${i === monthIdx ? "true" : "false"}">${i + 1}월</button>
+        `).join("")}
       </div>
     `;
 
-    const blocks = targetYears.map(year => {
-      if (mode === "months") {
-        const jumpButtons = Array.from({ length: 12 }, (_, i) =>
-          `<button class="month-jump-btn" onclick="jumpToMonthCard(${year}, ${i + 1})">${i + 1}월</button>`
-        ).join("");
-
-        const monthCards = Array.from({ length: 12 }, (_, idx) => {
-          const month = idx + 1;
-          const maxDay = new Date(year, month, 0).getDate();
-          const recordedDays = [];
-
-          for (let day = 1; day <= maxDay; day++) {
-            const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const meta = getDayMeta(dateStr);
-            if (meta.hasAny) recordedDays.push({ day, dateStr, ...meta });
-          }
-
-          const innerBody = recordedDays.length ? `
-            <div class="month-highlights">
-              ${recordedDays.map(item => {
-                const dow = getDayOfWeek(item.dateStr);
-                const dCol = getDateColor(item.dateStr);
-                const summary = item.log.oneLine || (item.hasArchive ? "아카이브 기록" : item.hasAchieved ? "목표·버킷 달성" : item.hasDiary ? "일기 작성됨" : "할일 등록됨");
-                return `
-                  <div class="highlight-row" onclick="selectDate('${item.dateStr}', true)">
-                    <strong style="width:52px; flex-shrink:0; color:${dCol};">${item.day}일(${dayNames[dow]})</strong>
-                    <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(summary)}</span>
-                    <span class="cell-badges">
-                      ${item.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)"></span>` : ""}
-                      ${item.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)"></span>` : ""}
-                      ${item.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)"></span>` : ""}
-                      ${item.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)"></span>` : ""}
-                    </span>
-                  </div>
-                `;
-              }).join("")}
+    const leftPage = `
+      <section class="nb-page nb-page--left">
+        <div class="nb-page-inner">
+          <div class="nb-month-head">
+            <div>
+              <div class="nb-month-name">${month}월</div>
+              <div class="nb-month-year">${year} · ${monthHeads[monthIdx]}</div>
             </div>
-          ` : `<p style="font-size:12px; color:var(--text-sub); margin:6px 0;">기록 있는 날이 없습니다.</p>`;
-
-          return `
-            <div class="month-card" id="month-card-${year}-${month}">
-              <div class="month-card-header">
-                <span class="month-card-title">${month}월</span>
-                <span class="month-card-count">기록 ${recordedDays.length}일</span>
-              </div>
-              ${innerBody}
-            </div>
-          `;
-        }).join("");
-
-        return `
-          <section class="year-block">
-            <div class="month-toolbar">
-              <h2 class="year-heading" style="margin:0;">${year}년 달별 모아보기 · 기록 있는 날</h2>
-              <div class="month-jump-bar">${jumpButtons}</div>
-            </div>
-            <div class="months-grid">${monthCards}</div>
-          </section>
-        `;
-      }
-
-      let rows = "";
-      for (let day = 1; day <= 31; day++) {
-        let cells = `<td class="day-axis-cell">${day}일</td>`;
-        for (let month = 1; month <= 12; month++) {
-          const maxDay = new Date(year, month, 0).getDate();
-          if (day > maxDay) {
-            cells += `<td class="empty-cell"></td>`;
-            continue;
-          }
-          const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const dow = getDayOfWeek(dateStr);
-          const hol = isHoliday(dateStr);
-          const dayCls = hol ? "holiday" : dow === 0 ? "sun" : dow === 6 ? "sat" : "";
-          const meta = getDayMeta(dateStr);
-
-          const isSelected = state.selectedDate === dateStr;
-          const isToday = TODAY_STR === dateStr;
-          const isWeekend = dow === 0 || dow === 6;
-          const tdCls = [
-            isWeekend ? "weekend-bg" : "",
-            isSelected ? "selected-day" : "",
-            isToday ? "today-cell" : ""
-          ].filter(Boolean).join(" ");
-          const tip = `${dateStr} (${dayNames[dow]})${HOLIDAYS[dateStr] ? ` · ${HOLIDAYS[dateStr]}` : ""}${meta.log.oneLine ? `\n${meta.log.oneLine}` : ""}`;
-          const showHolidayText = !meta.log.oneLine && hol;
-
-          cells += `
-            <td class="${tdCls}" onclick="selectDate('${dateStr}', true)" title="${escapeAttr(tip)}">
-              <div class="cell-top">
-                <span class="day-num ${dayCls}">${dayNames[dow]}</span>
-                <span class="cell-badges">
-                  ${meta.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)" title="일기 있음"></span>` : ""}
-                  ${meta.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)" title="목표/버킷 달성"></span>` : ""}
-                  ${meta.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)" title="아카이브 있음"></span>` : ""}
-                  ${meta.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)" title="할일 있음"></span>` : ""}
-                </span>
-              </div>
-              <div class="cell-line ${showHolidayText ? "holiday-label" : ""}">${escapeHtml(meta.log.oneLine || (hol ? HOLIDAYS[dateStr] : ""))}</div>
-            </td>
-          `;
-        }
-        rows += `<tr>${cells}</tr>`;
-      }
-
-      return `
-        <section class="year-block">
-          <h2 class="year-heading">${year}년 한눈에 보기</h2>
-          <div class="matrix-wrap">
-            <table class="year-table">
-              <thead>
-                <tr>
-                  <th class="day-axis-col">일</th>
-                  ${Array.from({ length: 12 }, (_, i) => `<th>${i + 1}월</th>`).join("")}
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
+            <span class="nb-month-badge">기록 ${monthRecords.length}일</span>
           </div>
-        </section>
-      `;
-    }).join("");
+          ${renderMonthCalendar(year, month)}
+          ${isThisMonth ? `<div class="nb-month-foot">오늘은 ${formatDateKo(TODAY_STR)}</div>` : `<div class="nb-month-foot">${year}년 ${month}월 · 기록 있는 날 ${monthRecords.length}일</div>`}
+        </div>
+        <span class="nb-page-no">${month} / 12</span>
+      </section>
+    `;
+
+    const rightPage = `
+      <section class="nb-page nb-page--right">
+        <div class="nb-page-inner">
+          <div class="nb-month-list-head">
+            <b>${month}월의 기록</b>
+            <span>${monthRecords.length}일</span>
+          </div>
+          ${monthRecords.length ? `
+            <div class="nb-month-list">${monthRecords.map(renderMonthRow).join("")}</div>
+          ` : `
+            <div class="nb-month-empty">
+              <p>이 달에는 아직 기록이 없습니다.</p>
+              <button class="btn btn-sm" onclick="selectDate('${year}-${pad2(month)}-01', true)">이 달 기록 시작하기</button>
+            </div>
+          `}
+        </div>
+        <span class="nb-page-no">${year} · ${month}월</span>
+      </section>
+    `;
 
     return `
       <div class="topbar">
         <div class="topbar-left">
           <h1 class="page-title title-year">${ICONS.year} 1년 연력</h1>
+          <span class="topbar-sub">${year}년 · 기록 있는 날 ${totalDays}일</span>
         </div>
         <div class="topbar-right">
-          <div class="segmented">
-            <button class="${mode === "matrix" ? "active" : ""}" onclick="setYearViewMode('matrix')">연간 표</button>
-            <button class="${mode === "months" ? "active" : ""}" onclick="setYearViewMode('months')">달별 모아보기</button>
-          </div>
-          ${yearSelectHtml(state.yearFilter, "changeYearFilter")}
-          <button class="btn btn-primary" onclick="selectDate('${TODAY_STR}', true)">오늘 (${TODAY_STR})</button>
+          <button class="btn" onclick="selectDate('${TODAY_STR}', true)">오늘 (${TODAY_STR})</button>
         </div>
         ${renderGlobalTools()}
       </div>
-      ${legendBar}
-      ${blocks}
+
+      <div class="nb-stage">
+        <div class="nb-reader-head">
+          <button class="nb-back" onclick="closeYearBook()">${ICONS.chevLeft}책장</button>
+          <div class="nb-reader-title">
+            <b>${year}년 노트</b>
+            <span>${month}월 · 기록 ${monthRecords.length}일</span>
+          </div>
+          <span class="nb-stage-count">${month} / 12</span>
+        </div>
+        ${jumpBar}
+        <div class="nb-book">
+          <button class="nb-nav prev" onclick="yearPageStep(-1)" ${yearPageIndex <= 0 ? "disabled" : ""} aria-label="이전 달">${ICONS.chevLeft}</button>
+          <div class="nb-spread" id="nbYearSpread" data-side="${yearMobileSide}">
+            <span class="nb-edge nb-edge--left"></span>
+            <span class="nb-edge nb-edge--right"></span>
+            ${leftPage}
+            ${rightPage}
+            <span class="nb-spine"></span>
+            <span class="nb-rings"></span>
+          </div>
+          <button class="nb-nav next" onclick="yearPageStep(1)" ${yearPageIndex >= 11 ? "disabled" : ""} aria-label="다음 달">${ICONS.chevRight}</button>
+        </div>
+        <div class="nb-side-toggle">
+          <button data-year-side="left" class="${yearMobileSide === "left" ? "active" : ""}" onclick="setYearMobileSide('left')">달력</button>
+          <button data-year-side="right" class="${yearMobileSide === "right" ? "active" : ""}" onclick="setYearMobileSide('right')">기록 목록</button>
+        </div>
+        <div class="nb-actions">
+          <button class="nb-action" onclick="closeYearBook()"><span class="nb-action-icon">${NB_ICONS.back}</span>책장으로</button>
+          <button class="nb-action" onclick="selectDate('${TODAY_STR}', true)"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
+          <button class="nb-action primary" onclick="openYearPage(${monthIdx >= 11 ? 0 : monthIdx + 1})"><span class="nb-action-icon">${ICONS.chevRight}</span>${monthIdx >= 11 ? "1월로" : "다음 달"}</button>
+        </div>
+        ${renderYearLegend()}
+      </div>
     `;
+  }
+
+  function renderYearView() {
+    const year = Number(yearBookYear);
+    if (year && YEARS.includes(year)) return renderYearReader(year);
+    return renderYearShelf();
   }
 
   // 하루 기록 · 일기 뷰 (할일 항목을 탭하면 바로 수정 모달 열림)
@@ -2752,6 +3469,9 @@
       collectionOf(kind).forEach(item => {
         if (item[cfg.itemKey] === oldName) item[cfg.itemKey] = newName;
       });
+      if (kind === "archive") {
+        state.books.forEach(b => { if (b.category === oldName) b.category = newName; });
+      }
       return true;
     });
   }
@@ -2771,6 +3491,9 @@
     if (kind === "goals") state.goals = state.goals.filter(g => g.topic !== target.name);
     else if (kind === "bucket") state.buckets = state.buckets.filter(b => b.category !== target.name);
     else state.archives = state.archives.filter(a => a.category !== target.name);
+    if (kind === "archive") {
+      state.books.forEach(b => { if (b.category === target.name) b.category = ""; });
+    }
     saveState();
     render();
     refreshCategoryManager();
@@ -2861,23 +3584,6 @@
         <button type="button" class="thumb-del-btn" onclick="${removeFnName}(${i})" title="삭제" aria-label="사진 삭제">&times;</button>
       </span>
     `).join("");
-  }
-
-  async function handleNewGoalImages(event) {
-    try {
-      draftGoalImages = await processMultipleFiles(event.target.files, draftGoalImages, 5);
-      event.target.value = "";
-      const prev = document.getElementById("newGoalImgPreview");
-      if (prev) prev.innerHTML = renderThumbList(draftGoalImages, "removeDraftGoalImage");
-    } catch (_) {
-      alert("이미지를 불러오는 중 오류가 발생했습니다.");
-    }
-  }
-
-  function removeDraftGoalImage(idx) {
-    draftGoalImages.splice(idx, 1);
-    const prev = document.getElementById("newGoalImgPreview");
-    if (prev) prev.innerHTML = renderThumbList(draftGoalImages, "removeDraftGoalImage");
   }
 
   // 통합 목표 뷰 (기간 설정 + 카테고리 관리 모달 + 탭 시 바로 수정 모달)
@@ -2982,13 +3688,6 @@
             <textarea id="goalNoteInp" style="width:100%; min-height:70px; resize:vertical;" placeholder="목표의 구체적인 실행 계획, 다짐, 기준 등 본문 내용을 작성하세요..."></textarea>
           </div>
           <div class="composer-footer">
-            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
-              <label class="btn" style="cursor:pointer;">
-                사진 추가 (최대 5장)
-                <input type="file" id="goalImgInp" accept="image/*" multiple style="display:none" onchange="handleNewGoalImages(event)" />
-              </label>
-              <div id="newGoalImgPreview" class="img-preview-box">${renderThumbList(draftGoalImages, "removeDraftGoalImage")}</div>
-            </div>
             <div class="composer-actions">
               <button class="btn btn-primary" onclick="addGoal()">목표 저장</button>
             </div>
@@ -2997,35 +3696,24 @@
       ` : ""}
 
       ${filtered.length ? `
-        <div class="media-grid">
+        <div class="goal-list">
           ${filtered.map(g => {
             const iconKey = getTopicIconKey(g.topic);
             const yr = normalizeYear(g.year);
             const pr = normalizePeriod(g.period);
-            const imgs = normalizeImages(g);
             return `
-              <article class="media-card ${g.done ? "done" : ""}">
-                <div class="media-cover" onclick="openCardCover('goal', '${g.id}')" title="${imgs.length ? "사진 크게 보기" : "탭하여 수정"}">
-                  ${imgs.length > 0
-                    ? `<img src="${imgs[0]}" alt="${escapeAttr(g.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
-                    : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(g.topic)}</span></div>`
-                  }
+              <article class="goal-card ${g.done ? "done" : ""}">
+                <div class="goal-card-top">
+                  <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
+                  <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
+                  <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
                 </div>
-                <div class="media-body">
-                  <div class="media-top">
-                    <div style="display:flex; flex-wrap:wrap; gap:4px; min-width:0;">
-                      <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
-                      <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
-                    </div>
-                    <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
-                  </div>
-                  <div class="media-title-row">
-                    <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
-                    <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
-                  </div>
-                  ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
-                  ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
+                <div class="media-title-row">
+                  <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
+                  <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
                 </div>
+                ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
+                ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
               </article>
             `;
           }).join("")}
@@ -3057,38 +3745,18 @@
       period,
       title,
       note: document.getElementById("goalNoteInp").value.trim(),
-      images: [...draftGoalImages],
+      images: [],
       done: false,
       doneDate: ""
     });
-    draftGoalImages = [];
     showGoalComposer = false;
     saveState();
     render();
   }
 
-  let modalGoalImages = [];
-  async function handleModalGoalImages(event) {
-    try {
-      modalGoalImages = await processMultipleFiles(event.target.files, modalGoalImages, 5);
-      event.target.value = "";
-      const box = document.getElementById("mGoalImgBox");
-      if (box) box.innerHTML = renderThumbList(modalGoalImages, "removeModalGoalImage");
-    } catch (_) {
-      alert("이미지를 불러오는 중 오류가 발생했습니다.");
-    }
-  }
-
-  function removeModalGoalImage(idx) {
-    modalGoalImages.splice(idx, 1);
-    const box = document.getElementById("mGoalImgBox");
-    if (box) box.innerHTML = renderThumbList(modalGoalImages, "removeModalGoalImage");
-  }
-
   function openEditGoal(id) {
     const g = state.goals.find(x => x.id === id);
     if (!g) return;
-    modalGoalImages = [...normalizeImages(g)];
     const curYear = normalizeYear(g.year);
     const curPeriod = normalizePeriod(g.period);
     openModal("목표 수정", `
@@ -3118,13 +3786,6 @@
         <label>본문 내용 · 실행 메모</label>
         <textarea id="mGoalNote" style="min-height:100px;">${escapeHtml(g.note || "")}</textarea>
       </div>
-      <div class="modal-field">
-        <label>사진 (최대 5장)</label>
-        <input type="file" accept="image/*" multiple onchange="handleModalGoalImages(event)" />
-        <div id="mGoalImgBox" class="img-preview-box">
-          ${renderThumbList(modalGoalImages, "removeModalGoalImage")}
-        </div>
-      </div>
     `, () => {
       const topicSel = document.getElementById("mGoalTopic");
       if (topicSel && topicSel.value) g.topic = topicSel.value;
@@ -3132,8 +3793,6 @@
       g.period = normalizePeriod(document.getElementById("mGoalPeriod").value);
       g.title = document.getElementById("mGoalTitle").value.trim() || g.title;
       g.note = document.getElementById("mGoalNote").value.trim();
-      g.images = [...modalGoalImages];
-      delete g.image;
       return true;
     });
   }
@@ -3337,6 +3996,7 @@
     state.archives.unshift({
       id: uid(),
       category,
+      bookId: resolveArchiveBookId(document.getElementById("archiveBookSel") ? document.getElementById("archiveBookSel").value : "", category),
       date,
       title,
       subtitle: document.getElementById("archiveSubInp").value.trim(),
@@ -3350,6 +4010,12 @@
   }
 
   function renderArchiveView() {
+    const mode = state.archiveViewMode === "notebook" ? "notebook" : "card";
+    if (mode === "notebook") return renderArchiveNotebookView();
+    return renderArchiveCardView();
+  }
+
+  function renderArchiveCardView() {
     let filtered = state.archives.filter(a => state.archiveCatFilter === "all" || a.category === state.archiveCatFilter);
     if (state.archiveSort === "date_desc") {
       filtered = [...filtered].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
@@ -3370,6 +4036,7 @@
           <span class="topbar-sub">총 ${filtered.length}개 · 항목을 탭하면 바로 수정</span>
         </div>
         <div class="topbar-right">
+          ${archiveViewToggle("card")}
           <select class="year-select" onchange="changeArchiveSort(this.value)" aria-label="아카이브 정렬">
             <option value="newest" ${state.archiveSort === "newest" ? "selected" : ""}>등록 최신순</option>
             <option value="oldest" ${state.archiveSort === "oldest" ? "selected" : ""}>등록 오래된순</option>
@@ -3407,9 +4074,10 @@
             <h3 style="color:var(--c-archive);">새 아카이브 등록</h3>
           </div>
           <div class="form-row">
-            <select id="archiveCatSel" aria-label="아카이브 분류">
+            <select id="archiveCatSel" aria-label="아카이브 분류" onchange="syncBookSelect('archiveBookSel', this.value)">
               ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
             </select>
+            <select id="archiveBookSel" aria-label="넣을 책">${bookOptionsHtml(defaultBookIdForCat(defaultCat))}</select>
             <input type="date" id="archiveDateInp" value="${state.selectedDate}" aria-label="기록 날짜" />
             <input type="text" id="archiveTitleInp" style="flex:1; min-width:170px;" placeholder="제목 (책 제목, 공부 주제, 여행지, 전시명, 차 이름 등)" />
             <input type="text" id="archiveSubInp" style="flex:1; min-width:140px;" placeholder="세부 정보 (저자, 장소, 다구 등 · 선택)" />
@@ -3468,6 +4136,693 @@
     `;
   }
 
+  // ---------- 아카이브: 주제별 책장 + 스프링 노트북 ----------
+  const NB_ICONS = {
+    back: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`,
+    edit: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+    plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    dots: `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>`,
+    book: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>`,
+    calendar: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    pen: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`
+  };
+
+  function getBooks() {
+    return Array.isArray(state.books) ? state.books : [];
+  }
+
+  function getBookById(id) {
+    const key = String(id || "");
+    if (!key) return null;
+    return getBooks().find(b => b.id === key) || null;
+  }
+
+  function bookArchives(bookId) {
+    const list = [];
+    (state.archives || []).forEach((a, i) => {
+      if ((a.bookId || "") === bookId) list.push({ a, i });
+    });
+    list.sort((x, y) => {
+      const d = String(x.a.date || "").localeCompare(String(y.a.date || ""));
+      return d !== 0 ? d : x.i - y.i;
+    });
+    return list.map(x => x.a);
+  }
+
+  function clampShelfIndex() {
+    const books = getBooks();
+    if (!books.length) {
+      notebookShelfIndex = 0;
+      return;
+    }
+    if (state.shelfSelectedBookId) {
+      const idx = books.findIndex(b => b.id === state.shelfSelectedBookId);
+      if (idx >= 0) {
+        notebookShelfIndex = idx;
+        return;
+      }
+    }
+    if (notebookShelfIndex > books.length - 1) notebookShelfIndex = books.length - 1;
+    if (notebookShelfIndex < 0) notebookShelfIndex = 0;
+    state.shelfSelectedBookId = books[notebookShelfIndex].id;
+  }
+
+  function scrollShelfCenter(el) {
+    if (!el) return;
+    const track = el.parentElement;
+    if (!track) return;
+    const trackRect = track.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const delta = (elRect.left + elRect.width / 2) - (trackRect.left + trackRect.width / 2);
+    try {
+      track.scrollBy({ left: delta, behavior: "smooth" });
+    } catch (_) {
+      track.scrollLeft = track.scrollLeft + delta;
+    }
+  }
+
+  function archiveViewToggle(mode) {
+    return `
+      <div class="segmented" role="group" aria-label="아카이브 보기 방식">
+        <button class="${mode === "card" ? "active" : ""}" onclick="setArchiveViewMode('card')">카드 보기</button>
+        <button class="${mode === "notebook" ? "active" : ""}" onclick="setArchiveViewMode('notebook')">노트북 보기</button>
+      </div>
+    `;
+  }
+
+  function setArchiveViewMode(mode) {
+    const next = mode === "notebook" ? "notebook" : "card";
+    if (state.archiveViewMode === next) return;
+    state.archiveViewMode = next;
+    notebookBookId = "";
+    notebookPageIndex = 0;
+    saveState();
+    render();
+  }
+
+  function renderArchiveNotebookView() {
+    const book = notebookBookId ? getBookById(notebookBookId) : null;
+    if (notebookBookId && !book) notebookBookId = "";
+    const books = getBooks();
+    const head = `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title title-archive">${ICONS.archive} 아카이브</h1>
+          <span class="topbar-sub">${books.length}권의 책 · 기록 ${state.archives.length}개</span>
+        </div>
+        <div class="topbar-right">
+          ${archiveViewToggle("notebook")}
+        </div>
+        ${renderGlobalTools()}
+      </div>
+    `;
+    return head + (book ? renderNotebookReader(book) : renderNotebookShelf());
+  }
+
+  function renderShelfCover(book, isActive) {
+    const recs = bookArchives(book.id);
+    const latest = recs.length ? recs[recs.length - 1] : null;
+    const latestImgs = latest ? normalizeImages(latest) : [];
+    const coverImg = book.cover || (latestImgs.length ? latestImgs[0] : "");
+    const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
+    return `
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" onclick="openNotebook('${book.id}')" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
+        <span class="nb-cover" style="--spine:${spine}">
+          ${coverImg
+            ? `<img class="nb-cover-photo" src="${coverImg}" alt="" /><span class="nb-cover-plate">${escapeHtml(book.title)}</span>`
+            : `<span class="nb-cover-label"><b>${escapeHtml(book.title)}</b><span>${escapeHtml(book.subject || book.category || "기록")}</span></span>`}
+          <span class="nb-cover-spine"></span>
+          <span class="nb-cover-shine"></span>
+          <span class="nb-cover-chip">${recs.length}p</span>
+        </span>
+      </button>
+    `;
+  }
+
+  function renderShelfMeta(book) {
+    const recs = bookArchives(book.id);
+    const latest = recs.length ? recs[recs.length - 1] : null;
+    const bits = [`${recs.length}페이지`];
+    if (book.category) bits.push(book.category);
+    else if (book.subject) bits.push(book.subject);
+    if (latest && latest.date) bits.push(`최근 ${latest.date}`);
+    return `
+      <div class="nb-book-meta">
+        <h3>${escapeHtml(book.title)}</h3>
+        <div class="nb-book-info">${bits.map(escapeHtml).join(" · ")}</div>
+      </div>
+    `;
+  }
+
+  function renderShelfActions(book) {
+    return `
+      <button class="nb-action primary" onclick="openNotebook('${book.id}')"><span class="nb-action-icon">${NB_ICONS.book}</span>이 책 펼치기</button>
+      <button class="nb-action" onclick="openBookModal()"><span class="nb-action-icon">${NB_ICONS.plus}</span>책 추가</button>
+      <button class="nb-action" onclick="openBookModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.edit}</span>편집</button>
+    `;
+  }
+
+  function renderNotebookShelf() {
+    const books = getBooks();
+    if (!books.length) {
+      return `
+        <div class="nb-stage">
+          <div class="nb-shelf-empty">
+            <h3>아직 책장이 비어 있습니다</h3>
+            <p>주제별로 책을 만들고 기록을 페이지처럼 모아 보세요.<br />독서 기록, 여행 노트, 공부 노트 무엇이든 좋습니다.</p>
+            <button class="btn btn-primary" onclick="openBookModal()">+ 첫 책 만들기</button>
+          </div>
+        </div>
+      `;
+    }
+    clampShelfIndex();
+    const active = books[notebookShelfIndex];
+    return `
+      <div class="nb-stage">
+        <div class="nb-stage-head">
+          <div>
+            <div class="nb-stage-title">주제별 책장</div>
+            <div class="nb-stage-sub">표지를 누르면 스프링 노트가 펼쳐집니다 · 좌우 화살표로 책을 고를 수 있습니다</div>
+          </div>
+          <span class="nb-stage-count">책 ${books.length}권</span>
+        </div>
+        <div class="nb-shelf">
+          <button class="nb-shelf-arrow prev" onclick="shelfStep(-1)" aria-label="이전 책">${ICONS.chevLeft}</button>
+          <div class="nb-shelf-track" id="nbShelfTrack">${books.map((b, i) => renderShelfCover(b, i === notebookShelfIndex)).join("")}</div>
+          <button class="nb-shelf-arrow next" onclick="shelfStep(1)" aria-label="다음 책">${ICONS.chevRight}</button>
+          <div class="nb-shelf-rail"></div>
+        </div>
+        <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
+        <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
+      </div>
+    `;
+  }
+
+  function selectShelfBook(id) {
+    const books = getBooks();
+    const idx = books.findIndex(b => b.id === id);
+    if (idx < 0) return;
+    notebookShelfIndex = idx;
+    state.shelfSelectedBookId = id;
+    saveState();
+    const track = document.getElementById("nbShelfTrack");
+    if (!track) { render(); return; }
+    Array.from(track.children).forEach(el => el.classList.toggle("is-active", el.dataset.bookId === id));
+    const meta = document.getElementById("nbShelfMeta");
+    if (meta) meta.innerHTML = renderShelfMeta(books[idx]);
+    const actions = document.getElementById("nbShelfActions");
+    if (actions) actions.innerHTML = renderShelfActions(books[idx]);
+    scrollShelfCenter(track.querySelector(".nb-cover-btn.is-active"));
+  }
+
+  function shelfStep(delta) {
+    const books = getBooks();
+    if (!books.length) return;
+    clampShelfIndex();
+    const next = (notebookShelfIndex + delta + books.length) % books.length;
+    selectShelfBook(books[next].id);
+  }
+
+  function openNotebook(id) {
+    const book = getBookById(id);
+    if (!book) return;
+    const idx = getBooks().findIndex(b => b.id === id);
+    if (idx >= 0) notebookShelfIndex = idx;
+    state.shelfSelectedBookId = id;
+    notebookBookId = id;
+    notebookPageIndex = 0;
+    notebookMobileSide = "left";
+    saveState();
+    render();
+  }
+
+  function closeNotebookBook() {
+    notebookBookId = "";
+    notebookPageIndex = 0;
+    notebookMobileSide = "left";
+    render();
+  }
+
+  function notebookTotalPages(book) {
+    return bookArchives(book.id).length + 1;
+  }
+
+  function notebookStep(delta) {
+    const book = getBookById(notebookBookId);
+    if (!book) return;
+    const total = notebookTotalPages(book);
+    notebookPageIndex = Math.min(total - 1, Math.max(0, notebookPageIndex + delta));
+    notebookMobileSide = "left";
+    render();
+  }
+
+  function setNotebookSide(side) {
+    notebookMobileSide = side === "right" ? "right" : "left";
+    const spread = document.getElementById("nbSpread");
+    if (spread) spread.dataset.side = notebookMobileSide;
+    document.querySelectorAll(".nb-side-toggle button[data-side]").forEach(b => {
+      b.classList.toggle("active", b.dataset.side === notebookMobileSide);
+    });
+  }
+
+  function openNotebookPhoto(id, index) {
+    const a = (state.archives || []).find(x => x.id === id);
+    if (!a) return;
+    openLightbox(normalizeImages(a), Number(index) || 0, a.title || "");
+  }
+
+  function renderNotebookLeftPage(a, book) {
+    const imgs = normalizeImages(a);
+    const iconKey = getArchiveCatIconKey(a.category);
+    const parts = String(a.date || "").split("-");
+    const y = parts[0] || "";
+    const m = parts[1] || "";
+    const d = parts[2] || "";
+    const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
+    const dow = /^\d{4}-\d{2}-\d{2}$/.test(String(a.date || "")) ? dowNames[getDayOfWeek(a.date)] : "";
+
+    const visual = imgs.length
+      ? `
+        <div class="nb-photo-frame" onclick="openNotebookPhoto('${a.id}', 0)" title="사진 크게 보기">
+          <span class="nb-photo-tape"></span>
+          <img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />
+          ${imgs.length > 1 ? `<span class="nb-photo-count">사진 ${imgs.length}장 · 탭하여 크게</span>` : ""}
+        </div>
+        ${imgs.length > 1 ? `
+          <div class="nb-thumbs">
+            ${imgs.map((src, i) => `<button class="nb-thumb" onclick="openNotebookPhoto('${a.id}', ${i})" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" /></button>`).join("")}
+          </div>
+        ` : ""}
+      `
+      : `
+        <div class="nb-visual">
+          <span class="nb-visual-icon">${renderPictogram(iconKey, 26)}</span>
+          <div class="nb-visual-date">${y}.${m}.${d}</div>
+          <div class="nb-visual-sub">${escapeHtml(a.category || (book && book.title) || "기록")}</div>
+        </div>
+      `;
+
+    return `
+      <section class="nb-page nb-page--left">
+        <div class="nb-page-inner">
+          ${visual}
+          <div class="nb-stamps">
+            <span class="nb-stamp"><b>${String(a.date || "").replace(/-/g, ".")}</b><span>${dow || "DATE"}</span></span>
+            <span class="nb-badge">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category || "기록")}</span>
+            ${a.subtitle ? `<span class="nb-badge nb-badge--ghost">${escapeHtml(a.subtitle)}</span>` : ""}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderNotebookRightPage(a) {
+    return `
+      <section class="nb-page nb-page--right">
+        <div class="nb-page-inner">
+          <div class="nb-note">
+            <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
+            ${a.subtitle ? `<div class="nb-note-sub">${escapeHtml(a.subtitle)}</div>` : ""}
+            <div class="nb-note-rule"></div>
+            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 아래 ‘이 페이지 수정’으로 감상을 남겨 보세요.</span>`}</div>
+          </div>
+        </div>
+        <span class="nb-page-no">${escapeHtml(a.category || "")}</span>
+      </section>
+    `;
+  }
+
+  function renderNotebookGuidePages(book, recs) {
+    const last = recs.length ? recs[recs.length - 1] : null;
+    const firstLabel = recs.length ? "눌러서 새 기록 남기기" : "눌러서 첫 기록 남기기";
+    return `
+      <section class="nb-page nb-page--left">
+        <div class="nb-page-inner nb-guide" onclick="openNewArchiveModal('${book.id}')" style="cursor:pointer;">
+          <button class="nb-guide-plus" onclick="event.stopPropagation(); openNewArchiveModal('${book.id}')" aria-label="${firstLabel}">${NB_ICONS.plus}</button>
+          <div class="nb-guide-title">${firstLabel}</div>
+          <p class="nb-guide-sub">${recs.length ? "이 책의 마지막 페이지입니다. 오늘의 기록으로 책을 이어가 보세요." : "아직 페이지가 없습니다. 첫 기록을 남겨 이 책을 시작해 보세요."}</p>
+        </div>
+      </section>
+      <section class="nb-page nb-page--right">
+        <div class="nb-page-inner nb-guide-summary">
+          <div class="nb-summary-title">${escapeHtml(book.title)}</div>
+          <ul class="nb-summary-list">
+            <li><span>기록</span><b>${recs.length}개</b></li>
+            <li><span>최근 기록</span><b>${last ? escapeHtml(last.date || "") : "—"}</b></li>
+            <li><span>연결</span><b>${escapeHtml(book.category || book.subject || "자유 주제")}</b></li>
+          </ul>
+          <button class="btn btn-primary" onclick="openNewArchiveModal('${book.id}')">+ 새 기록 추가</button>
+        </div>
+        <span class="nb-page-no">${recs.length + 1}</span>
+      </section>
+    `;
+  }
+
+  function renderNotebookReader(book) {
+    const recs = bookArchives(book.id);
+    const total = recs.length + 1;
+    if (notebookFocusId) {
+      const fi = recs.findIndex(a => a.id === notebookFocusId);
+      if (fi >= 0) notebookPageIndex = fi;
+      notebookFocusId = "";
+    }
+    notebookPageIndex = Math.min(total - 1, Math.max(0, notebookPageIndex));
+    const idx = notebookPageIndex;
+    const onGuide = idx >= recs.length;
+    const current = onGuide ? null : recs[idx];
+    const subBits = [];
+    if (book.category) subBits.push(book.category);
+    else if (book.subject) subBits.push(book.subject);
+    subBits.push(`${recs.length}페이지`);
+
+    const spreadBody = onGuide
+      ? renderNotebookGuidePages(book, recs)
+      : `${renderNotebookLeftPage(current, book)}${renderNotebookRightPage(current)}`;
+
+    return `
+      <div class="nb-stage">
+        <div class="nb-reader-head">
+          <button class="nb-back" onclick="closeNotebookBook()">${ICONS.chevLeft}책장</button>
+          <div class="nb-reader-title">
+            <b>${escapeHtml(book.title)}</b>
+            <span>${subBits.map(escapeHtml).join(" · ")}</span>
+          </div>
+          <span class="nb-stage-count">${onGuide ? "마지막 페이지" : `${idx + 1} / ${recs.length}`}</span>
+        </div>
+        <div class="nb-book">
+          <button class="nb-nav prev" onclick="notebookStep(-1)" ${idx <= 0 ? "disabled" : ""} aria-label="이전 페이지">${ICONS.chevLeft}</button>
+          <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}">
+            <span class="nb-edge nb-edge--left"></span>
+            <span class="nb-edge nb-edge--right"></span>
+            ${spreadBody}
+            <span class="nb-spine"></span>
+            <span class="nb-rings"></span>
+          </div>
+          <button class="nb-nav next" onclick="notebookStep(1)" ${idx >= total - 1 ? "disabled" : ""} aria-label="다음 페이지">${ICONS.chevRight}</button>
+        </div>
+        <div class="nb-side-toggle">
+          <button data-side="left" class="${notebookMobileSide === "left" ? "active" : ""}" onclick="setNotebookSide('left')">사진 페이지</button>
+          <button data-side="right" class="${notebookMobileSide === "right" ? "active" : ""}" onclick="setNotebookSide('right')">노트 페이지</button>
+        </div>
+        <div class="nb-actions">
+          <button class="nb-action" onclick="closeNotebookBook()"><span class="nb-action-icon">${NB_ICONS.back}</span>책장으로</button>
+          ${onGuide ? "" : `<button class="nb-action" onclick="openEditArchive('${current.id}')"><span class="nb-action-icon">${NB_ICONS.edit}</span>이 페이지 수정</button>`}
+          <button class="nb-action primary" onclick="openNewArchiveModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.plus}</span>새 기록 추가</button>
+          <button class="nb-action" onclick="openBookModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.dots}</span>책 설정</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function bindNotebookGestures() {
+    const track = document.getElementById("nbShelfTrack") || document.getElementById("nbYearShelfTrack");
+    if (track) {
+      const active = track.querySelector(".nb-cover-btn.is-active");
+      if (active) {
+        const trackRect = track.getBoundingClientRect();
+        const elRect = active.getBoundingClientRect();
+        const delta = (elRect.left + elRect.width / 2) - (trackRect.left + trackRect.width / 2);
+        track.scrollLeft = Math.max(0, track.scrollLeft + delta);
+      }
+    }
+    const spreads = [document.getElementById("nbSpread"), document.getElementById("nbYearSpread")].filter(Boolean);
+    spreads.forEach(spread => {
+      const isYear = spread.id === "nbYearSpread";
+      if (spread.dataset.gestureBound === "1") return;
+      spread.dataset.gestureBound = "1";
+      let sx = 0;
+      let sy = 0;
+      spread.addEventListener("touchstart", e => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        sx = t.clientX;
+        sy = t.clientY;
+      }, { passive: true });
+      spread.addEventListener("touchend", e => {
+        const t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        const dx = t.clientX - sx;
+        const dy = t.clientY - sy;
+        if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          if (isYear) yearPageStep(dx < 0 ? 1 : -1);
+          else notebookStep(dx < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+    });
+  }
+
+  // ---------- 책 만들기 / 편집 ----------
+  function spineSwatchHtml(selected) {
+    return BOOK_SPINE_PALETTE.map(c => `
+      <button type="button" class="spine-swatch ${c === selected ? "selected" : ""}" style="background:${c}" data-color="${c}" onclick="pickBookSpine('${c}')" aria-label="책등 색 ${c}"></button>
+    `).join("");
+  }
+
+  function coverPreviewHtml(cover, spine, title) {
+    const color = normalizeSpineColor(spine, BOOK_SPINE_PALETTE[0]);
+    return `
+      <span class="nb-cover" style="--spine:${color}">
+        ${cover
+          ? `<img class="nb-cover-photo" src="${cover}" alt="" />`
+          : `<span class="nb-cover-label"><b>${escapeHtml(title || "새 책")}</b><span>표지</span></span>`}
+        <span class="nb-cover-spine"></span>
+        <span class="nb-cover-shine"></span>
+      </span>
+    `;
+  }
+
+  function refreshBookCoverPreview() {
+    const box = document.getElementById("mBookCoverPrev");
+    if (!box) return;
+    const spineEl = document.getElementById("mBookSpine");
+    const titleEl = document.getElementById("mBookTitle");
+    box.innerHTML = coverPreviewHtml(draftBookCover, spineEl ? spineEl.value : draftBookSpine, titleEl ? titleEl.value : "새 책");
+  }
+
+  function pickBookSpine(color) {
+    draftBookSpine = normalizeSpineColor(color, BOOK_SPINE_PALETTE[0]);
+    const inp = document.getElementById("mBookSpine");
+    if (inp) inp.value = draftBookSpine;
+    document.querySelectorAll("#mBookSpineWrap .spine-swatch").forEach(b => {
+      b.classList.toggle("selected", b.dataset.color === draftBookSpine);
+    });
+    refreshBookCoverPreview();
+  }
+
+  async function handleBookCoverPick(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    try {
+      draftBookCover = await compressImageFile(file, 900, 0.8);
+      refreshBookCoverPreview();
+    } catch (_) {
+      alert("이미지를 불러오는 중 오류가 발생했습니다.");
+    }
+    event.target.value = "";
+  }
+
+  function clearBookCover() {
+    draftBookCover = "";
+    refreshBookCoverPreview();
+  }
+
+  function defaultBookIdForCat(cat) {
+    const found = getBooks().find(b => b.category && b.category === cat);
+    return found ? found.id : "";
+  }
+
+  function bookOptionsHtml(selectedId) {
+    const sel = String(selectedId || "");
+    return `<option value="" ${sel ? "" : "selected"}>책 없음 (분류에 맞춰 자동)</option>` +
+      getBooks().map(b => `<option value="${escapeAttr(b.id)}" ${b.id === sel ? "selected" : ""}>${escapeHtml(b.title)}</option>`).join("");
+  }
+
+  function syncBookSelect(selectId, catName) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const book = getBooks().find(b => b.category && b.category === catName);
+    if (book) sel.value = book.id;
+  }
+
+  function ensureInboxBook() {
+    let inbox = getBookById("book_inbox");
+    if (!inbox) {
+      inbox = { id: "book_inbox", title: "미분류 기록", category: "", subject: "", spine: "#5b6478", cover: "", auto: true, createdAt: TODAY_STR };
+      state.books.push(inbox);
+    }
+    return inbox;
+  }
+
+  function resolveArchiveBookId(explicitId, category) {
+    if (explicitId && getBookById(explicitId)) return explicitId;
+    const byCat = getBooks().find(b => b.category && b.category === category);
+    if (byCat) return byCat.id;
+    return ensureInboxBook().id;
+  }
+
+  function openBookModal(id) {
+    const book = id ? getBookById(id) : null;
+    if (id && !book) return;
+    draftBookCover = book ? (book.cover || "") : "";
+    draftBookSpine = book ? normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0])
+      : BOOK_SPINE_PALETTE[getBooks().length % BOOK_SPINE_PALETTE.length];
+    const catOptions = (state.archiveCategories || []).map(c => `
+      <option value="${escapeAttr(c.name)}" ${book && book.category === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>
+    `).join("");
+    openModal(book ? "책 설정" : "새 책 만들기", `
+      <div class="modal-field">
+        <label>책 제목</label>
+        <input type="text" id="mBookTitle" value="${escapeAttr(book ? book.title : "")}" placeholder="예) 독서 기록, 2026 교토 여행" oninput="refreshBookCoverPreview()" />
+      </div>
+      <div class="modal-field">
+        <label>연결 카테고리 (선택)</label>
+        <select id="mBookCat">
+          <option value="">자유 주제 (카테고리 연결 없음)</option>
+          ${catOptions}
+        </select>
+        <p class="settings-hint" style="margin:0;">연결하면 같은 분류의 아카이브 기록이 이 책으로 모입니다.</p>
+      </div>
+      <div class="modal-field">
+        <label>자유 주제 문구 (선택)</label>
+        <input type="text" id="mBookSubject" value="${escapeAttr(book ? (book.subject || "") : "")}" placeholder="예) 2024 Kyoto" />
+      </div>
+      <div class="modal-field" id="mBookSpineWrap">
+        <label>책등 컬러</label>
+        <div class="spine-swatches">${spineSwatchHtml(draftBookSpine)}</div>
+        <input type="hidden" id="mBookSpine" value="${escapeAttr(draftBookSpine)}" />
+      </div>
+      <div class="modal-field">
+        <label>표지 이미지 (선택)</label>
+        <div class="book-cover-preview" id="mBookCoverPrev">${coverPreviewHtml(draftBookCover, draftBookSpine, book ? book.title : "새 책")}</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+          <label class="btn btn-sm" style="cursor:pointer;">표지 사진 올리기<input type="file" accept="image/*" style="display:none" onchange="handleBookCoverPick(event)" /></label>
+          <button class="btn btn-sm" onclick="clearBookCover()">표지 자동으로</button>
+        </div>
+        <p class="settings-hint" style="margin:0;">올리지 않으면 최근 기록 사진, 그것도 없으면 책등 컬러 표지가 쓰입니다.</p>
+      </div>
+      ${book ? `<div class="modal-danger-row"><button class="btn btn-sm btn-danger-outline" onclick="deleteBook('${book.id}')">이 책 삭제</button></div>` : ""}
+    `, () => {
+      const titleEl = document.getElementById("mBookTitle");
+      const title = (titleEl && titleEl.value ? titleEl.value : "").trim();
+      if (!title) {
+        alert("책 제목을 입력해 주세요.");
+        if (titleEl) titleEl.focus();
+        return false;
+      }
+      const category = document.getElementById("mBookCat").value;
+      const subject = (document.getElementById("mBookSubject").value || "").trim();
+      const spine = normalizeSpineColor(document.getElementById("mBookSpine").value, BOOK_SPINE_PALETTE[0]);
+      if (book) {
+        book.title = title;
+        book.category = category;
+        book.subject = subject;
+        book.spine = spine;
+        book.cover = draftBookCover;
+      } else {
+        const newBook = { id: "bk_" + uid().slice(3), title, category, subject, spine, cover: draftBookCover, createdAt: TODAY_STR };
+        state.books.push(newBook);
+        if (category) {
+          state.archives.forEach(a => {
+            if (a.category !== category) return;
+            const cur = getBookById(a.bookId);
+            if (!a.bookId || !cur || cur.id === "book_inbox") a.bookId = newBook.id;
+          });
+        }
+        state.shelfSelectedBookId = newBook.id;
+        notebookShelfIndex = state.books.length - 1;
+      }
+      return true;
+    });
+  }
+
+  function deleteBook(id) {
+    const book = getBookById(id);
+    if (!book) return;
+    const n = state.archives.filter(a => a.bookId === id).length;
+    const msg = n
+      ? `‘${book.title}’ 책을 삭제할까요?\n\n이 책의 기록 ${n}개는 지워지지 않고 ‘미분류 기록’ 책으로 옮겨집니다.`
+      : `‘${book.title}’ 책을 삭제할까요?`;
+    if (!confirm(msg)) return;
+    state.books = state.books.filter(b => b.id !== id);
+    state.archives.forEach(a => { if (a.bookId === id) a.bookId = ""; });
+    applyBookModel(state);
+    if (notebookBookId === id) {
+      notebookBookId = "";
+      notebookPageIndex = 0;
+    }
+    if (state.shelfSelectedBookId === id) {
+      state.shelfSelectedBookId = state.books[0] ? state.books[0].id : "";
+      notebookShelfIndex = 0;
+    }
+    closeModal();
+    saveState();
+    render();
+  }
+
+  // ---------- 새 아카이브 기록 (노트북에서 바로 쓰기) ----------
+  function openNewArchiveModal(bookId) {
+    const book = bookId ? getBookById(bookId) : null;
+    modalArchiveImages = [];
+    const defCat = (book && book.category) || (state.archiveCategories[0] ? state.archiveCategories[0].name : "기타");
+    const defBook = book ? book.id : resolveArchiveBookId("", defCat);
+    openModal(book ? `‘${book.title}’에 새 기록` : "새 아카이브 기록", `
+      <div class="modal-field">
+        <label>분류</label>
+        <select id="mNewArchiveCat" onchange="syncBookSelect('mNewArchiveBook', this.value)">
+          ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${c.name === defCat ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>책</label>
+        <select id="mNewArchiveBook">${bookOptionsHtml(defBook)}</select>
+      </div>
+      <div class="modal-field">
+        <label>날짜</label>
+        <input type="date" id="mNewArchiveDate" value="${state.selectedDate || TODAY_STR}" />
+      </div>
+      <div class="modal-field">
+        <label>제목</label>
+        <input type="text" id="mNewArchiveTitle" placeholder="책 제목, 여행지, 전시명, 공부 주제 등" />
+      </div>
+      <div class="modal-field">
+        <label>세부 정보 (저자, 장소 등 · 선택)</label>
+        <input type="text" id="mNewArchiveSub" />
+      </div>
+      <div class="modal-field">
+        <label>글 · 감상</label>
+        <textarea id="mNewArchiveNote" style="min-height:130px;" placeholder="감상, 배운 내용, 시음 메모 등"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>사진 (최대 5장)</label>
+        <input type="file" accept="image/*" multiple onchange="handleModalArchiveImages(event)" />
+        <div id="mArchiveImgBox" class="img-preview-box">${renderThumbList(modalArchiveImages, "removeModalArchiveImage")}</div>
+      </div>
+    `, () => {
+      const titleEl = document.getElementById("mNewArchiveTitle");
+      const title = (titleEl && titleEl.value ? titleEl.value : "").trim();
+      if (!title) {
+        alert("제목을 입력해 주세요.");
+        if (titleEl) titleEl.focus();
+        return false;
+      }
+      const category = document.getElementById("mNewArchiveCat").value || defCat;
+      const bookSel = document.getElementById("mNewArchiveBook");
+      const newId = "a_" + uid().slice(3);
+      state.archives.unshift({
+        id: newId,
+        category,
+        bookId: resolveArchiveBookId(bookSel ? bookSel.value : "", category),
+        date: document.getElementById("mNewArchiveDate").value || state.selectedDate || TODAY_STR,
+        title,
+        subtitle: document.getElementById("mNewArchiveSub").value.trim(),
+        note: document.getElementById("mNewArchiveNote").value.trim(),
+        images: [...modalArchiveImages]
+      });
+      notebookFocusId = newId;
+      return true;
+    });
+  }
+
   let modalArchiveImages = [];
   async function handleModalArchiveImages(event) {
     try {
@@ -3493,9 +4848,13 @@
     openModal("아카이브 수정", `
       <div class="modal-field">
         <label>분류</label>
-        <select id="mArchiveCat">
+        <select id="mArchiveCat" onchange="syncBookSelect('mArchiveBook', this.value)">
           ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${a.category === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
         </select>
+      </div>
+      <div class="modal-field">
+        <label>책</label>
+        <select id="mArchiveBook">${bookOptionsHtml(a.bookId || defaultBookIdForCat(a.category))}</select>
       </div>
       <div class="modal-field">
         <label>날짜</label>
@@ -3528,6 +4887,7 @@
       a.subtitle = document.getElementById("mArchiveSub").value.trim();
       a.note = document.getElementById("mArchiveNote").value.trim();
       a.images = [...modalArchiveImages];
+      a.bookId = resolveArchiveBookId(document.getElementById("mArchiveBook") ? document.getElementById("mArchiveBook").value : "", a.category);
       delete a.image;
       return true;
     });
@@ -3827,6 +5187,33 @@
       if (event.key === "ArrowLeft") lightboxStep(-1);
       else if (event.key === "ArrowRight") lightboxStep(1);
     }
+
+    // 노트북 · 연도 책 넘기기 (입력 중이거나 모달이 열려 있을 때는 결과)
+    const tagName = (event.target && event.target.tagName) || "";
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(tagName) || (event.target && event.target.isContentEditable);
+    const modalOpen = ["editModal", "settingsModal", "catModal", "lightbox"].some(id => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains("open");
+    });
+    if (!typing && !modalOpen) {
+      if (state.activeTab === "year") {
+        if (yearBookYear) {
+          if (event.key === "ArrowLeft") { yearPageStep(-1); return; }
+          if (event.key === "ArrowRight") { yearPageStep(1); return; }
+        } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          yearShelfStep(event.key === "ArrowLeft" ? -1 : 1);
+          return;
+        }
+      } else if (state.activeTab === "archive" && state.archiveViewMode === "notebook") {
+        if (notebookBookId) {
+          if (event.key === "ArrowLeft") { notebookStep(-1); return; }
+          if (event.key === "ArrowRight") { notebookStep(1); return; }
+        } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          shelfStep(event.key === "ArrowLeft" ? -1 : 1);
+          return;
+        }
+      }
+    }
   });
 
   const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
@@ -3854,6 +5241,29 @@
     closeCategoryManager,
     openLightbox,
     closeLightbox,
+    setArchiveViewMode,
+    openNotebook,
+    closeNotebookBook,
+    notebookStep,
+    selectShelfBook,
+    shelfStep,
+    openBookModal,
+    openNewArchiveModal,
+    openEditArchive,
+    openEditGoal,
+    openYearBook,
+    closeYearBook,
+    openTodayYearBook,
+    openYearPage,
+    yearPageStep,
+    getNotebookState: () => ({
+      view: state.archiveViewMode,
+      bookId: notebookBookId,
+      page: notebookPageIndex,
+      yearBook: yearBookYear,
+      yearPage: yearPageIndex,
+      mobileSide: notebookMobileSide
+    }),
     errors: () => window.__errors
   };
 
