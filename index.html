@@ -1140,6 +1140,41 @@
     }
     .auth-local:hover { color: #33383f; }
     .auth-note { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: #9aa0a9; text-align: center; }
+    .auth-switch {
+      display: block; width: 100%; margin-top: 10px; padding: 0; background: none; border: 0;
+      color: #4a5568; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; text-align: center;
+    }
+    .auth-switch:hover { color: #1f2530; text-decoration: underline; text-underline-offset: 3px; }
+    .auth-notice {
+      margin: 0 0 14px; padding: 9px 11px; border-radius: 9px;
+      background: #fdf4e5; border: 1px solid #efdcc0; color: #7c5a2c;
+      font-size: 11.5px; line-height: 1.6;
+    }
+    .auth-primary:disabled, .auth-google:disabled { opacity: .55; cursor: default; }
+    /* ===== 화면 알림(토스트) ===== */
+    .toast-stack {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      z-index: 200; display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+      width: min(92vw, 440px); pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto; display: flex; align-items: flex-start; gap: 10px;
+      background: #232838; color: #f6f4ef; border-radius: 12px; padding: 11px 13px;
+      font-size: 12.5px; line-height: 1.55;
+      box-shadow: 0 16px 34px -16px rgba(6,9,18,.65);
+      animation: toastIn .18s ease-out;
+    }
+    .toast.warn { background: #7a3f38; }
+    .toast.ok { background: #2f5247; }
+    .toast-text { flex: 1; min-width: 0; word-break: keep-all; }
+    .toast-close {
+      flex-shrink: 0; width: 20px; height: 20px; margin-top: -1px; padding: 0;
+      background: none; border: 0; color: inherit; opacity: .65; font-size: 11px;
+      cursor: pointer; font-family: inherit;
+    }
+    .toast-close:hover { opacity: 1; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     .account-row { display: flex; align-items: center; gap: 10px; }
     .account-badge {
       width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
@@ -2286,6 +2321,7 @@
 </head>
 <body>
 <div class="auth-screen" id="authScreen" role="dialog" aria-modal="true" aria-hidden="true"></div>
+<div class="toast-stack" id="toastStack" role="status" aria-live="polite"></div>
 
 <div class="app-shell">
   <aside class="sidebar">
@@ -2361,7 +2397,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "2.6";
+  const APP_VERSION = "2.8";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -3122,11 +3158,12 @@
     return keys.every(k => stableStringify(s[k]) === stableStringify(defaultState[k]));
   }
 
-  function saveState() {
+  function saveState(options) {
+    const skipCloud = Boolean(options && options.skipCloud);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       lastSavedAt = new Date();
-      if (typeof scheduleCloudPush === "function") scheduleCloudPush();
+      if (!skipCloud && typeof scheduleCloudPush === "function") scheduleCloudPush();
       return true;
     } catch (e) {
       const msg = `${(e && e.name) || ""} ${(e && e.message) || ""}`;
@@ -5739,18 +5776,98 @@
     if (modal && modal.classList.contains("open")) renderSettingsBody();
   }
 
-  // ---------- 계정 · 동기화 (Firebase 준비) ----------
-  // 아래 FIREBASE_CONFIG에 도현 님 Firebase 웹 앱 설정을 채우면 이메일/Google 로그인과
-  // Firestore 동기화가 켜집니다. 비어 있으면 앱은 그대로 로컬 모드로 동작합니다.
-  const FIREBASE_CONFIG = null;
+  // ---------- 계정 · 동기화 (Firebase) ----------
+  // 도현 님 Firebase 웹 앱(my-planner-bf980) 설정입니다.
+  // null로 비우면 앱은 지금처럼 로컬 모드로만 동작합니다.
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCL9Z-9wl4vDwrKxlrUGE2osJCoA8_PXbs",
+    authDomain: "my-planner-bf980.firebaseapp.com",
+    projectId: "my-planner-bf980",
+    storageBucket: "my-planner-bf980.firebasestorage.app",
+    messagingSenderId: "1015099043505",
+    appId: "1:1015099043505:web:151e76185f8435dee3bc90",
+    measurementId: "G-HG7X99HRVT"
+  };
   const FIREBASE_SDK_VERSION = "10.12.2";
+  const LOCAL_MODE_KEY = "personal_archive_planner_local_mode";
+  const AUTH_PROMPT_SKIP_KEY = "personal_archive_planner_auth_prompt_skipped";
+  const CLOUD_BASELINE_KEY = "personal_archive_planner_cloud_baseline";
+  const CLOUD_SINGLE_DOC_BYTES = 650000; // 이 크기 이하면 Firestore 문서 하나에 저장
+  const CLOUD_CHUNK_CHARS = 150000;      // 넘으면 나눠 저장 (문서당 1MB 한도 대비)
+  const CLOUD_MAX_BYTES = 8 * 1024 * 1024;
+  const DEFAULT_LOG_DATES = new Set(Object.keys(defaultState.logs || {}));
+
   let authUser = null;
   let authBusy = false;
+  let authMode = "signin";         // signin | signup
+  let authResolved = false;
+  let authConfigState = "unknown"; // unknown | ok | not-configured
+  let authStartupNoticeShown = false;
   let firebaseCtx = null;
   let cloudTimer = null;
+  let cloudSyncing = false;
+  let cloudPending = false;
+  let cloudAdopting = false;
+  let lastPushedSerialized = "";
+  let lastCloudAt = null;
+  let cloudBytes = 0;
+  let lastCloudErrorCode = "";
+  let lastCloudErrorAt = 0;
 
   function isFirebaseConfigured() {
     return Boolean(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
+  }
+
+  // ---------- 화면 알림(토스트) ----------
+  function showToast(message, kind = "info", ms = 3800) {
+    const stack = document.getElementById("toastStack");
+    if (!stack) return;
+    const el = document.createElement("div");
+    el.className = "toast" + (kind === "warn" ? " warn" : kind === "ok" ? " ok" : "");
+    const text = document.createElement("span");
+    text.className = "toast-text";
+    text.textContent = String(message == null ? "" : message);
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "toast-close";
+    close.setAttribute("aria-label", "알림 닫기");
+    close.textContent = "✕";
+    close.onclick = () => el.remove();
+    el.append(text, close);
+    stack.appendChild(el);
+    while (stack.children.length > 3) stack.firstChild.remove();
+    if (ms > 0) setTimeout(() => { if (el.parentNode) el.remove(); }, ms);
+  }
+
+  function hasChosenLocalMode() {
+    try { return localStorage.getItem(LOCAL_MODE_KEY) === "1"; } catch (_) { return false; }
+  }
+  function rememberLocalMode(on) {
+    try {
+      if (on) localStorage.setItem(LOCAL_MODE_KEY, "1");
+      else localStorage.removeItem(LOCAL_MODE_KEY);
+    } catch (_) {}
+  }
+  function hasSkippedAuthPrompt() {
+    try { return sessionStorage.getItem(AUTH_PROMPT_SKIP_KEY) === "1"; } catch (_) { return false; }
+  }
+  function rememberAuthPromptSkip() {
+    try { sessionStorage.setItem(AUTH_PROMPT_SKIP_KEY, "1"); } catch (_) {}
+  }
+
+  function isIOSDevice() {
+    const ua = navigator.userAgent || "";
+    if (/iPhone|iPad|iPod/i.test(ua)) return true;
+    return navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1;
+  }
+  function isInAppBrowser() {
+    return /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|Twitter/i.test(navigator.userAgent || "");
+  }
+  function isStandalonePWA() {
+    try { return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (_) { return false; }
+  }
+  function prefersRedirectAuth() {
+    return isIOSDevice() || isStandalonePWA();
   }
 
   async function getFirebase() {
@@ -5762,17 +5879,43 @@
       import(`${base}firebase-auth.js`),
       import(`${base}firebase-firestore.js`)
     ]);
-    const app = appMod.initializeApp(FIREBASE_CONFIG);
+    const app = appMod.getApps && appMod.getApps().length ? appMod.getApps()[0] : appMod.initializeApp(FIREBASE_CONFIG);
     const auth = authMod.getAuth(app);
     const db = dbMod.getFirestore(app);
     firebaseCtx = { app, auth, db, authMod, dbMod };
+
+    // 모바일 Safari·PWA에서도 로그인이 유지되도록 (막힌 환경은 SDK 기본값 사용)
+    try { await authMod.setPersistence(auth, authMod.browserLocalPersistence); } catch (_) {}
+
     authMod.onAuthStateChanged(auth, user => {
+      const wasSignedIn = Boolean(authUser);
+      authResolved = true;
+      authConfigState = "ok";
       authUser = user ? { uid: user.uid, email: user.email || "", name: user.displayName || "" } : null;
-      const screen = document.getElementById("authScreen");
-      if (authUser && screen && screen.classList.contains("open")) closeAuthScreen();
-      if (authUser) adoptCloudState();
+      if (authUser) {
+        rememberLocalMode(false);
+        const screen = document.getElementById("authScreen");
+        if (screen && screen.classList.contains("open")) closeAuthScreen();
+        adoptCloudState();
+      } else {
+        authMode = "signin";
+        if (wasSignedIn) lastPushedSerialized = "";
+      }
+      refreshSettingsIfOpen();
+    }, err => {
+      authResolved = true;
+      if (err && String(err.code || "").includes("configuration")) authConfigState = "not-configured";
       refreshSettingsIfOpen();
     });
+
+    // Google 로그인 리디렉트로 돌아온 경우
+    authMod.getRedirectResult(auth).then(result => {
+      if (result && result.user) showToast("Google 계정으로 로그인했습니다.", "ok");
+    }).catch(err => {
+      const code = String((err && err.code) || "");
+      if (code && !code.includes("no-auth-event") && !code.includes("configuration-not-found")) showToast(authErrorText(err), "warn", 6000);
+    });
+
     return firebaseCtx;
   }
 
@@ -5780,27 +5923,58 @@
     const el = document.getElementById("authScreen");
     if (!el) return;
     const configured = isFirebaseConfigured();
+    const signup = authMode === "signup";
+    const configNotice = authConfigState === "not-configured"
+      ? `<div class="auth-notice">Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 ‘시작하기’를 누르고 이메일/비밀번호·Google 로그인을 켜면 동기화가 시작됩니다. 그전까지 기록은 이 브라우저에 저장됩니다.</div>`
+      : "";
     el.innerHTML = `
       <div class="auth-card" role="document">
         <div class="auth-mark">${ICONS.archive}아카이브 &amp; 플래너</div>
-        <h2>기록을 이어서</h2>
-        <p class="auth-sub">로그인하면 기기를 바꿔도 기록을 그대로 이어갈 수 있습니다.</p>
+        <h2>${signup ? "계정 만들기" : "기록을 이어서"}</h2>
+        <p class="auth-sub">${signup ? "이메일로 계정을 만들면 기기를 바꿔도 기록이 그대로 이어집니다." : "로그인하면 기기를 바꿔도 기록을 그대로 이어갈 수 있습니다."}</p>
+        ${configNotice}
         <div class="auth-field">
           <label for="authEmail">이메일</label>
           <input id="authEmail" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" />
         </div>
         <div class="auth-field">
           <label for="authPassword">비밀번호</label>
-          <input id="authPassword" type="password" autocomplete="current-password" placeholder="6자 이상" onkeydown="if (event.key === 'Enter') submitEmailLogin()" />
+          <input id="authPassword" type="password" autocomplete="${signup ? "new-password" : "current-password"}" placeholder="6자 이상" onkeydown="if (event.key === 'Enter') submitEmailAuth()" />
         </div>
         <div class="auth-error" id="authError"></div>
-        <button class="auth-primary" onclick="submitEmailLogin()">로그인</button>
+        <button class="auth-primary" id="authPrimaryBtn" onclick="submitEmailAuth()">${signup ? "회원가입" : "로그인"}</button>
         <div class="auth-or"><span>또는</span></div>
-        <button class="auth-google" onclick="submitGoogleLogin()"><span class="auth-g">G</span>Google로 계속하기</button>
-        <button class="auth-local" onclick="closeAuthScreen()">로그인 없이 로컬 모드로 시작하기</button>
-        <p class="auth-note">${configured ? "Firebase 계정과 자동으로 동기화됩니다." : "Firebase 미연결 · 기록은 이 브라우저에만 저장됩니다."}</p>
+        <button class="auth-google" id="authGoogleBtn" onclick="submitGoogleLogin()"><span class="auth-g">G</span>Google로 계속하기</button>
+        <button class="auth-switch" onclick="toggleAuthMode()">${signup ? "이미 계정이 있으신가요? 로그인" : "처음이신가요? 회원가입"}</button>
+        <button class="auth-local" onclick="startLocalMode()">로그인 없이 로컬 모드로 시작하기</button>
+        <p class="auth-note">${configured ? "로그인 상태는 이 브라우저에 유지되고, 기록은 계정과 자동으로 동기화됩니다." : "Firebase 미연결 · 기록은 이 브라우저에만 저장됩니다."}</p>
       </div>
     `;
+  }
+
+  function toggleAuthMode() {
+    authMode = authMode === "signup" ? "signin" : "signup";
+    renderAuthScreen();
+    setTimeout(() => {
+      const email = document.getElementById("authEmail");
+      if (email) { try { email.focus(); } catch (_) {} }
+    }, 40);
+  }
+
+  function startLocalMode() {
+    rememberLocalMode(true);
+    closeAuthScreen();
+    showToast("로컬 모드로 시작합니다. 기록은 이 브라우저에 저장되고, 설정에서 언제든 로그인할 수 있습니다.", "info", 4500);
+  }
+
+  function setAuthButtonsBusy(busy, label) {
+    const primary = document.getElementById("authPrimaryBtn");
+    const google = document.getElementById("authGoogleBtn");
+    if (primary) {
+      primary.disabled = Boolean(busy);
+      primary.textContent = busy && label ? label : (authMode === "signup" ? "회원가입" : "로그인");
+    }
+    if (google) google.disabled = Boolean(busy);
   }
 
   function openAuthScreen() {
@@ -5818,6 +5992,7 @@
   function closeAuthScreen() {
     const el = document.getElementById("authScreen");
     if (!el) return;
+    if (el.classList.contains("open") && !authUser) rememberAuthPromptSkip();
     el.classList.remove("open");
     el.setAttribute("aria-hidden", "true");
   }
@@ -5829,15 +6004,25 @@
 
   function authErrorText(err) {
     const code = String((err && err.code) || "");
-    if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) return "이메일 또는 비밀번호가 맞지 않습니다.";
+    const raw = String((err && err.message) || "");
+    if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found") || code.includes("invalid-login-credentials")) return "이메일 또는 비밀번호가 맞지 않습니다. 처음이라면 ‘회원가입’으로 계정을 만들어 주세요.";
+    if (code.includes("email-already-in-use")) return "이미 가입된 이메일입니다. ‘로그인’으로 바꿔 주세요.";
+    if (code.includes("weak-password")) return "비밀번호는 6자 이상이어야 합니다.";
+    if (code.includes("invalid-email")) return "이메일 주소를 확인해 주세요.";
     if (code.includes("too-many-requests")) return "시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.";
-    if (code.includes("popup-closed-by-user") || code.includes("cancelled-popup")) return "로그인 창이 닫혔습니다.";
+    if (code.includes("popup-closed-by-user") || code.includes("cancelled-popup-request")) return "로그인 창이 닫혔습니다.";
+    if (code.includes("popup-blocked")) return "브라우저가 로그인 창을 막았습니다. 다시 시도해 주세요.";
     if (code.includes("network-request-failed")) return "네트워크 연결을 확인해 주세요.";
-    if (code.includes("operation-not-allowed")) return "이 로그인 방식이 Firebase 콘솔에서 아직 켜져 있지 않습니다.";
+    if (code.includes("operation-not-allowed")) return "이 로그인 방식이 Firebase 콘솔에서 아직 켜져 있지 않습니다. Authentication에서 이메일/비밀번호·Google 로그인을 켜 주세요.";
+    if (code.includes("configuration-not-found")) return "Firebase Authentication이 아직 시작되지 않았습니다. Firebase 콘솔 → Authentication에서 ‘시작하기’를 눌러 주세요.";
+    if (code.includes("unauthorized-domain")) return "이 사이트 주소가 Firebase 승인 도메인에 없습니다. Authentication → 설정 → 승인된 도메인에 kongdomath.github.io를 추가해 주세요.";
+    if (code.includes("web-storage-unsupported")) return "브라우저가 쿠키·저장소를 막아 로그인할 수 없습니다. Safari 설정에서 ‘교차 사이트 추적 방지’를 풀거나 Chrome에서 시도해 주세요.";
+    if (code.includes("internal-error")) return "Firebase에서 로그인을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    if (/unauthorized|api-key|referrer/i.test(raw)) return "Firebase 설정(API 키·승인 도메인)을 확인해 주세요.";
     return "로그인하지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
 
-  async function submitEmailLogin() {
+  async function submitEmailAuth() {
     if (authBusy) return;
     if (!isFirebaseConfigured()) {
       setAuthError("Firebase 설정이 아직 연결되지 않았습니다. 아래 ‘로컬 모드’로 앱을 그대로 사용할 수 있어요.");
@@ -5849,16 +6034,29 @@
     const password = (pwEl && pwEl.value) || "";
     if (!/.+@.+\..+/.test(email)) { setAuthError("이메일 주소를 확인해 주세요."); return; }
     if (password.length < 6) { setAuthError("비밀번호는 6자 이상이어야 합니다."); return; }
+    const signup = authMode === "signup";
     authBusy = true;
     setAuthError("");
+    setAuthButtonsBusy(true, signup ? "가입 중…" : "로그인 중…");
     try {
       const fb = await getFirebase();
-      await fb.authMod.signInWithEmailAndPassword(fb.auth, email, password);
+      if (!fb) { setAuthError("Firebase 설정이 아직 연결되지 않았습니다."); return; }
+      if (signup) {
+        const cred = await fb.authMod.createUserWithEmailAndPassword(fb.auth, email, password);
+        try { await fb.authMod.updateProfile(cred.user, { displayName: email.split("@")[0] }); } catch (_) {}
+      } else {
+        await fb.authMod.signInWithEmailAndPassword(fb.auth, email, password);
+      }
       closeAuthScreen();
     } catch (err) {
+      if (String((err && err.code) || "").includes("configuration-not-found")) {
+        authConfigState = "not-configured";
+        renderAuthScreen();
+      }
       setAuthError(authErrorText(err));
     } finally {
       authBusy = false;
+      setAuthButtonsBusy(false);
     }
   }
 
@@ -5868,62 +6066,487 @@
       setAuthError("Firebase 설정이 아직 연결되지 않았습니다. 아래 ‘로컬 모드’로 앱을 그대로 사용할 수 있어요.");
       return;
     }
+    if (isInAppBrowser()) {
+      setAuthError("지금 앱 안의 브라우저에서는 Google 로그인이 막힙니다. Safari나 Chrome에서 열어 주세요. 이메일 로그인은 여기서도 됩니다.");
+      return;
+    }
     authBusy = true;
     setAuthError("");
+    setAuthButtonsBusy(true, authMode === "signup" ? "가입 중…" : "로그인 중…");
     try {
       const fb = await getFirebase();
+      if (!fb) { setAuthError("Firebase 설정이 아직 연결되지 않았습니다."); return; }
       const provider = new fb.authMod.GoogleAuthProvider();
-      await fb.authMod.signInWithPopup(fb.auth, provider);
-      closeAuthScreen();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const googleBtn = document.getElementById("authGoogleBtn");
+      if (prefersRedirectAuth()) {
+        if (googleBtn) googleBtn.innerHTML = `<span class="auth-g">G</span>Google 화면으로 이동 중…`;
+        await fb.authMod.signInWithRedirect(fb.auth, provider);
+        return;
+      }
+      try {
+        await fb.authMod.signInWithPopup(fb.auth, provider);
+        closeAuthScreen();
+      } catch (err) {
+        const code = String((err && err.code) || "");
+        const shouldRedirect = code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment";
+        if (!shouldRedirect) throw err;
+        if (googleBtn) googleBtn.innerHTML = `<span class="auth-g">G</span>Google 화면으로 이동 중…`;
+        await fb.authMod.signInWithRedirect(fb.auth, provider);
+      }
     } catch (err) {
+      if (String((err && err.code) || "").includes("configuration-not-found")) {
+        authConfigState = "not-configured";
+        renderAuthScreen();
+      }
       setAuthError(authErrorText(err));
     } finally {
       authBusy = false;
+      setAuthButtonsBusy(false);
     }
   }
 
   async function signOutOfAccount() {
+    clearTimeout(cloudTimer);
+    cloudTimer = null;
     try {
       if (firebaseCtx) await firebaseCtx.authMod.signOut(firebaseCtx.auth);
     } catch (_) {}
     authUser = null;
+    authMode = "signin";
+    lastPushedSerialized = "";
     refreshSettingsIfOpen();
+    showToast("로그아웃했습니다. 기록은 이 기기에 그대로 남아 있습니다.", "info", 4000);
     openAuthScreen();
   }
 
-  // 로그인 상태에서만 조용히 Firestore로 기록을 올립니다 (설정 전에는 아무 동작도 하지 않음)
-  function scheduleCloudPush() {
-    if (!isFirebaseConfigured() || !authUser || !firebaseCtx) return;
-    clearTimeout(cloudTimer);
-    cloudTimer = setTimeout(async () => {
-      try {
-        const { db, dbMod } = firebaseCtx;
-        await dbMod.setDoc(dbMod.doc(db, "users", authUser.uid, "planner", "state"), { state, updatedAt: Date.now() });
-      } catch (_) {}
-    }, 1200);
+  // ---------- Firestore 동기화 ----------
+  // 기록 전체를 users/{uid}/planner/state 문서 하나에 담고,
+  // 사진 때문에 650KB를 넘으면 같은 문서 아래 parts 하위 컬렉션에 나눠 저장합니다.
+  // (Firestore 문서 하나의 한도는 약 1MB입니다.)
+  function cloudStateRef(fb) {
+    return fb.dbMod.doc(fb.db, "users", authUser.uid, "planner", "state");
+  }
+  function cloudPartsRef(fb) {
+    return fb.dbMod.collection(fb.db, "users", authUser.uid, "planner", "state", "parts");
+  }
+  function jsonBytes(str) {
+    try { return new TextEncoder().encode(str).length; } catch (_) { return String(str).length * 2; }
   }
 
-  async function pullCloudState() {
-    if (!isFirebaseConfigured() || !authUser || !firebaseCtx) return null;
+  function readCloudBaseline(uid) {
     try {
-      const { db, dbMod } = firebaseCtx;
-      const snap = await dbMod.getDoc(dbMod.doc(db, "users", authUser.uid, "planner", "state"));
-      return snap.exists() ? snap.data().state : null;
-    } catch (_) {
-      return null;
+      const raw = localStorage.getItem(CLOUD_BASELINE_KEY);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw);
+      if (!parsed || parsed.uid !== uid) return 0;
+      return Number(parsed.updatedAt) || 0;
+    } catch (_) { return 0; }
+  }
+  function writeCloudBaseline(updatedAt) {
+    if (!authUser) return;
+    try { localStorage.setItem(CLOUD_BASELINE_KEY, JSON.stringify({ uid: authUser.uid, updatedAt: Number(updatedAt) || 0 })); } catch (_) {}
+  }
+
+  function cloudErrorText(err) {
+    const code = String((err && err.code) || "");
+    const raw = String((err && err.message) || err || "");
+    if (code === "state-too-large") return "기록이 너무 커서(8MB 초과) 계정에 저장하지 못했습니다. 기록은 이 기기에 저장되어 있습니다. 설정에서 사진을 줄여 주세요.";
+    if (code.includes("permission-denied")) return "Firestore 보안 규칙에 막혀 계정에 저장하지 못했습니다. Firebase 콘솔의 Firestore 규칙에서 로그인한 본인만 읽고 쓸 수 있게 허용해 주세요.";
+    if (code.includes("failed-precondition") || /firestore.*(not|disabled|enable)|database.*(not|missing)/i.test(raw)) return "Firestore가 아직 준비되지 않았습니다. Firebase 콘솔에서 Firestore 데이터베이스를 만들어 주세요.";
+    if (code.includes("unavailable") || code.includes("network") || /offline/i.test(raw)) return "동기화 서버에 연결하지 못했습니다. 네트워크를 확인해 주세요. 기록은 이 기기에 저장되어 있습니다.";
+    if (code.includes("resource-exhausted") || /quota/i.test(raw)) return "Firebase 사용량 한도에 닿아 동기화하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    if (code.includes("unauthenticated")) return "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.";
+    if (code.includes("invalid-argument") || /maximum|too large/i.test(raw)) return "기록이 Firestore 문서 한도를 넘어 저장하지 못했습니다. 기록은 이 기기에 저장되어 있습니다.";
+    return "계정에 저장하지 못했습니다. 기록은 이 기기에 저장되어 있습니다.";
+  }
+
+  function notifyCloudError(err) {
+    const code = String((err && err.code) || (err && err.message) || "unknown");
+    const now = Date.now();
+    if (code === lastCloudErrorCode && now - lastCloudErrorAt < 60000) return;
+    lastCloudErrorCode = code;
+    lastCloudErrorAt = now;
+    showToast(cloudErrorText(err), "warn", 7000);
+    refreshSettingsIfOpen();
+  }
+
+  async function writeCloudState(fb, serialized) {
+    const { dbMod } = fb;
+    const bytes = jsonBytes(serialized);
+    if (bytes > CLOUD_MAX_BYTES) {
+      const err = new Error("state too large");
+      err.code = "state-too-large";
+      throw err;
+    }
+    const stateRef = cloudStateRef(fb);
+    const partsRef = cloudPartsRef(fb);
+    const stamp = Date.now();
+    if (bytes <= CLOUD_SINGLE_DOC_BYTES) {
+      await dbMod.setDoc(stateRef, { schema: 2, state: JSON.parse(serialized), bytes, updatedAt: stamp, appVersion: APP_VERSION });
+      const old = await dbMod.getDocs(partsRef);
+      if (!old.empty) await Promise.all(old.docs.map(d => dbMod.deleteDoc(d.ref)));
+    } else {
+      const parts = [];
+      for (let i = 0; i < serialized.length; i += CLOUD_CHUNK_CHARS) parts.push(serialized.slice(i, i + CLOUD_CHUNK_CHARS));
+      await Promise.all(parts.map((chunk, i) => dbMod.setDoc(dbMod.doc(partsRef, "p" + i), { i, data: chunk, updatedAt: stamp })));
+      await dbMod.setDoc(stateRef, { schema: 2, parts: parts.length, bytes, updatedAt: stamp, appVersion: APP_VERSION });
+      const old = await dbMod.getDocs(partsRef);
+      const stale = old.docs.filter(d => {
+        const n = Number(String(d.id).replace(/^p/, ""));
+        return !(Number.isFinite(n) && n >= 0 && n < parts.length);
+      });
+      if (stale.length) await Promise.all(stale.map(d => dbMod.deleteDoc(d.ref)));
+    }
+    cloudBytes = bytes;
+    lastCloudAt = new Date();
+    writeCloudBaseline(stamp);
+  }
+
+  async function readCloudState(fb) {
+    const { dbMod } = fb;
+    const snap = await dbMod.getDoc(cloudStateRef(fb));
+    if (!snap.exists()) return { state: null, updatedAt: 0, bytes: 0 };
+    const data = snap.data() || {};
+    if (data.state && typeof data.state === "object") {
+      return { state: data.state, updatedAt: Number(data.updatedAt) || 0, bytes: Number(data.bytes) || 0 };
+    }
+    const partCount = Number(data.parts) || 0;
+    if (partCount <= 0) return { state: null, updatedAt: Number(data.updatedAt) || 0, bytes: Number(data.bytes) || 0 };
+    const shots = await dbMod.getDocs(cloudPartsRef(fb));
+    const list = shots.docs.map(d => {
+      const row = d.data() || {};
+      const num = Number(row.i);
+      return {
+        i: Number.isFinite(num) ? num : Number(String(d.id).replace(/^p/, "")),
+        data: String(row.data || "")
+      };
+    }).sort((a, b) => a.i - b.i);
+    const json = list.map(x => x.data).join("");
+    if (!json) return { state: null, updatedAt: Number(data.updatedAt) || 0, bytes: Number(data.bytes) || 0 };
+    return { state: JSON.parse(json), updatedAt: Number(data.updatedAt) || 0, bytes: Number(data.bytes) || jsonBytes(json) };
+  }
+
+  // 저장은 1.5초 쉬었다가 한 번에 (글자를 칭 때마다 Firestore를 두드리지 않게)
+  function scheduleCloudPush(delay = 1500) {
+    if (!isFirebaseConfigured() || !authUser) return;
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(() => { cloudTimer = null; pushCloudState(); }, delay);
+  }
+
+  async function pushCloudState() {
+    if (!isFirebaseConfigured() || !authUser) return false;
+    if (cloudSyncing) { cloudPending = true; return false; }
+    clearTimeout(cloudTimer);
+    cloudTimer = null;
+    cloudSyncing = true;
+    let ok = false;
+    try {
+      const fb = await getFirebase();
+      if (!fb) return false;
+      const serialized = JSON.stringify(state);
+      if (serialized === lastPushedSerialized) {
+        lastCloudAt = new Date();
+        return true;
+      }
+      await writeCloudState(fb, serialized);
+      lastPushedSerialized = serialized;
+      lastCloudErrorCode = "";
+      ok = true;
+      refreshSettingsIfOpen();
+    } catch (err) {
+      notifyCloudError(err);
+    } finally {
+      cloudSyncing = false;
+      if (cloudPending) { cloudPending = false; scheduleCloudPush(800); }
+    }
+    return ok;
+  }
+
+  // ---------- 기기 기록과 계정 기록 합치기 ----------
+  function cleanUndefined(value) {
+    if (Array.isArray(value)) return value.map(cleanUndefined);
+    if (value && typeof value === "object") {
+      const out = {};
+      Object.keys(value).forEach(k => { if (value[k] !== undefined) out[k] = cleanUndefined(value[k]); });
+      return out;
+    }
+    return value;
+  }
+
+  function isEmptyText(v) {
+    return !String(v == null ? "" : v).trim();
+  }
+
+  function mergeImageLists(a, b) {
+    const out = [];
+    [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])].forEach(src => {
+      if (!src) return;
+      const exists = out.some(x => (typeof src === "string" ? x === src : JSON.stringify(x) === JSON.stringify(src)));
+      if (!exists) out.push(src);
+    });
+    return out;
+  }
+
+  function mergeLogEntry(localLog, cloudLog) {
+    const l = (localLog && typeof localLog === "object") ? localLog : {};
+    const c = (cloudLog && typeof cloudLog === "object") ? cloudLog : {};
+    const out = { ...c, ...l };
+    ["oneLine", "diary", "memo", "text"].forEach(k => {
+      if (k in c && isEmptyText(l[k]) && !isEmptyText(c[k])) out[k] = c[k];
+    });
+    const images = mergeImageLists(normalizeImages(l), normalizeImages(c));
+    if (images.length) out.images = images;
+    return cleanUndefined(out);
+  }
+
+  // 같은 id는 이 기기 내용을 기준으로 하고, 계정 쪽에만 있는 항목은 더합니다.
+  function mergeItemLists(localList, cloudList) {
+    const out = [];
+    const index = new Map();
+    (Array.isArray(localList) ? localList : []).forEach(item => {
+      if (!item || !item.id || index.has(item.id)) return;
+      index.set(item.id, out.length);
+      out.push({ ...item });
+    });
+    let added = 0;
+    (Array.isArray(cloudList) ? cloudList : []).forEach(item => {
+      if (!item || !item.id) return;
+      const at = index.get(item.id);
+      if (at === undefined) {
+        index.set(item.id, out.length);
+        out.push({ ...item });
+        added += 1;
+        return;
+      }
+      const local = out[at];
+      const merged = { ...item, ...local };
+      Object.keys(item).forEach(k => {
+        if (k === "images") return;
+        const cur = merged[k];
+        const emptyCur = cur === undefined || cur === null || cur === "" || (Array.isArray(cur) && !cur.length);
+        if (emptyCur && item[k] !== undefined && item[k] !== null && item[k] !== "") merged[k] = item[k];
+      });
+      const images = mergeImageLists(normalizeImages(local), normalizeImages(item));
+      if (images.length) merged.images = images;
+      out[at] = merged;
+    });
+    return { list: out, added };
+  }
+
+  function mergeCategoryList(localList, cloudList, fallbackIcon) {
+    const out = normalizeCategoryList(localList, fallbackIcon);
+    const names = new Set(out.map(c => c.name));
+    normalizeCategoryList(cloudList, fallbackIcon).forEach(c => {
+      if (!names.has(c.name)) { names.add(c.name); out.push(c); }
+    });
+    return out;
+  }
+
+  // 연도 책은 id가 아니라 year로 구분합니다.
+  function mergeYearBookList(localList, cloudList) {
+    const out = normalizeYearBooks(localList);
+    const years = new Set(out.map(b => Number(b.year)));
+    normalizeYearBooks(cloudList).forEach(b => {
+      if (years.has(Number(b.year))) return;
+      years.add(Number(b.year));
+      out.push(b);
+    });
+    return out.sort((a, b) => a.year - b.year);
+  }
+
+  function mergeStates(localState, cloudState) {
+    const local = normalizeState(localState);
+    const cloud = normalizeState(cloudState);
+    const stats = { logsAdded: 0, itemsAdded: 0 };
+    const merged = { ...local };
+
+    const localLogs = local.logs || {};
+    const cloudLogs = cloud.logs || {};
+    const logs = {};
+    const dates = new Set([...Object.keys(cloudLogs), ...Object.keys(localLogs)]);
+    dates.forEach(date => {
+      const l = localLogs[date];
+      const c = cloudLogs[date];
+      if (!l) {
+        logs[date] = c;
+        if (!DEFAULT_LOG_DATES.has(date)) stats.logsAdded += 1;
+        return;
+      }
+      logs[date] = c ? mergeLogEntry(l, c) : l;
+    });
+    merged.logs = logs;
+
+    ["goals", "buckets", "archives", "todos", "books"].forEach(key => {
+      const res = mergeItemLists(local[key], cloud[key]);
+      merged[key] = res.list;
+      stats.itemsAdded += res.added;
+    });
+    merged.yearBooks = mergeYearBookList(local.yearBooks, cloud.yearBooks);
+    merged.topics = mergeCategoryList(local.topics, cloud.topics, "target");
+    merged.archiveCategories = mergeCategoryList(local.archiveCategories, cloud.archiveCategories, "folder");
+    merged.bucketCategories = mergeCategoryList(local.bucketCategories, cloud.bucketCategories, "star");
+    merged.booksSeeded = Boolean(local.booksSeeded || cloud.booksSeeded);
+    return { state: cleanUndefined(normalizeState(merged)), stats };
+  }
+
+  async function adoptCloudState(manual = false) {
+    if (cloudAdopting) return;
+    cloudAdopting = true;
+    try {
+      await adoptCloudStateInner(manual);
+    } finally {
+      cloudAdopting = false;
     }
   }
 
-  async function adoptCloudState() {
-    const cloud = await pullCloudState();
-    if (!cloud) { scheduleCloudPush(); return; }
-    if (isUntouchedNewDefault(state)) {
-      state = normalizeState(cloud);
-      saveState();
-      render();
-    } else {
-      scheduleCloudPush();
+  async function adoptCloudStateInner(manual = false) {
+    if (!isFirebaseConfigured() || !authUser) return;
+    let cloud;
+    try {
+      const fb = await getFirebase();
+      if (!fb) return;
+      cloud = await readCloudState(fb);
+    } catch (err) {
+      notifyCloudError(err);
+      return;
     }
+    const localUntouched = isUntouchedNewDefault(state);
+
+    // 계정이 비어 있으면 이 기기 기록을 그대로 올립니다.
+    if (!cloud.state) {
+      lastPushedSerialized = "";
+      const ok = await pushCloudState();
+      if (ok && !localUntouched) showToast("이 기기의 기록을 계정에 처음 올렸습니다.", "ok", 4000);
+      return;
+    }
+
+    // 이 기기가 예시 그대로면 계정 기록을 그대로 불러옵니다.
+    if (localUntouched) {
+      state = normalizeState(cloud.state);
+      saveState({ skipCloud: true });
+      lastPushedSerialized = JSON.stringify(state);
+      cloudBytes = cloud.bytes || jsonBytes(lastPushedSerialized);
+      lastCloudAt = new Date();
+      writeCloudBaseline(cloud.updatedAt);
+      render();
+      refreshSettingsIfOpen();
+      if (manual) showToast("계정에 저장된 기록을 불러왔습니다.", "ok", 4000);
+      return;
+    }
+
+    const localJson = JSON.stringify(state);
+    const cloudJson = JSON.stringify(cloud.state);
+
+    // 이 기기가 마지막으로 맞춘 뒤 계정 쪽이 변하지 않았다면, 이 기기 기록이 기준입니다.
+    // (기기에서 지운 항목이 계정 때문에 되살아나지 않게)
+    const baseline = readCloudBaseline(authUser.uid);
+    const cloudChanged = Number(cloud.updatedAt) > baseline;
+
+    if (localJson === cloudJson) {
+      lastPushedSerialized = localJson;
+      lastCloudAt = new Date();
+      cloudBytes = cloud.bytes || jsonBytes(localJson);
+      writeCloudBaseline(cloud.updatedAt);
+      refreshSettingsIfOpen();
+      if (manual) showToast("계정과 이미 같은 기록입니다.", "info", 2800);
+      return;
+    }
+
+    if (!cloudChanged) {
+      const ok = await pushCloudState();
+      if (manual && ok) showToast("이 기기의 기록을 계정에 올렸습니다.", "ok", 3500);
+      return;
+    }
+
+    // 양쪽 모두에 기록이 있고 계정 쪽이 새로 바뀌었을 때만 안전하게 합칩니다.
+    const result = mergeStates(state, cloud.state);
+    state = result.state;
+    saveState({ skipCloud: true });
+    const mergedJson = JSON.stringify(state);
+
+    if (mergedJson === cloudJson) {
+      lastPushedSerialized = mergedJson;
+      cloudBytes = cloud.bytes || jsonBytes(mergedJson);
+      lastCloudAt = new Date();
+      writeCloudBaseline(cloud.updatedAt);
+      render();
+      refreshSettingsIfOpen();
+      if (manual) showToast("계정 기록과 같아졌습니다.", "ok", 3000);
+      return;
+    }
+
+    lastPushedSerialized = "";
+    render();
+    const ok = await pushCloudState();
+    const bits = [];
+    if (result.stats.logsAdded) bits.push(`일기 ${result.stats.logsAdded}일`);
+    if (result.stats.itemsAdded) bits.push(`항목 ${result.stats.itemsAdded}개`);
+    if (ok) {
+      showToast(bits.length
+        ? `이 기기 기록과 계정 기록을 합쳤습니다 (${bits.join(" · ")} 추가).`
+        : "이 기기 기록과 계정 기록을 합쳐 저장했습니다.", "ok", 5000);
+    }
+  }
+
+  async function syncAccountNow() {
+    if (!authUser) { openAuthScreen(); return; }
+    await adoptCloudState(true);
+  }
+
+  // Firebase Authentication이 아직 시작되지 않은 프로젝트인지 미리 확인합니다.
+  async function probeAuthConfig() {
+    if (!isFirebaseConfigured()) return "unknown";
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => { try { ctrl.abort(); } catch (_) {} }, 5000);
+      const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=${encodeURIComponent(FIREBASE_CONFIG.apiKey)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: "probe@example.com", continueUri: location.origin + location.pathname }),
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      const data = await res.json().catch(() => null);
+      const message = String((data && data.error && data.error.message) || "");
+      if (message === "CONFIGURATION_NOT_FOUND") return "not-configured";
+      return "ok";
+    } catch (_) {
+      return "unknown";
+    }
+  }
+
+  async function bootstrapAuth() {
+    if (!isFirebaseConfigured()) return;
+    let fb = null;
+    try {
+      fb = await getFirebase();
+    } catch (err) {
+      console.warn("[planner] Firebase 모듈을 불러오지 못했습니다", err);
+      return;
+    }
+    if (!fb) return;
+    try {
+      if (fb.authMod.authStateReady) {
+        await Promise.race([
+          fb.authMod.authStateReady(fb.auth),
+          new Promise(resolve => setTimeout(resolve, 5000))
+        ]);
+      }
+    } catch (err) {
+      if (err && String(err.code || "").includes("configuration")) authConfigState = "not-configured";
+    }
+    if (authConfigState === "unknown") authConfigState = await probeAuthConfig();
+
+    if (authUser) return;
+    if (authConfigState === "not-configured") {
+      if (!authStartupNoticeShown) {
+        authStartupNoticeShown = true;
+        showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. 기록은 이 브라우저에 저장됩니다.", "warn", 6500);
+      }
+      return;
+    }
+    if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) openAuthScreen();
   }
 
   function renderSettingsBody() {
@@ -5945,9 +6568,13 @@
             <span class="account-badge">${escapeHtml((authUser.email || authUser.name || "?").slice(0, 1).toUpperCase())}</span>
             <div class="account-text">
               <strong>${escapeHtml(authUser.email || authUser.name || "로그인됨")}</strong>
-              <span>${configured ? "Firestore 동기화 사용 중" : "로컬 모드"}</span>
+              <span>${configured ? (lastCloudAt ? `Firestore 동기화 · ${timeStr(lastCloudAt)}` : "Firestore 동기화 사용 중") : "로컬 모드"}</span>
             </div>
             <button class="btn btn-sm" onclick="signOutOfAccount()">로그아웃</button>
+          </div>
+          <div class="settings-actions" style="margin-top:8px;">
+            <button class="btn btn-sm" onclick="syncAccountNow()">지금 동기화</button>
+            ${cloudBytes ? `<span class="settings-hint" style="margin:0;align-self:center;">계정 기록 약 ${formatBytes(cloudBytes)}</span>` : ""}
           </div>
         ` : `
           <div class="account-row">
@@ -5964,7 +6591,7 @@
         <h4>저장 공간</h4>
         <div class="storage-line"><strong>사용 중 약 ${formatBytes(usage.bytes)}</strong><span>/ 권장 한도 약 4~5MB</span></div>
         <div class="storage-track"><div class="storage-fill ${pct >= 80 ? "warn" : ""}" style="width:${pct}%;"></div></div>
-        <p class="settings-hint">사진 ${photos}장 · 기록 ${totalItems}건. 모든 기록은 이 브라우저(localStorage)에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 두세요.</p>
+        <p class="settings-hint">사진 ${photos}장 · 기록 ${totalItems}건. ${authUser ? "기록은 이 브라우저와 계정(Firestore)에 함께 저장됩니다. 둘 다 지우지 않도록 가끔 JSON으로 백업해 두세요." : "모든 기록은 이 브라우저(localStorage)에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 두세요."}</p>
         ${lastSavedAt ? `<p class="settings-hint">마지막 저장: ${timeStr(lastSavedAt)}</p>` : ""}
         <p class="settings-hint">공간이 부족하면 저장이 되지 않을 수 있고, 그때는 사진을 줄이거나 백업 후 오래된 사진을 삭제해 주세요.</p>
       </div>
@@ -6150,6 +6777,20 @@
     openAuthScreen,
     closeAuthScreen,
     isFirebaseConfigured,
+    showToast,
+    pushCloudState,
+    syncAccountNow,
+    mergeStates,
+    getCloudInfo: () => ({
+      configured: isFirebaseConfigured(),
+      uid: authUser ? authUser.uid : null,
+      email: authUser ? authUser.email : "",
+      authConfigState,
+      lastCloudAt: lastCloudAt ? lastCloudAt.toISOString() : null,
+      cloudBytes,
+      syncing: cloudSyncing,
+      baseline: authUser ? readCloudBaseline(authUser.uid) : 0
+    }),
     openCategoryManager,
     closeCategoryManager,
     openLightbox,
@@ -6187,8 +6828,25 @@
     errors: () => window.__errors
   };
 
+  // 화면을 닫거나 앱이 백그라운드로 가기 전에 남은 동기화를 밀어 보냅니다 (모바일 Safari 대비)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden" && cloudTimer) {
+      clearTimeout(cloudTimer);
+      cloudTimer = null;
+      pushCloudState();
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    if (cloudTimer) {
+      clearTimeout(cloudTimer);
+      cloudTimer = null;
+      pushCloudState();
+    }
+  });
+
   mountNavIcons();
   render();
+  bootstrapAuth();
 </script>
 </body>
 </html>
