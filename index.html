@@ -1877,11 +1877,13 @@
       color: #2b2f37;
     }
     .nb-page--left {
+      padding-right: 50px;
       border-radius: 6px 2px 2px 8px;
       background-image: linear-gradient(90deg, rgba(120,110,86,.10), rgba(120,110,86,0) 26%);
       box-shadow: inset -22px 0 26px -26px rgba(30,34,44,.5);
     }
     .nb-page--right {
+      padding-left: 50px;
       border-radius: 2px 6px 8px 2px;
       background-image: radial-gradient(rgba(122,128,142,.17) 1px, transparent 1px);
       background-size: 19px 19px;
@@ -3766,7 +3768,6 @@
     const month = Math.min(11, Math.max(0, yearPageIndex)) + 1;
     const monthRecords = collectMonthDays(year, month);
     const monthIdx = month - 1;
-    const isThisMonth = `${year}-${pad2(month)}` === TODAY_STR.slice(0, 7);
     const monthHeads = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
     const leftPage = `
@@ -3780,7 +3781,6 @@
             <span class="nb-month-badge">기록 ${monthRecords.length}일</span>
           </div>
           ${renderMonthCalendar(year, month)}
-          ${isThisMonth ? `<div class="nb-month-foot">오늘은 ${formatDateKo(TODAY_STR)}</div>` : `<div class="nb-month-foot">${year}년 ${month}월 · 기록 있는 날 ${monthRecords.length}일</div>`}
         </div>
         <span class="nb-page-no">${month} / 12</span>
       </section>
