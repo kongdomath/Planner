@@ -6518,6 +6518,20 @@
 
   async function bootstrapAuth() {
     if (!isFirebaseConfigured()) return;
+    // Firebase Authentication이 준비되지 않은 프로젝트라면 SDK(수백 KB)를 내려받지 않고
+    // 첫 화면에서 바로 안내합니다. 준비되어 있으면 그때 SDK를 불러와 로그인 상태를 확인합니다.
+    authConfigState = await probeAuthConfig();
+    if (authConfigState === "not-configured") {
+      if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) {
+        openAuthScreen();
+        return;
+      }
+      if (!authStartupNoticeShown) {
+        authStartupNoticeShown = true;
+        showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 시작해 주세요.", "warn", 6500);
+      }
+      return;
+    }
     let fb = null;
     try {
       fb = await getFirebase();
@@ -6536,23 +6550,20 @@
     } catch (err) {
       if (err && String(err.code || "").includes("configuration")) authConfigState = "not-configured";
     }
-    if (authConfigState === "unknown") authConfigState = await probeAuthConfig();
 
     if (authUser) return;
-    // 로그인 상태가 확인된 것과 Firebase Authentication이 준비된 것은 다릅니다.
-    // 준비되지 않은 프로젝트면 로그인 카드에 안내를 먼저 띄웁니다.
-    if (authConfigState !== "not-configured") {
-      const probe = await probeAuthConfig();
-      if (probe === "not-configured") authConfigState = "not-configured";
-    }
-    if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) {
-      openAuthScreen();
+    if (authConfigState === "not-configured") {
+      if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) {
+        openAuthScreen();
+        return;
+      }
+      if (!authStartupNoticeShown) {
+        authStartupNoticeShown = true;
+        showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 시작해 주세요.", "warn", 6500);
+      }
       return;
     }
-    if (authConfigState === "not-configured" && !authStartupNoticeShown) {
-      authStartupNoticeShown = true;
-      showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 시작해 주세요.", "warn", 6500);
-    }
+    if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) openAuthScreen();
   }
 
   function renderSettingsBody() {
