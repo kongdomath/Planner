@@ -4287,7 +4287,7 @@
             <span class="nb-rings"></span>
             <div class="idx-tabs idx-tabs--quarter" role="tablist" aria-label="분기 인덱스">
               ${[0, 1, 2, 3].map(q => `
-                <button class="idx-tab idx-tab--q${q + 1} ${quarter === q ? "is-active" : ""}" role="tab" aria-selected="${quarter === q ? "true" : "false"}" onclick="yearQuarterJump(${q})" title="${q + 1}분기 (${q * 3 + 1}월)">
+                <button class="idx-tab idx-tab--q${q + 1} ${quarter === q ? "is-active" : ""}" role="tab" aria-label="${q + 1}분기 (${q * 3 + 1}월)" aria-selected="${quarter === q ? "true" : "false"}" onclick="yearQuarterJump(${q})" title="${q + 1}분기 (${q * 3 + 1}월)">
                   <span>${stackedLabel(`${q + 1}분기`)}</span>
                 </button>
               `).join("")}
@@ -5183,7 +5183,7 @@
       const short = String(t.name).split(/[·,\s]/).filter(Boolean)[0] || t.name;
       const color = TOPIC_TAB_COLORS[i % TOPIC_TAB_COLORS.length];
       return `
-        <button class="idx-tab idx-tab--topic ${i === idx ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-selected="${i === idx ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
+        <button class="idx-tab idx-tab--topic ${i === idx ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-label="${escapeAttr(t.name)} 주제" aria-selected="${i === idx ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
           <span>${stackedLabel(short)}</span>
         </button>
       `;
@@ -5217,12 +5217,6 @@
         <div class="nb-side-toggle">
           <button data-goal-side="left" class="${goalBookSide === "left" ? "active" : ""}" onclick="setGoalBookSide('left')">목표</button>
           <button data-goal-side="right" class="${goalBookSide === "right" ? "active" : ""}" onclick="setGoalBookSide('right')">버킷리스트</button>
-        </div>
-
-        <div class="nb-actions">
-          <button class="nb-action" onclick="openGoalModal(${jsArg(topicAddName)})"><span class="nb-action-icon">${NB_ICONS.pen}</span>목표 추가</button>
-          <button class="nb-action" onclick="openBucketModal(${jsArg(bucketAddCat)})"><span class="nb-action-icon">${NB_ICONS.plus}</span>버킷 추가</button>
-          <button class="nb-action" onclick="openBookTopicManager()"><span class="nb-action-icon">${NB_ICONS.dots}</span>주제 관리</button>
         </div>
       </div>
       <div class="gb-fab ${goalBookFabOpen ? "is-open" : ""}">
