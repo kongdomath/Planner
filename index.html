@@ -1730,22 +1730,15 @@
     /* 책장 */
     .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 0; }
     .nb-shelf-track {
-      --cover-w: 176px;
-      --cover-gap: 12px;
-      display: flex; align-items: flex-end; justify-content: flex-start; gap: var(--cover-gap);
-      flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
+      --cover-gap: 14px;
+      display: flex; align-items: flex-end; justify-content: center; gap: var(--cover-gap);
+      flex: 1; min-width: 0; overflow: hidden;
       padding: 26px 0 24px;
-      scrollbar-width: none; -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
       cursor: grab;
       user-select: none; -webkit-user-select: none;
-      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
-      mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
-      scroll-behavior: auto;
     }
-    .nb-shelf-track::-webkit-scrollbar { display: none; }
-    .nb-shelf-track.dragging { cursor: grabbing; scroll-snap-type: none; }
-    .nb-shelf-track.dragging .nb-cover-label, .nb-shelf-track.dragging .nb-cover-plate { pointer-events: none; }
+    .nb-shelf-track.dragging { cursor: grabbing; }
     .nb-shelf-rail {
       position: absolute; left: 4%; right: 4%; bottom: 12px; height: 2px; border-radius: 2px;
       background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.16) 18%, rgba(255,255,255,.16) 82%, rgba(255,255,255,0));
