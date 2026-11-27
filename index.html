@@ -1540,6 +1540,14 @@
 
   const HOLIDAYS = buildHolidayMap(YEARS);
 
+  // 이전 버전(archive_planner_index_v2_3)의 미사용 기본 예시 판별용
+  const LEGACY_SAMPLE = {
+    archives: ["면도날", "2018 생차 시음 기록"],
+    goals: ["미적분학·미분기하 개념 복습", "주 2~3회 상체·코어 루틴 유지"],
+    buckets: ["국내·해외 혼자 여행 떠나기", "재즈 바·LP 바 방문하기"],
+    diaryDates: ["2026-09-20", "2026-11-22"]
+  };
+
   const defaultState = {
     activeTab: "year",
     yearFilter: YEARS.includes(Number(TODAY_STR.slice(0, 4))) ? TODAY_STR.slice(0, 4) : "2026",
@@ -1751,13 +1759,6 @@
   }
 
   // ---------- 이전 버전(archive_planner_index_v2_3) 데이터 이전 ----------
-  const LEGACY_SAMPLE = {
-    archives: ["면도날", "2018 생차 시음 기록"],
-    goals: ["미적분학·미분기하 개념 복습", "주 2~3회 상체·코어 루틴 유지"],
-    buckets: ["국내·해외 혼자 여행 떠나기", "재즈 바·LP 바 방문하기"],
-    diaryDates: ["2026-09-20", "2026-11-22"]
-  };
-
   function guessIconByName(name) {
     const n = String(name || "");
     const rules = [
@@ -1912,11 +1913,17 @@
   }
 
   function loadState() {
+    let untouchedNewState = null;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") return normalizeState(parsed);
+        if (parsed && typeof parsed === "object") {
+          const normalized = normalizeState(parsed);
+          // 예시 그대로인 새 상태는 이전 버전 데이터가 있으면 그쪽을 살린다
+          if (!isUntouchedNewDefault(normalized)) return normalized;
+          untouchedNewState = normalized;
+        }
       }
     } catch (_) { /* 손상된 v8 데이터는 아래 후보에서 복구 */ }
 
@@ -1941,7 +1948,20 @@
       }
     } catch (_) { /* 이전 데이터가 깨졌으면 새 기본값으로 */ }
 
-    return clone(defaultState);
+    return untouchedNewState || clone(defaultState);
+  }
+
+  function stableStringify(value) {
+    if (Array.isArray(value)) return "[" + value.map(stableStringify).join(",") + "]";
+    if (value && typeof value === "object") {
+      return "{" + Object.keys(value).sort().map(k => JSON.stringify(k) + ":" + stableStringify(value[k])).join(",") + "}";
+    }
+    return JSON.stringify(value === undefined ? null : value);
+  }
+
+  function isUntouchedNewDefault(s) {
+    const keys = ["logs", "goals", "buckets", "archives", "todos", "topics", "bucketCategories", "archiveCategories"];
+    return keys.every(k => stableStringify(s[k]) === stableStringify(defaultState[k]));
   }
 
   function saveState() {
