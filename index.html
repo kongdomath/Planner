@@ -4956,7 +4956,7 @@
           <div class="nb-visual-date">${Number(m) || ""}월 ${Number(d) || ""}일</div>
           <div class="nb-visual-sub">${y}${dow ? ` · ${dow}요일` : ""}</div>
           <span class="nb-visual-rule"></span>
-          <div class="nb-visual-cat">${escapeHtml(a.category || (book && book.title) || "기록")}</div>
+          ${(a.category && (!book || a.category !== book.title)) ? `<div class="nb-visual-cat">${escapeHtml(a.category)}</div>` : ""}
         </div>
       `;
 
@@ -4984,7 +4984,7 @@
             <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 아래 ‘이 페이지 수정’으로 감상을 남겨 보세요.</span>`}</div>
           </div>
         </div>
-        <span class="nb-page-no">${escapeHtml(a.category || "")}</span>
+        <span class="nb-page-no">${escapeHtml(String(a.date || "").replace(/-/g, "."))}</span>
       </section>
     `;
   }
