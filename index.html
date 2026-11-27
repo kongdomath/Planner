@@ -15,14 +15,16 @@
       --border: #e5e2da;
       --text: #1f2421;
       --text-sub: #6b7280;
-      --sat: #2563eb;
-      --sun: #dc2626;
+      /* 톤다운된 세련된 코발트 블루 & 테라코타/로즈 레드 */
+      --sat: #3b6ea5;
+      --sun: #c84b4b;
+      /* 카테고리 고유 색상 복원 */
       --c-year: #334155;
-      --c-diary: #3730a3;
-      --c-goal: #166534;
-      --c-plan: #0369a1;
-      --c-bucket: #b45309;
-      --c-todo: #6d28d9;
+      --c-diary: #2b4c7e;
+      --c-goal: #2d6a4f;
+      --c-plan: #25638a;
+      --c-bucket: #b46528;
+      --c-todo: #6441a5;
       --radius: 12px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -111,8 +113,9 @@
     }
     .topbar-left {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .topbar-right {
       display: flex;
@@ -125,8 +128,20 @@
       font-weight: 700;
       margin: 0;
       letter-spacing: -0.02em;
-      color: var(--text);
     }
+    .title-year { color: var(--c-year); }
+    .title-diary { color: var(--c-diary); }
+    .title-goal { color: var(--c-goal); }
+    .title-plan { color: var(--c-plan); }
+    .title-bucket { color: var(--c-bucket); }
+    .title-todo { color: var(--c-todo); }
+
+    .diary-date-badge {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
     select, input[type="text"], input[type="date"], textarea {
       font-family: inherit;
       font-size: 14px;
@@ -183,12 +198,11 @@
     .icon-btn:hover { background: var(--surface-muted); color: var(--text); border-color: var(--border); }
     .icon-btn.danger:hover { color: var(--sun); }
 
-    /* Year Matrix */
     .year-block { margin-bottom: 32px; }
     .year-heading {
       font-size: 16px;
       font-weight: 700;
-      color: var(--text);
+      color: var(--c-year);
       margin: 0 0 10px;
       display: flex;
       align-items: center;
@@ -249,8 +263,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .cell-line.holiday-label {
+      color: var(--sun);
+      opacity: 0.85;
+    }
 
-    /* Cards & Lists */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -331,7 +348,6 @@
       padding: 14px;
     }
 
-    /* Mobile bottom nav */
     .mobile-nav {
       display: none;
       position: fixed;
@@ -359,7 +375,6 @@
     }
     .mobile-nav button.active { color: var(--text); }
 
-    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -406,6 +421,7 @@
     <button class="nav-btn" data-tab="bucket"><span class="dot" style="background:var(--c-bucket)"></span>버킷리스트</button>
     <button class="nav-btn" data-tab="todos"><span class="dot" style="background:var(--c-todo)"></span>할일</button>
     <div class="sidebar-footer">
+      <button class="btn" onclick="clearSamples()">예시 지우기</button>
       <button class="btn" onclick="exportBackup()">데이터 백업 (JSON)</button>
       <label class="btn" style="cursor:pointer;">
         백업 복원
@@ -442,99 +458,120 @@
   const TODAY_STR = "2026-11-27";
   const YEARS = [2026, 2027, 2028, 2029, 2030];
 
-  const HOLIDAYS = {
-    "2026-01-01": "신정",
-    "2026-02-16": "설날 연휴",
-    "2026-02-17": "설날",
-    "2026-02-18": "설날 연휴",
-    "2026-03-01": "삼일절",
-    "2026-03-02": "대체공휴일",
-    "2026-05-05": "어린이날",
-    "2026-05-24": "부처님오신날",
-    "2026-05-25": "대체공휴일",
-    "2026-06-06": "현충일",
-    "2026-08-15": "광복절",
-    "2026-08-17": "대체공휴일",
-    "2026-09-24": "추석 연휴",
-    "2026-09-25": "추석",
-    "2026-09-26": "추석 연휴",
-    "2026-10-03": "개천절",
-    "2026-10-05": "대체공휴일",
-    "2026-10-09": "한글날",
-    "2026-12-25": "기독탄신일",
-
-    "2027-01-01": "신정",
-    "2027-02-06": "설날 연휴",
-    "2027-02-07": "설날",
-    "2027-02-08": "설날 연휴",
-    "2027-02-09": "대체공휴일",
-    "2027-03-01": "삼일절",
-    "2027-05-05": "어린이날",
-    "2027-05-13": "부처님오신날",
-    "2027-06-06": "현충일",
-    "2027-08-15": "광복절",
-    "2027-08-16": "대체공휴일",
-    "2027-09-14": "추석 연휴",
-    "2027-09-15": "추석",
-    "2027-09-16": "추석 연휴",
-    "2027-10-03": "개천절",
-    "2027-10-04": "대체공휴일",
-    "2027-10-09": "한글날",
-    "2027-10-11": "대체공휴일",
-    "2027-12-25": "기독탄신일",
-
-    "2028-01-01": "신정",
-    "2028-01-26": "설날 연휴",
-    "2028-01-27": "설날",
-    "2028-01-28": "설날 연휴",
-    "2028-03-01": "삼일절",
-    "2028-05-02": "부처님오신날",
-    "2028-05-05": "어린이날",
-    "2028-06-06": "현충일",
-    "2028-08-15": "광복절",
-    "2028-10-02": "추석 연휴",
-    "2028-10-03": "개천절 · 추석",
-    "2028-10-04": "추석 연휴",
-    "2028-10-05": "대체공휴일",
-    "2028-10-09": "한글날",
-    "2028-12-25": "기독탄신일",
-
-    "2029-01-01": "신정",
-    "2029-02-12": "설날 연휴",
-    "2029-02-13": "설날",
-    "2029-02-14": "설날 연휴",
-    "2029-03-01": "삼일절",
-    "2029-05-05": "어린이날",
-    "2029-05-07": "대체공휴일",
-    "2029-05-20": "부처님오신날",
-    "2029-05-21": "대체공휴일",
-    "2029-06-06": "현충일",
-    "2029-08-15": "광복절",
-    "2029-09-21": "추석 연휴",
-    "2029-09-22": "추석",
-    "2029-09-23": "추석 연휴",
-    "2029-09-24": "대체공휴일",
-    "2029-10-03": "개천절",
-    "2029-10-09": "한글날",
-    "2029-12-25": "기독탄신일",
-
-    "2030-01-01": "신정",
-    "2030-02-02": "설날 연휴",
-    "2030-02-03": "설날",
-    "2030-02-04": "설날 연휴",
-    "2030-03-01": "삼일절",
-    "2030-05-05": "어린이날",
-    "2030-05-06": "대체공휴일",
-    "2030-05-09": "부처님오신날",
-    "2030-06-06": "현충일",
-    "2030-08-15": "광복절",
-    "2030-09-11": "추석 연휴",
-    "2030-09-12": "추석",
-    "2030-09-13": "추석 연휴",
-    "2030-10-03": "개천절",
-    "2030-10-09": "한글날",
-    "2030-12-25": "기독탄신일"
+  // 양력 고정 공휴일 + 브라우저 내장 음력 캘린더(Intl.DateTimeFormat 'ko-KR-u-ca-chinese') 기반 명절 자동 계산
+  const FIXED_SOLAR_HOLIDAYS = {
+    "01-01": "신정",
+    "03-01": "삼일절",
+    "05-05": "어린이날",
+    "06-06": "현충일",
+    "08-15": "광복절",
+    "10-03": "개천절",
+    "10-09": "한글날",
+    "12-25": "크리스마스"
   };
+
+  const lunarFormatter = new Intl.DateTimeFormat("ko-KR-u-ca-chinese", {
+    month: "numeric",
+    day: "numeric"
+  });
+
+  function getLunarMonthDay(dateObj) {
+    try {
+      const parts = lunarFormatter.formatToParts(dateObj);
+      const mPart = parts.find(p => p.type === "month")?.value || "";
+      const dPart = parts.find(p => p.type === "day")?.value || "";
+      const isLeap = mPart.includes("윤");
+      const month = parseInt(mPart.replace(/[^0-9]/g, ""), 10);
+      const day = parseInt(dPart.replace(/[^0-9]/g, ""), 10);
+      return { month, day, isLeap };
+    } catch {
+      return null;
+    }
+  }
+
+  function buildHolidayMap(years) {
+    const map = {};
+    const addName = (ds, name) => {
+      if (!map[ds]) map[ds] = name;
+      else if (!map[ds].includes(name)) map[ds] += ` · ${name}`;
+    };
+
+    years.forEach(year => {
+      const start = new Date(year - 1, 11, 25);
+      const end = new Date(year + 1, 0, 5);
+      for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+        const y = dt.getFullYear();
+        const m = dt.getMonth() + 1;
+        const d = dt.getDate();
+        const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const md = `${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+        if (y === year && FIXED_SOLAR_HOLIDAYS[md]) {
+          addName(ds, FIXED_SOLAR_HOLIDAYS[md]);
+        }
+
+        const lunar = getLunarMonthDay(dt);
+        if (lunar && !lunar.isLeap) {
+          // 설날 (음력 1월 1일 및 전날·다음날)
+          if (lunar.month === 1 && lunar.day === 1) {
+            const prev = new Date(dt); prev.setDate(prev.getDate() - 1);
+            const next = new Date(dt); next.setDate(next.getDate() + 1);
+            const pStr = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+            const nStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+            if (prev.getFullYear() === year) addName(pStr, "설날 연휴");
+            if (y === year) addName(ds, "설날");
+            if (next.getFullYear() === year) addName(nStr, "설날 연휴");
+          }
+          // 부처님오신날 (음력 4월 8일)
+          if (y === year && lunar.month === 4 && lunar.day === 8) {
+            addName(ds, "부처님오신날");
+          }
+          // 추석 (음력 8월 15일 및 전날·다음날)
+          if (lunar.month === 8 && lunar.day === 15) {
+            const prev = new Date(dt); prev.setDate(prev.getDate() - 1);
+            const next = new Date(dt); next.setDate(next.getDate() + 1);
+            const pStr = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+            const nStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+            if (prev.getFullYear() === year) addName(pStr, "추석 연휴");
+            if (y === year) addName(ds, "추석");
+            if (next.getFullYear() === year) addName(nStr, "추석 연휴");
+          }
+        }
+      }
+
+      // 대체공휴일 자동 산정 (설·추석 연휴가 일요일과 겹치거나, 삼일절·어린이날·부처님오신날·광복절·개천절·한글날·크리스마스가 토/일요일과 겹칠 때)
+      const subTargets = new Set(["설날 연휴", "설날", "추석 연휴", "추석", "삼일절", "어린이날", "부처님오신날", "광복절", "개천절", "한글날", "크리스마스"]);
+      const yearDates = Object.keys(map).filter(k => k.startsWith(`${year}-`)).sort();
+      yearDates.forEach(ds => {
+        const [yy, mm, dd] = ds.split("-").map(Number);
+        const dt = new Date(yy, mm - 1, dd);
+        const dow = dt.getDay();
+        const names = map[ds].split(" · ");
+        const isSeolOrChuseok = names.some(n => n.includes("설날") || n.includes("추석"));
+        const isOtherSub = names.some(n => subTargets.has(n) && !n.includes("설날") && !n.includes("추석"));
+        const hasOverlap = names.length > 1;
+
+        if ((isSeolOrChuseok && (dow === 0 || hasOverlap)) || (isOtherSub && (dow === 0 || dow === 6 || hasOverlap))) {
+          const cursor = new Date(dt);
+          while (true) {
+            cursor.setDate(cursor.getDate() + 1);
+            const cStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+            const cDow = cursor.getDay();
+            if (cDow !== 0 && cDow !== 6 && !map[cStr]) {
+              if (cursor.getFullYear() === year) {
+                map[cStr] = "대체공휴일";
+              }
+              break;
+            }
+          }
+        }
+      });
+    });
+
+    return map;
+  }
+
+  const HOLIDAYS = buildHolidayMap(YEARS);
 
   const pencilIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
   const trashIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
@@ -589,6 +626,17 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function clearSamples() {
+    if (!confirm("기본으로 들어 있는 예시 항목을 지우고 빈 상태로 시작할까요?")) return;
+    state.logs = {};
+    state.goals = [];
+    state.plans = [];
+    state.buckets = [];
+    state.todos = [];
+    saveState();
+    render();
   }
 
   function uid() {
@@ -695,6 +743,7 @@
           const isToday = TODAY_STR === dateStr;
           const tdCls = [isSelected ? "selected-day" : "", isToday ? "today-cell" : ""].filter(Boolean).join(" ");
           const tip = HOLIDAYS[dateStr] ? `${dateStr} (${HOLIDAYS[dateStr]})` : dateStr;
+          const showHolidayText = !log.oneLine && hol;
 
           cells += `
             <td class="${tdCls}" onclick="selectDate('${dateStr}', true)" title="${escapeAttr(tip)}">
@@ -706,7 +755,7 @@
                   ${hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)" title="할일 있음"></span>` : ""}
                 </span>
               </div>
-              <div class="cell-line">${escapeHtml(log.oneLine || (hol ? HOLIDAYS[dateStr] : ""))}</div>
+              <div class="cell-line ${showHolidayText ? "holiday-label" : ""}">${escapeHtml(log.oneLine || (hol ? HOLIDAYS[dateStr] : ""))}</div>
             </td>
           `;
         }
@@ -731,7 +780,7 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title">1년 연력</h1>
+          <h1 class="page-title title-year">1년 연력</h1>
         </div>
         <div class="topbar-right">
           <button class="btn" onclick="selectDate('${TODAY_STR}', true)">오늘 기록 (${TODAY_STR})</button>
@@ -744,7 +793,7 @@
 
   function renderDiaryView() {
     const d = state.selectedDate;
-    const titleColor = getDateColor(d);
+    const dateColor = getDateColor(d);
     const log = state.logs[d] || { oneLine: "", diary: "" };
 
     const dayTodos = state.todos.filter(t => t.date === d);
@@ -755,7 +804,8 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:${titleColor}">${formatDateKo(d)}</h1>
+          <h1 class="page-title title-diary">하루 기록 · 일기</h1>
+          <span class="diary-date-badge" style="color:${dateColor}">${formatDateKo(d)}</span>
         </div>
         <div class="topbar-right">
           <input type="date" value="${d}" onchange="if(this.value) selectDate(this.value, false)" />
@@ -766,10 +816,10 @@
 
       <div class="grid-2">
         <div class="card">
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px;">연력 한 줄 요약</label>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">연력 한 줄 요약</label>
           <input type="text" id="oneLineInput" style="width:100%; margin-bottom:16px;" placeholder="연력 칸에 표시될 오늘의 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="saveDiaryDraft()" />
 
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
           <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="saveDiaryDraft()">${escapeHtml(log.diary || "")}</textarea>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
             <span id="saveStatus" style="font-size:12px; color:var(--text-sub);">자동 저장됨</span>
@@ -779,7 +829,7 @@
 
         <div>
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">이 날의 할일</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-todo);">이 날의 할일</h3>
             <div class="form-row">
               <input type="text" id="dayTodoInput" style="flex:1;" placeholder="이 날짜에 할일 추가..." onkeydown="if(event.key==='Enter') addDayTodo()" />
               <button class="btn" onclick="addDayTodo()">추가</button>
@@ -801,7 +851,7 @@
           </div>
 
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">이 날 달성한 목표 · 계획 · 버킷</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">이 날 달성한 목표 · 계획 · 버킷</h3>
             ${(doneGoals.length + donePlans.length + doneBuckets.length) === 0
               ? `<p style="font-size:13px; color:var(--text-sub); margin:0;">목표, 계획, 버킷리스트에서 완료 체크하면 달성 날짜(${d})와 자동으로 연결됩니다.</p>`
               : `<div class="item-list">
@@ -844,7 +894,7 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title">주제별 목표</h1>
+          <h1 class="page-title title-goal">주제별 목표</h1>
         </div>
         <div class="topbar-right">
           ${yearSelectHtml()}
@@ -869,7 +919,7 @@
         const items = filtered.filter(g => g.topic === topic);
         return `
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">${escapeHtml(topic)} (${items.filter(i => i.done).length}/${items.length})</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">${escapeHtml(topic)} (${items.filter(i => i.done).length}/${items.length})</h3>
             <div class="item-list">
               ${items.length ? items.map(g => `
                 <div class="list-item ${g.done ? "done" : ""}">
@@ -921,7 +971,7 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title">연간 계획</h1>
+          <h1 class="page-title title-plan">연간 계획</h1>
         </div>
         <div class="topbar-right">
           ${yearSelectHtml()}
@@ -989,7 +1039,7 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title">버킷리스트</h1>
+          <h1 class="page-title title-bucket">버킷리스트</h1>
         </div>
         <div class="topbar-right">
           ${yearSelectHtml()}
@@ -1048,7 +1098,7 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title">할일</h1>
+          <h1 class="page-title title-todo">할일</h1>
         </div>
         <div class="topbar-right">
           ${yearSelectHtml()}
