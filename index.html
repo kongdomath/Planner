@@ -4493,33 +4493,6 @@
     render();
   }
 
-  function addGoal() {
-    const topicSel = document.getElementById("goalTopicSel");
-    let topic = topicSel && topicSel.value ? topicSel.value : ensureTopicExists("기타", "target");
-    if (!topic) topic = "기타";
-    const year = normalizeYear(document.getElementById("goalYearSel").value);
-    const period = normalizePeriod(document.getElementById("goalPeriodSel").value);
-    const titleEl = document.getElementById("goalTitleInp");
-    const title = titleEl.value.trim();
-    if (!title) {
-      titleEl.focus();
-      return;
-    }
-    state.goals.unshift({
-      id: uid(),
-      topic,
-      year,
-      period,
-      title,
-      note: document.getElementById("goalNoteInp").value.trim(),
-      images: [],
-      done: false,
-      doneDate: ""
-    });
-    saveState();
-    render();
-  }
-
   function openEditGoal(id) {
     const g = state.goals.find(x => x.id === id);
     if (!g) return;
@@ -4703,27 +4676,7 @@
     render();
   }
 
-  function addBucket() {
-    const sel = document.getElementById("bucketCatSel");
-    const category = sel && sel.value ? sel.value : ensureCategory("bucket", "경험", "star");
-    const titleEl = document.getElementById("bucketTitleInp");
-    const title = titleEl.value.trim();
-    if (!title) {
-      titleEl.focus();
-      return;
-    }
-    state.buckets.unshift({
-      id: uid(),
-      category,
-      title,
-      note: document.getElementById("bucketNoteInp").value.trim(),
-      done: false,
-      doneDate: ""
-    });
-    saveState();
-    render();
-  }
-
+  // ---------- 아카이브 (주제별 책장 + 스프링 노트북 단일 뷰) ----------
   function renderArchiveView() {
     return renderArchiveNotebookView();
   }
