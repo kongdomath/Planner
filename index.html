@@ -1584,10 +1584,9 @@
       border-radius: 0 !important;
       background: transparent !important;
       padding: 0 2px !important;
-      font-size: 14px;
-      line-height: 32px;
+      font-size: 14.5px;
+      line-height: 1.95;
       color: #33383f;
-      background-image: repeating-linear-gradient(to bottom, transparent 0 31px, rgba(120,126,140,.24) 31px 32px) !important;
     }
     .diary-note .diary-save-line { margin-top: 8px; }
     .nb-stage .save-status { color: #9aa0a9; }
@@ -2108,6 +2107,7 @@
       .nb-spread { grid-template-columns: 1fr; max-width: 100%; }
       .nb-spine, .nb-rings, .nb-edge { display: none; }
       .nb-page { border-radius: 8px !important; min-height: 430px; max-height: none; padding: 26px 22px 30px; }
+      .nb-page-no { display: none; }
       .nb-spread[data-side="left"] .nb-page--right { display: none; }
       .nb-spread[data-side="right"] .nb-page--left { display: none; }
       .nb-spread { perspective: 1200px; }
@@ -3935,10 +3935,10 @@
     return `
       <div class="nb-stage">
         <div class="nb-reader-head">
-          <button class="nb-back" onclick="closeYearDay()">${ICONS.chevLeft}${m}월 달력</button>
+          <button class="nb-back" onclick="closeYearDay()">${ICONS.chevLeft}달력</button>
           <div class="nb-reader-title">
             <b>${m}월 ${day}일 <em>(${dowNames[dow]})</em></b>
-            <span>${y}년${isToday ? " · 오늘" : ""} · 연력 한 줄 · 일기 · 할일</span>
+            <span>${y}년${isToday ? " · 오늘" : ""}</span>
           </div>
           <span class="nb-stage-count">${day} / ${maxDay}</span>
         </div>
