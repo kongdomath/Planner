@@ -4849,7 +4849,6 @@
           ${visual}
           <div class="nb-stamps">
             <span class="nb-stamp"><b>${String(a.date || "").replace(/-/g, ".")}</b><span>${dow || "DATE"}</span></span>
-            <span class="nb-badge">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category || "기록")}</span>
             ${a.subtitle ? `<span class="nb-badge nb-badge--ghost">${escapeHtml(a.subtitle)}</span>` : ""}
           </div>
         </div>
