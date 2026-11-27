@@ -1730,7 +1730,7 @@
     /* 책장 */
     .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 6px 0 0; }
     .nb-shelf-track {
-      --cover-w: 128px;
+      --cover-w: 164px;
       --cover-gap: 12px;
       display: flex; align-items: flex-end; justify-content: flex-start; gap: var(--cover-gap);
       flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
@@ -1738,6 +1738,9 @@
       scrollbar-width: none; -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
       cursor: grab;
+      user-select: none; -webkit-user-select: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
       scroll-behavior: auto;
     }
     .nb-shelf-track::-webkit-scrollbar { display: none; }
@@ -1758,7 +1761,7 @@
     .nb-cover-btn:hover { filter: brightness(1) saturate(1); }
     .nb-cover {
       position: relative; display: block;
-      width: 152px; height: 212px;
+      width: 164px; height: 228px;
       border-radius: 3px 8px 8px 3px;
       background: linear-gradient(160deg, rgba(255,255,255,.26), rgba(0,0,0,.22)), var(--spine, #2f3e5c);
       box-shadow: 0 12px 22px rgba(10,13,22,.42), 0 1px 0 rgba(255,255,255,.22) inset;
@@ -2088,8 +2091,8 @@
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-shelf-track { --cover-w: 132px; --cover-gap: 10px; padding: 22px 0 20px; }
-      .nb-cover { width: 132px; height: 184px; }
+      .nb-shelf-track { --cover-w: 142px; --cover-gap: 10px; padding: 22px 0 20px; }
+      .nb-cover { width: 142px; height: 198px; }
       .nb-cover-label { left: 22px; right: 12px; top: 24px; padding: 10px 9px 11px; }
       .nb-cover-label b { font-size: 13.5px; }
       .nb-book-meta h3 { font-size: 17px; }
@@ -5033,39 +5036,46 @@
         if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.25) step(dx < 0 ? 1 : -1);
       }, { passive: true });
 
-      // 데스크톱: 마우스로 책장을 끌어 넘기기
+      // 데스크톱: 마우스로 책장을 끌어 넘기기 (움직임이 생기기 전에는 일반 클릭 유지)
       let down = false;
       let startX = 0;
       let startScroll = 0;
       let moved = 0;
+      let pastDragAt = 0;
+      const onMove = e => {
+        if (!down) return;
+        const dx = e.clientX - startX;
+        moved = Math.max(moved, Math.abs(dx));
+        if (moved > 6) {
+          el.classList.add("dragging");
+          el.scrollLeft = startScroll - dx;
+        }
+      };
+      const endDrag = () => {
+        if (!down) return;
+        down = false;
+        el.classList.remove("dragging");
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", endDrag);
+        window.removeEventListener("pointercancel", endDrag);
+        if (moved > 8) {
+          el.dataset.draggedAt = String(Date.now());
+          pastDragAt = Number(el.dataset.draggedAt);
+          settleShelfSelection(el);
+        }
+      };
       el.addEventListener("pointerdown", e => {
         if (e.pointerType !== "mouse" || e.button !== 0) return;
         down = true;
         moved = 0;
         startX = e.clientX;
         startScroll = el.scrollLeft;
-        el.classList.add("dragging");
-        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", endDrag);
+        window.addEventListener("pointercancel", endDrag);
       });
-      el.addEventListener("pointermove", e => {
-        if (!down) return;
-        const dx = e.clientX - startX;
-        moved = Math.max(moved, Math.abs(dx));
-        el.scrollLeft = startScroll - dx;
-      });
-      const endDrag = () => {
-        if (!down) return;
-        down = false;
-        el.classList.remove("dragging");
-        if (moved > 8) {
-          el.dataset.draggedAt = String(Date.now());
-          settleShelfSelection(el);
-        }
-      };
-      el.addEventListener("pointerup", endDrag);
-      el.addEventListener("pointercancel", endDrag);
       el.addEventListener("click", e => {
-        const at = Number(el.dataset.draggedAt || 0);
+        const at = Number(el.dataset.draggedAt || pastDragAt);
         if (at && Date.now() - at < 320) {
           e.preventDefault();
           e.stopPropagation();
