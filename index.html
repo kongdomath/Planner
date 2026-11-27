@@ -1730,14 +1730,18 @@
     /* 책장 */
     .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 0; }
     .nb-shelf-track {
-      --cover-gap: 14px;
-      display: flex; align-items: flex-end; justify-content: center; gap: var(--cover-gap);
-      flex: 1; min-width: 0; overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(5, 176px);
+      justify-content: center;
+      align-items: end;
+      gap: 14px;
+      width: 100%; min-width: 0; overflow: hidden;
       padding: 26px 0 24px;
       touch-action: pan-y;
       cursor: grab;
       user-select: none; -webkit-user-select: none;
     }
+    .nb-slot-empty { display: block; }
     .nb-shelf-track.dragging { cursor: grabbing; }
     .nb-shelf-rail {
       position: absolute; left: 4%; right: 4%; bottom: 12px; height: 2px; border-radius: 2px;
@@ -2089,9 +2093,8 @@
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-shelf-track { padding: 18px 0 16px; gap: 10px; }
-      .nb-cover-btn[data-offset="2"], .nb-cover-btn[data-offset="-2"] { display: none; }
-      .nb-cover-btn { transform: translateY(4px) scale(.9); }
+      .nb-shelf-track { grid-template-columns: repeat(3, 190px); padding: 18px 0 16px; gap: 10px; }
+      .nb-cover-btn { transform: translateY(4px) scale(.94); }
       .nb-cover { width: 190px; height: 264px; }
       .nb-cover-label { left: 30px; right: 16px; top: 30px; padding: 13px 11px 14px; }
       .nb-cover-label b { font-size: 16px; }
@@ -3508,12 +3511,16 @@
   // 선택된 책이 항상 가운데, 양옆에 이전/다음 책이 대칭으로 보이는 창(window)
   function shelfSlots(n, active, radius) {
     if (!n) return [];
-    const r = Math.min(radius, Math.floor((n - 1) / 2));
     const out = [];
-    for (let k = -r; k <= r; k++) {
-      out.push({ index: ((active + k) % n + n) % n, offset: k });
+    for (let k = -radius; k <= radius; k++) {
+      const i = active + k;
+      out.push(i >= 0 && i < n ? { index: i, offset: k } : null);
     }
     return out;
+  }
+
+  function shelfRadius() {
+    return isMobileViewport() ? 1 : 2;
   }
 
   function pad2(n) {
@@ -3670,7 +3677,7 @@
       <div class="nb-stage nb-stage--shelf">
         <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
         <div class="nb-shelf">
-          <div class="nb-shelf-track" id="nbYearShelfTrack">${shelfSlots(yearBooks.length, yearShelfIndex, 2).map(slot => renderYearCover(yearBooks[slot.index].year, slot.offset === 0, slot.offset)).join("")}</div>
+          <div class="nb-shelf-track" id="nbYearShelfTrack">${shelfSlots(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => slot ? renderYearCover(yearBooks[slot.index].year, slot.offset === 0, slot.offset) : `<span class="nb-slot-empty" aria-hidden="true"></span>`).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
@@ -4745,7 +4752,7 @@
       <div class="nb-stage nb-stage--shelf">
         <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
         <div class="nb-shelf">
-          <div class="nb-shelf-track" id="nbShelfTrack">${shelfSlots(books.length, notebookShelfIndex, 2).map(slot => renderShelfCover(books[slot.index], slot.offset === 0, slot.offset)).join("")}</div>
+          <div class="nb-shelf-track" id="nbShelfTrack">${shelfSlots(books.length, notebookShelfIndex, shelfRadius()).map(slot => slot ? renderShelfCover(books[slot.index], slot.offset === 0, slot.offset) : `<span class="nb-slot-empty" aria-hidden="true"></span>`).join("")}</div>
           <div class="nb-shelf-rail"></div>
         </div>
         <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
@@ -6065,7 +6072,8 @@
   const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
   if (mobileMq) {
     const onMqChange = () => {
-      if (state.yearViewMode === "auto") render();
+      const onShelf = (state.activeTab === "year" && !yearBookYear) || (state.activeTab === "archive" && !notebookBookId);
+      if (state.yearViewMode === "auto" || onShelf) render();
     };
     if (mobileMq.addEventListener) mobileMq.addEventListener("change", onMqChange);
     else if (mobileMq.addListener) mobileMq.addListener(onMqChange);
