@@ -20,7 +20,6 @@
       --c-year: #334155;
       --c-diary: #2b4c7e;
       --c-goal: #2d6a4f;
-      --c-plan: #25638a;
       --c-bucket: #b46528;
       --c-archive: #5b4b8a;
       --c-todo: #6441a5;
@@ -151,7 +150,6 @@
     .title-year { color: var(--c-year); }
     .title-diary { color: var(--c-diary); }
     .title-goal { color: var(--c-goal); }
-    .title-plan { color: var(--c-plan); }
     .title-bucket { color: var(--c-bucket); }
     .title-archive { color: var(--c-archive); }
 
@@ -270,27 +268,12 @@
     .icon-btn:hover { background: var(--surface-muted); color: var(--text); }
     .icon-btn.danger:hover { color: var(--sun); border-color: #fecaca; background: #fef2f2; }
 
-    /* 글씨 클릭 시 나타나는 수정/삭제 버튼 그룹 */
-    .reveal-actions {
-      display: none;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-      animation: fadeInAction 0.14s ease-out;
-    }
-    .reveal-actions.visible {
-      display: inline-flex;
-    }
-    @keyframes fadeInAction {
-      from { opacity: 0; transform: translateX(4px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    .clickable-label {
+    .tap-edit-target {
       cursor: pointer;
-      user-select: none;
+      transition: opacity 0.14s, color 0.14s;
     }
-    .clickable-label:hover {
-      opacity: 0.8;
+    .tap-edit-target:hover {
+      opacity: 0.78;
     }
 
     /* 통계 요약 바 */
@@ -476,7 +459,7 @@
       opacity: 0.9;
     }
 
-    /* 달별 모아보기 */
+    /* 달별 모아보기 (기록 있는 날만) */
     .month-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -535,57 +518,7 @@
       padding: 2px 8px;
       border-radius: 999px;
     }
-    .cal-weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-    }
-    .cal-weekdays span:first-child { color: var(--sun); }
-    .cal-weekdays span:last-child { color: var(--sat); }
-    .cal-days-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 3px;
-    }
-    .cal-day-cell {
-      min-height: 46px;
-      border-radius: 7px;
-      padding: 4px 3px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: background 0.12s;
-    }
-    .cal-day-cell:hover { background: var(--surface-muted); }
-    .cal-day-cell.has-record { background: #f8fafc; border-color: #e2e8f0; }
-    .cal-day-cell.selected-day { background: #eef2ff; border-color: var(--c-diary); }
-    .cal-day-cell.today-cell { background: #fefce8; border-color: #eab308; }
-    .cal-day-num {
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    .cal-day-mini {
-      font-size: 9.5px;
-      color: var(--text-sub);
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.1;
-    }
-    .cal-day-mini.holiday-label { color: var(--sun); }
     .month-highlights {
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--border);
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -594,10 +527,11 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
-      padding: 4px 6px;
-      border-radius: 6px;
+      font-size: 12.5px;
+      padding: 5px 7px;
+      border-radius: 7px;
       cursor: pointer;
+      transition: background 0.12s;
     }
     .highlight-row:hover { background: var(--surface-muted); }
 
@@ -702,7 +636,7 @@
       padding: 14px;
     }
 
-    /* 필터 칩 & 카드 그리드 */
+    /* 필터 칩 & 카테고리 관리 */
     .filter-bar-wrap {
       display: flex;
       flex-wrap: wrap;
@@ -727,9 +661,6 @@
       padding-right: 4px;
       transition: all 0.15s;
     }
-    .chip-wrap:not(.expanded) {
-      padding-right: 0;
-    }
     .chip-wrap.active {
       background: var(--text);
       border-color: var(--text);
@@ -751,9 +682,7 @@
     .chip-wrap .chip-btn {
       border: none;
       background: transparent;
-    }
-    .chip-wrap.expanded .chip-btn {
-      padding-right: 6px;
+      padding-right: 4px;
     }
     .chip-btn:hover { background: var(--surface-muted); color: var(--text); }
     .chip-wrap .chip-btn:hover { background: transparent; }
@@ -767,12 +696,9 @@
       color: #fff;
     }
     .chip-actions {
-      display: none;
-      align-items: center;
-      gap: 2px;
-    }
-    .chip-wrap.expanded .chip-actions {
       display: inline-flex;
+      align-items: center;
+      gap: 1px;
     }
     .chip-action-btn {
       border: none;
@@ -787,8 +713,8 @@
       cursor: pointer;
       padding: 0;
     }
-    .chip-wrap.active .chip-action-btn { color: rgba(255,255,255,0.8); }
-    .chip-action-btn:hover { background: rgba(128,128,128,0.2); }
+    .chip-wrap.active .chip-action-btn { color: rgba(255,255,255,0.85); }
+    .chip-action-btn:hover { background: rgba(128,128,128,0.22); }
 
     .composer-card {
       border-color: #cbd5e1;
@@ -1059,19 +985,6 @@
     .modal-field { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
     .modal-field label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .modal-gallery {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .modal-gallery img {
-      width: 100%;
-      max-height: 340px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: var(--surface-muted);
-    }
 
     @media (max-width: 1060px) {
       .months-grid, .media-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1095,8 +1008,7 @@
     </div>
     <button class="nav-btn active" data-tab="year"><span class="nav-icon" id="navIconYear"></span>1년 연력</button>
     <button class="nav-btn" data-tab="diary"><span class="nav-icon" id="navIconDiary"></span>하루 기록 · 일기</button>
-    <button class="nav-btn" data-tab="goals"><span class="nav-icon" id="navIconGoals"></span>주제별 목표</button>
-    <button class="nav-btn" data-tab="plans"><span class="nav-icon" id="navIconPlans"></span>연간 목표</button>
+    <button class="nav-btn" data-tab="goals"><span class="nav-icon" id="navIconGoals"></span>목표</button>
     <button class="nav-btn" data-tab="bucket"><span class="nav-icon" id="navIconBucket"></span>버킷리스트</button>
     <button class="nav-btn" data-tab="archive"><span class="nav-icon" id="navIconArchive"></span>아카이브</button>
     <div class="sidebar-footer">
@@ -1116,7 +1028,6 @@
   <button class="active" data-tab="year"><span class="nav-icon" id="mIconYear"></span>연력</button>
   <button data-tab="diary"><span class="nav-icon" id="mIconDiary"></span>일기</button>
   <button data-tab="goals"><span class="nav-icon" id="mIconGoals"></span>목표</button>
-  <button data-tab="plans"><span class="nav-icon" id="mIconPlans"></span>연간목표</button>
   <button data-tab="bucket"><span class="nav-icon" id="mIconBucket"></span>버킷</button>
   <button data-tab="archive"><span class="nav-icon" id="mIconArchive"></span>아카이브</button>
 </nav>
@@ -1133,7 +1044,7 @@
 </div>
 
 <script>
-  const STORAGE_KEY = "personal_archive_planner_v7";
+  const STORAGE_KEY = "personal_archive_planner_v8";
   const YEARS = [2026, 2027, 2028, 2029, 2030];
   const PERIODS = ["연간", "상반기", "하반기", "1분기", "2분기", "3분기", "4분기"];
 
@@ -1152,10 +1063,8 @@
     year: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
     diary: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`,
     goals: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-    plans: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>`,
     bucket: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
     archive: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>`,
-    pencil: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`,
     trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
     chevLeft: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
     chevRight: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
@@ -1241,7 +1150,6 @@
       ["navIconYear", ICONS.year], ["mIconYear", ICONS.year],
       ["navIconDiary", ICONS.diary], ["mIconDiary", ICONS.diary],
       ["navIconGoals", ICONS.goals], ["mIconGoals", ICONS.goals],
-      ["navIconPlans", ICONS.plans], ["mIconPlans", ICONS.plans],
       ["navIconBucket", ICONS.bucket], ["mIconBucket", ICONS.bucket],
       ["navIconArchive", ICONS.archive], ["mIconArchive", ICONS.archive]
     ];
@@ -1365,12 +1273,10 @@
     activeTab: "year",
     yearFilter: YEARS.includes(Number(TODAY_STR.slice(0, 4))) ? TODAY_STR.slice(0, 4) : "2026",
     yearViewMode: "matrix",
-    monthDisplayMode: "calendar",
     goalTopicFilter: "all",
     goalYearFilter: "all",
     goalPeriodFilter: "all",
     goalSort: "newest",
-    annualGoalYearFilter: "all",
     bucketCatFilter: "all",
     bucketSort: "newest",
     archiveCatFilter: "all",
@@ -1379,10 +1285,10 @@
     logs: {
       "2026-11-27": {
         oneLine: "나만의 플래너 앱 구조 확정 및 첫 기록",
-        diary: "오늘부터 연력 한 줄 기록과 긴 일기, 주제별 목표와 연간 목표, 버킷리스트와 아카이브를 하나로 연결해 기록하기 시작했다."
+        diary: "오늘부터 연력 한 줄 기록과 긴 일기, 기간별 목표, 버킷리스트와 아카이브를 하나로 연결해 기록하기 시작했다."
       },
       "2027-01-01": {
-        oneLine: "2027년 새해 첫날, 연간 목표 점검",
+        oneLine: "2027년 새해 첫날, 목표 점검",
         diary: "새해 첫 아침. 올 한 해 차분히 쌓아갈 공부, 운동, 독서와 여행의 방향을 정리했다."
       }
     },
@@ -1479,7 +1385,7 @@
     ],
     todos: [
       { id: "t1", date: TODAY_STR, title: "오늘의 연력 한 줄과 일기 작성하기", done: false },
-      { id: "t2", date: "2027-01-01", title: "2027년 주제별 목표 세부 항목 확정", done: false }
+      { id: "t2", date: "2027-01-01", title: "2027년 목표 세부 항목 확정", done: false }
     ]
   };
 
@@ -1490,38 +1396,11 @@
   let showArchiveComposer = false;
   let draftArchiveImages = [];
   let draftGoalImages = [];
-  let activeActionTarget = null; // 글씨 클릭 시 수정/삭제 버튼이 열리는 대상 키
 
-  function toggleRowActions(event, key) {
-    if (event) event.stopPropagation();
-    const nextKey = activeActionTarget === key ? null : key;
-    activeActionTarget = nextKey;
-    document.querySelectorAll("[data-action-key]").forEach(el => {
-      el.classList.toggle("visible", el.dataset.actionKey === nextKey);
-    });
+  function normalizeTab(tab) {
+    if (!tab || tab === "todos" || tab === "plans") return "goals";
+    return tab;
   }
-
-  function toggleChipActions(event, chipKey) {
-    if (event) event.stopPropagation();
-    const wrap = event?.currentTarget?.closest(".chip-wrap");
-    const wasExpanded = wrap && wrap.classList.contains("expanded");
-    document.querySelectorAll(".chip-wrap.expanded").forEach(el => el.classList.remove("expanded"));
-    if (wrap && !wasExpanded) {
-      wrap.classList.add("expanded");
-    }
-  }
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".reveal-actions") && !e.target.closest(".clickable-label")) {
-      if (activeActionTarget !== null) {
-        activeActionTarget = null;
-        document.querySelectorAll("[data-action-key].visible").forEach(el => el.classList.remove("visible"));
-      }
-    }
-    if (!e.target.closest(".chip-wrap")) {
-      document.querySelectorAll(".chip-wrap.expanded").forEach(el => el.classList.remove("expanded"));
-    }
-  });
 
   function normalizeYear(y) {
     const cleaned = String(y || "").replace(/[^0-9]/g, "");
@@ -1553,13 +1432,14 @@
     try {
       const raw =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem("personal_archive_planner_v7") ||
         localStorage.getItem("personal_archive_planner_v6") ||
         localStorage.getItem("personal_archive_planner_v5") ||
         localStorage.getItem("personal_archive_planner_v4");
       if (!raw) return structuredClone(defaultState);
       const parsed = JSON.parse(raw);
       const merged = { ...structuredClone(defaultState), ...parsed };
-      if (merged.activeTab === "todos") merged.activeTab = "diary";
+      merged.activeTab = normalizeTab(merged.activeTab);
       merged.topics = normalizeCategoryList(merged.topics, "target");
       merged.archiveCategories = normalizeCategoryList(merged.archiveCategories, "folder");
       merged.bucketCategories = normalizeCategoryList(merged.bucketCategories, "star");
@@ -1716,20 +1596,13 @@
     render();
   }
 
-  function setMonthDisplayMode(mode) {
-    state.monthDisplayMode = mode;
-    saveState();
-    render();
-  }
-
   function jumpToMonthCard(year, month) {
     const el = document.getElementById(`month-card-${year}-${month}`);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function setTab(tab) {
-    state.activeTab = tab;
-    activeActionTarget = null;
+    state.activeTab = normalizeTab(tab);
     saveState();
     render();
   }
@@ -1737,7 +1610,6 @@
   function selectDate(dateStr, goDiary = false) {
     state.selectedDate = dateStr;
     if (goDiary) state.activeTab = "diary";
-    activeActionTarget = null;
     saveState();
     render();
   }
@@ -1784,7 +1656,7 @@
         (g.note || "").toLowerCase().includes(term)
       ) {
         results.push({
-          type: "주제별 목표",
+          type: "목표",
           title: g.title,
           sub: `${g.topic} · ${normalizeYear(g.year)}년 ${normalizePeriod(g.period)}`,
           action: () => {
@@ -1884,6 +1756,7 @@
   }
 
   function render() {
+    state.activeTab = normalizeTab(state.activeTab);
     updateNavUI();
     currentSearchList = findSearchResults(searchQuery);
     const main = document.getElementById("mainView");
@@ -1891,7 +1764,6 @@
     if (state.activeTab === "year") bodyHtml = renderYearView();
     else if (state.activeTab === "diary") bodyHtml = renderDiaryView();
     else if (state.activeTab === "goals") bodyHtml = renderGoalsView();
-    else if (state.activeTab === "plans") bodyHtml = renderAnnualGoalsView();
     else if (state.activeTab === "bucket") bodyHtml = renderBucketView();
     else if (state.activeTab === "archive") bodyHtml = renderArchiveView();
     else bodyHtml = renderYearView();
@@ -1911,7 +1783,7 @@
     return { log, hasDiary, hasAchieved, hasArchive, hasTodo, hasAny };
   }
 
-  // 1년 연력 뷰
+  // 1년 연력 뷰 (달별 모아보기는 '기록 있는 날만' 고정)
   function renderYearView() {
     const targetYears = state.yearFilter === "all" ? YEARS : [Number(normalizeYear(state.yearFilter))];
     const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -1924,7 +1796,7 @@
           <span class="legend-item"><span class="badge-dot" style="background:var(--c-archive)"></span>아카이브</span>
           <span class="legend-item"><span class="badge-dot" style="background:var(--c-todo)"></span>할일</span>
         </div>
-        <span style="font-size:12px; color:var(--text-sub);">날짜 칸을 누르면 해당 날짜의 기록·일기로 이동합니다</span>
+        <span style="font-size:12px; color:var(--text-sub);">날짜를 누르면 해당 날짜의 기록·일기로 이동합니다</span>
       </div>
     `;
 
@@ -1937,8 +1809,7 @@
         const monthCards = Array.from({ length: 12 }, (_, idx) => {
           const month = idx + 1;
           const maxDay = new Date(year, month, 0).getDate();
-          const firstDow = new Date(year, month - 1, 1).getDay();
-          let recordedDays = [];
+          const recordedDays = [];
 
           for (let day = 1; day <= maxDay; day++) {
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -1946,82 +1817,27 @@
             if (meta.hasAny) recordedDays.push({ day, dateStr, ...meta });
           }
 
-          let innerBody = "";
-          if (state.monthDisplayMode === "recorded") {
-            innerBody = recordedDays.length ? `
-              <div class="month-highlights" style="border-top:none; margin-top:0; padding-top:0;">
-                ${recordedDays.map(item => {
-                  const dow = getDayOfWeek(item.dateStr);
-                  const dCol = getDateColor(item.dateStr);
-                  const summary = item.log.oneLine || (item.hasArchive ? "아카이브 기록" : item.hasAchieved ? "목표·버킷 달성" : item.hasDiary ? "일기 작성됨" : "할일 등록됨");
-                  return `
-                    <div class="highlight-row" onclick="selectDate('${item.dateStr}', true)">
-                      <strong style="width:46px; flex-shrink:0; color:${dCol};">${item.day}일(${dayNames[dow]})</strong>
-                      <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(summary)}</span>
-                      <span class="cell-badges">
-                        ${item.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)"></span>` : ""}
-                        ${item.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)"></span>` : ""}
-                        ${item.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)"></span>` : ""}
-                        ${item.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)"></span>` : ""}
-                      </span>
-                    </div>
-                  `;
-                }).join("")}
-              </div>
-            ` : `<p style="font-size:12px; color:var(--text-sub); margin:8px 0;">이 달에는 아직 작성된 기록이 없습니다.</p>`;
-          } else {
-            let cellsHtml = "";
-            for (let b = 0; b < firstDow; b++) {
-              cellsHtml += `<div></div>`;
-            }
-            for (let day = 1; day <= maxDay; day++) {
-              const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-              const dow = getDayOfWeek(dateStr);
-              const hol = isHoliday(dateStr);
-              const dCol = hol || dow === 0 ? "var(--sun)" : dow === 6 ? "var(--sat)" : "var(--text)";
-              const meta = getDayMeta(dateStr);
-              const isSelected = state.selectedDate === dateStr;
-              const isToday = TODAY_STR === dateStr;
-              const cls = [
-                "cal-day-cell",
-                meta.hasAny ? "has-record" : "",
-                isSelected ? "selected-day" : "",
-                isToday ? "today-cell" : ""
-              ].filter(Boolean).join(" ");
-              const miniTxt = meta.log.oneLine || (hol ? HOLIDAYS[dateStr] : "");
-              const tip = `${dateStr}${hol ? ` (${HOLIDAYS[dateStr]})` : ""}${meta.log.oneLine ? ` - ${meta.log.oneLine}` : ""}`;
-
-              cellsHtml += `
-                <div class="${cls}" onclick="selectDate('${dateStr}', true)" title="${escapeAttr(tip)}">
-                  <span class="cal-day-num" style="color:${dCol}">${day}</span>
-                  <span class="cell-badges">
-                    ${meta.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)"></span>` : ""}
-                    ${meta.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)"></span>` : ""}
-                    ${meta.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)"></span>` : ""}
-                    ${meta.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)"></span>` : ""}
-                  </span>
-                  <span class="cal-day-mini ${!meta.log.oneLine && hol ? "holiday-label" : ""}">${escapeHtml(miniTxt)}</span>
-                </div>
-              `;
-            }
-
-            const highlightsHtml = recordedDays.slice(0, 4).map(item => {
-              const dCol = getDateColor(item.dateStr);
-              const summary = item.log.oneLine || (item.hasArchive ? "아카이브 기록" : item.hasAchieved ? "목표 달성" : item.hasDiary ? "일기 작성" : "할일");
-              return `
-                <div class="highlight-row" onclick="selectDate('${item.dateStr}', true)">
-                  <strong style="color:${dCol}; flex-shrink:0;">${item.day}일</strong>
-                  <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-sub);">${escapeHtml(summary)}</span>
-                </div>
-              `;
-            }).join("");
-
-            innerBody = `
-              <div class="cal-weekdays">${dayNames.map(dn => `<span>${dn}</span>`).join("")}</div>
-              <div class="cal-days-grid">${cellsHtml}</div>
-              ${highlightsHtml ? `<div class="month-highlights">${highlightsHtml}</div>` : ""}
-            `;
-          }
+          const innerBody = recordedDays.length ? `
+            <div class="month-highlights">
+              ${recordedDays.map(item => {
+                const dow = getDayOfWeek(item.dateStr);
+                const dCol = getDateColor(item.dateStr);
+                const summary = item.log.oneLine || (item.hasArchive ? "아카이브 기록" : item.hasAchieved ? "목표·버킷 달성" : item.hasDiary ? "일기 작성됨" : "할일 등록됨");
+                return `
+                  <div class="highlight-row" onclick="selectDate('${item.dateStr}', true)">
+                    <strong style="width:52px; flex-shrink:0; color:${dCol};">${item.day}일(${dayNames[dow]})</strong>
+                    <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(summary)}</span>
+                    <span class="cell-badges">
+                      ${item.hasDiary ? `<span class="badge-dot" style="background:var(--c-diary)"></span>` : ""}
+                      ${item.hasAchieved ? `<span class="badge-dot" style="background:var(--c-goal)"></span>` : ""}
+                      ${item.hasArchive ? `<span class="badge-dot" style="background:var(--c-archive)"></span>` : ""}
+                      ${item.hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)"></span>` : ""}
+                    </span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          ` : `<p style="font-size:12px; color:var(--text-sub); margin:6px 0;">기록 있는 날이 없습니다.</p>`;
 
           return `
             <div class="month-card" id="month-card-${year}-${month}">
@@ -2037,14 +1853,8 @@
         return `
           <section class="year-block">
             <div class="month-toolbar">
-              <h2 class="year-heading" style="margin:0;">${year}년 달별 모아보기</h2>
-              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
-                <div class="segmented">
-                  <button class="${state.monthDisplayMode === "calendar" ? "active" : ""}" onclick="setMonthDisplayMode('calendar')">달력 격자</button>
-                  <button class="${state.monthDisplayMode === "recorded" ? "active" : ""}" onclick="setMonthDisplayMode('recorded')">기록 있는 날만</button>
-                </div>
-                <div class="month-jump-bar">${jumpButtons}</div>
-              </div>
+              <h2 class="year-heading" style="margin:0;">${year}년 달별 모아보기 · 기록 있는 날</h2>
+              <div class="month-jump-bar">${jumpButtons}</div>
             </div>
             <div class="months-grid">${monthCards}</div>
           </section>
@@ -2133,7 +1943,7 @@
     `;
   }
 
-  // 하루 기록 · 일기 뷰 (단일 화살표 아이콘 버튼 + 날짜 선택기 + 오늘 버튼)
+  // 하루 기록 · 일기 뷰 (할일 항목을 탭하면 바로 수정 모달 열림)
   function renderDiaryView() {
     const d = state.selectedDate;
     const prevDate = shiftDate(d, -1);
@@ -2181,21 +1991,15 @@
               <button class="btn" onclick="addDayTodo()">추가</button>
             </div>
             <div class="item-list">
-              ${dayTodos.length ? dayTodos.map(t => {
-                const key = `todo_${t.id}`;
-                return `
-                  <div class="list-item ${t.done ? "done" : ""}">
-                    <div class="item-left">
-                      <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" />
-                      <div class="item-title clickable-label" onclick="toggleRowActions(event, '${key}')">${escapeHtml(t.title)}</div>
-                    </div>
-                    <div class="reveal-actions ${activeActionTarget === key ? "visible" : ""}" data-action-key="${key}">
-                      <button class="icon-btn" onclick="openEditTodo('${t.id}')" title="수정">${ICONS.pencil}</button>
-                      <button class="icon-btn danger" onclick="deleteItem('todos','${t.id}')" title="삭제">${ICONS.trash}</button>
-                    </div>
+              ${dayTodos.length ? dayTodos.map(t => `
+                <div class="list-item ${t.done ? "done" : ""}">
+                  <div class="item-left">
+                    <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" />
+                    <div class="item-title tap-edit-target" onclick="openEditTodo('${t.id}')" title="탭하여 수정">${escapeHtml(t.title)}</div>
                   </div>
-                `;
-              }).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 할일이 없습니다.</p>`}
+                  <button class="icon-btn danger" onclick="deleteItem('todos','${t.id}')" title="삭제">${ICONS.trash}</button>
+                </div>
+              `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 할일이 없습니다.</p>`}
             </div>
           </div>
 
@@ -2203,9 +2007,9 @@
             <div class="card">
               <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">이 날의 달성 · 아카이브</h3>
               <div class="item-list">
-                ${doneGoals.map(g => `<div class="list-item" style="cursor:pointer;" onclick="openViewGoal('${g.id}')"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} 목표 · ${escapeHtml(g.topic)}</span>${escapeHtml(g.title)}</div>`).join("")}
-                ${doneBuckets.map(b => `<div class="list-item"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} 버킷 · ${escapeHtml(b.category)}</span>${escapeHtml(b.title)}</div>`).join("")}
-                ${dayArchives.map(a => `<div class="list-item" style="cursor:pointer;" onclick="openViewArchive('${a.id}')"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span>${escapeHtml(a.title)}</div>`).join("")}
+                ${doneGoals.map(g => `<div class="list-item tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} 목표 · ${escapeHtml(g.topic)}</span>${escapeHtml(g.title)}</div>`).join("")}
+                ${doneBuckets.map(b => `<div class="list-item tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} 버킷 · ${escapeHtml(b.category)}</span>${escapeHtml(b.title)}</div>`).join("")}
+                ${dayArchives.map(a => `<div class="list-item tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span>${escapeHtml(a.title)}</div>`).join("")}
               </div>
             </div>
           ` : ""}
@@ -2232,7 +2036,7 @@
     render();
   }
 
-  // 주제별 목표 & 연간 목표 양방향 동기화 필터 함수
+  // 목표 필터 & 카테고리 관리
   function changeGoalTopicFilter(val) {
     state.goalTopicFilter = val;
     saveState();
@@ -2240,9 +2044,7 @@
   }
 
   function changeGoalYearFilter(val) {
-    const norm = val === "all" ? "all" : normalizeYear(val);
-    state.goalYearFilter = norm;
-    state.annualGoalYearFilter = norm;
+    state.goalYearFilter = val === "all" ? "all" : normalizeYear(val);
     saveState();
     render();
   }
@@ -2266,7 +2068,7 @@
 
   function renderDoneDateControl(collection, id, doneDate) {
     return `
-      <span class="done-date-inline">
+      <span class="done-date-inline" onclick="event.stopPropagation()">
         달성일:
         <input type="date" value="${escapeAttr(doneDate || TODAY_STR)}" onchange="updateDoneDate('${collection}','${id}',this.value)" />
       </span>
@@ -2300,7 +2102,7 @@
     if (prev) prev.innerHTML = renderThumbList(draftGoalImages, "removeDraftGoalImage");
   }
 
-  // 주제별 목표 뷰
+  // 통합 목표 뷰 (기간 설정 + 카테고리 추가/수정 지원 + 탭 시 바로 수정 모달)
   function renderGoalsView() {
     let filtered = state.goals.filter(g => {
       const topicOk = state.goalTopicFilter === "all" || g.topic === state.goalTopicFilter;
@@ -2330,12 +2132,12 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title title-goal">${ICONS.goals} 주제별 목표</h1>
-          <span class="topbar-sub">총 ${totalCnt}개</span>
+          <h1 class="page-title title-goal">${ICONS.goals} 목표</h1>
+          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
         </div>
         <div class="topbar-right">
-          ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 기한 (연도)")}
-          <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="세부 기간 필터">
+          ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 연도")}
+          <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
             <option value="all" ${state.goalPeriodFilter === "all" ? "selected" : ""}>전체 기간</option>
             ${PERIODS.map(p => `<option value="${p}" ${state.goalPeriodFilter === p ? "selected" : ""}>${p}</option>`).join("")}
           </select>
@@ -2372,23 +2174,23 @@
             const isAct = state.goalTopicFilter === t.name;
             return `
               <span class="chip-wrap ${isAct ? "active" : ""}">
-                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter('${escapeAttr(t.name)}'); toggleChipActions(event, 'topic_${idx}')">
+                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter('${escapeAttr(t.name)}')">
                   ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} (${cnt})
                 </button>
                 <span class="chip-actions">
-                  <button class="chip-action-btn" onclick="openEditTopic(${idx})" title="주제 수정">${ICONS.pencil}</button>
-                  <button class="chip-action-btn" onclick="deleteTopic(${idx})" title="주제 삭제">${ICONS.trash}</button>
+                  <button class="chip-action-btn" onclick="openEditTopic(${idx})" title="카테고리 수정">수정</button>
+                  <button class="chip-action-btn" onclick="deleteTopic(${idx})" title="카테고리 삭제">${ICONS.trash}</button>
                 </span>
               </span>
             `;
           }).join("")}
         </div>
         <div class="cat-add-inline">
-          <select id="newTopicIconSel" class="year-select" aria-label="주제 픽토그램 선택">
+          <select id="newTopicIconSel" class="year-select" aria-label="카테고리 픽토그램 선택">
             ${Object.entries(PICTOGRAMS).map(([k, info]) => `<option value="${k}">${info.label}</option>`).join("")}
           </select>
-          <input type="text" id="newTopicInp" style="width:150px;" placeholder="새 주제명 입력" onkeydown="if(event.key==='Enter') addTopic()" />
-          <button class="btn" onclick="addTopic()">주제 추가</button>
+          <input type="text" id="newTopicInp" style="width:150px;" placeholder="새 카테고리명 입력" onkeydown="if(event.key==='Enter') addTopic()" />
+          <button class="btn" onclick="addTopic()">카테고리 추가</button>
         </div>
       </div>
 
@@ -2399,13 +2201,14 @@
             <button class="btn btn-sm" onclick="toggleGoalComposer()">취소</button>
           </div>
           <div class="form-row">
-            <select id="goalTopicSel">
+            <select id="goalTopicSel" aria-label="목표 카테고리">
               ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
             </select>
-            <select id="goalYearSel">
+            <input type="text" id="composerQuickTopicInp" style="width:140px;" placeholder="새 카테고리 바로 입력" />
+            <select id="goalYearSel" aria-label="목표 연도">
               ${YEARS.map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
             </select>
-            <select id="goalPeriodSel">
+            <select id="goalPeriodSel" aria-label="목표 기간">
               ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
             </select>
             <input type="text" id="goalTitleInp" style="flex:1; min-width:200px;" placeholder="목표 제목 입력..." onkeydown="if(event.key==='Enter') addGoal()" />
@@ -2436,10 +2239,9 @@
             const yr = normalizeYear(g.year);
             const pr = normalizePeriod(g.period);
             const imgs = normalizeImages(g);
-            const key = `goal_${g.id}`;
             return `
               <article class="media-card ${g.done ? "done" : ""}">
-                <div class="media-cover" onclick="openViewGoal('${g.id}')" title="자세히 보기">
+                <div class="media-cover" onclick="openEditGoal('${g.id}')" title="탭하여 수정">
                   ${imgs.length > 0
                     ? `<img src="${imgs[0]}" alt="${escapeAttr(g.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
                     : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(g.topic)}</span></div>`
@@ -2451,16 +2253,13 @@
                       <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
                       <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
                     </div>
-                    <div class="reveal-actions ${activeActionTarget === key ? "visible" : ""}" data-action-key="${key}">
-                      <button class="icon-btn" onclick="openEditGoal('${g.id}')" title="수정">${ICONS.pencil}</button>
-                      <button class="icon-btn danger" onclick="deleteItem('goals','${g.id}')" title="삭제">${ICONS.trash}</button>
-                    </div>
+                    <button class="icon-btn danger" onclick="deleteItem('goals','${g.id}')" title="삭제">${ICONS.trash}</button>
                   </div>
                   <div class="media-title-row">
                     <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals','${g.id}')" />
-                    <h3 class="media-title clickable-label" onclick="toggleRowActions(event, '${key}')">${escapeHtml(g.title)}</h3>
+                    <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
                   </div>
-                  ${g.note ? `<div class="media-note clickable-label" onclick="openViewGoal('${g.id}')">${escapeHtml(g.note)}</div>` : ""}
+                  ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
                   ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
                 </div>
               </article>
@@ -2475,6 +2274,15 @@
     `;
   }
 
+  function ensureTopicExists(name, icon = "target") {
+    const clean = String(name || "").trim();
+    if (!clean) return null;
+    if (!state.topics.some(t => t.name === clean)) {
+      state.topics.push({ name: clean, icon: resolveIconKey(icon, "target") });
+    }
+    return clean;
+  }
+
   function addTopic() {
     const iconSel = document.getElementById("newTopicIconSel");
     const nameInp = document.getElementById("newTopicInp");
@@ -2482,7 +2290,7 @@
     const name = (nameInp.value || "").trim();
     if (!name) return;
     if (state.topics.some(t => t.name === name)) {
-      alert("이미 같은 이름의 주제가 있습니다.");
+      alert("이미 같은 이름의 카테고리가 있습니다.");
       return;
     }
     state.topics.push({ name, icon });
@@ -2493,13 +2301,13 @@
   function openEditTopic(idx) {
     const target = state.topics[idx];
     if (!target) return;
-    openModal("주제 수정", `
+    openModal("목표 카테고리 수정", `
       <div class="modal-field">
         <label>픽토그램 선택</label>
         ${renderIconPickerHtml("mTopicIcon", target.icon)}
       </div>
       <div class="modal-field">
-        <label>주제 이름 (기존 목표들의 주제명도 함께 변경됩니다)</label>
+        <label>카테고리 이름 (기존 목표들의 카테고리명도 함께 변경됩니다)</label>
         <input type="text" id="mTopicName" value="${escapeAttr(target.name)}" />
       </div>
     `, () => {
@@ -2507,7 +2315,7 @@
       const newName = document.getElementById("mTopicName").value.trim();
       if (!newName) return;
       if (newName !== target.name && state.topics.some(t => t.name === newName)) {
-        alert("이미 같은 이름의 주제가 있습니다.");
+        alert("이미 같은 이름의 카테고리가 있습니다.");
         return;
       }
       const oldName = target.name;
@@ -2524,8 +2332,8 @@
     if (!target) return;
     const count = state.goals.filter(g => g.topic === target.name).length;
     const msg = count > 0
-      ? `'${target.name}' 주제를 삭제할까요? 이 주제에 속한 목표 ${count}개도 함께 삭제됩니다.`
-      : `'${target.name}' 주제를 삭제할까요?`;
+      ? `'${target.name}' 카테고리를 삭제할까요? 이 카테고리에 속한 목표 ${count}개도 함께 삭제됩니다.`
+      : `'${target.name}' 카테고리를 삭제할까요?`;
     if (!confirm(msg)) return;
     state.topics.splice(idx, 1);
     if (state.goalTopicFilter === target.name) state.goalTopicFilter = "all";
@@ -2535,8 +2343,10 @@
   }
 
   function addGoal() {
+    const quickInp = document.getElementById("composerQuickTopicInp");
+    const quickCat = quickInp ? quickInp.value.trim() : "";
     const topicSel = document.getElementById("goalTopicSel");
-    const topic = topicSel ? topicSel.value : (state.topics[0]?.name || "기타");
+    const selectedTopic = quickCat ? ensureTopicExists(quickCat, "target") : (topicSel ? topicSel.value : (state.topics[0]?.name || "기타"));
     const year = normalizeYear(document.getElementById("goalYearSel").value);
     const period = normalizePeriod(document.getElementById("goalPeriodSel").value);
     const title = document.getElementById("goalTitleInp").value.trim();
@@ -2544,7 +2354,7 @@
     if (!title) return;
     state.goals.unshift({
       id: uid(),
-      topic,
+      topic: selectedTopic,
       year,
       period,
       title,
@@ -2557,21 +2367,6 @@
     showGoalComposer = false;
     saveState();
     render();
-  }
-
-  function openViewGoal(id) {
-    const g = state.goals.find(x => x.id === id);
-    if (!g) return;
-    const imgs = normalizeImages(g);
-    openViewModal(
-      `${g.topic} · ${normalizeYear(g.year)}년 ${normalizePeriod(g.period)}`,
-      `
-        ${imgs.length ? `<div class="modal-gallery">${imgs.map(src => `<img src="${src}" alt="${escapeAttr(g.title)}" />`).join("")}</div>` : ""}
-        <h4 style="margin:0 0 8px; font-size:17px;">${escapeHtml(g.title)}</h4>
-        <div style="font-size:14px; line-height:1.7; white-space:pre-line;">${escapeHtml(g.note || "작성된 본문 내용이 없습니다.")}</div>
-      `,
-      () => openEditGoal(id)
-    );
   }
 
   let modalGoalImages = [];
@@ -2600,10 +2395,14 @@
     const curPeriod = normalizePeriod(g.period);
     openModal("목표 수정", `
       <div class="modal-field">
-        <label>주제</label>
+        <label>카테고리</label>
         <select id="mGoalTopic">
           ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${g.topic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
         </select>
+      </div>
+      <div class="modal-field">
+        <label>새 카테고리 직접 추가 (입력 시 자동 추가 및 선택)</label>
+        <input type="text" id="mGoalNewTopic" placeholder="새 카테고리 이름 (선택)" />
       </div>
       <div class="modal-field">
         <label>연도</label>
@@ -2626,14 +2425,19 @@
         <textarea id="mGoalNote" style="min-height:100px;">${escapeHtml(g.note || "")}</textarea>
       </div>
       <div class="modal-field">
-        <label>대표 이미지 (최대 5장)</label>
+        <label>사진 (최대 5장)</label>
         <input type="file" accept="image/*" multiple onchange="handleModalGoalImages(event)" />
         <div id="mGoalImgBox" class="img-preview-box">
           ${renderThumbList(modalGoalImages, "removeModalGoalImage")}
         </div>
       </div>
     `, () => {
-      g.topic = document.getElementById("mGoalTopic").value;
+      const addedCat = document.getElementById("mGoalNewTopic").value.trim();
+      if (addedCat) {
+        g.topic = ensureTopicExists(addedCat, "target");
+      } else {
+        g.topic = document.getElementById("mGoalTopic").value;
+      }
       g.year = normalizeYear(document.getElementById("mGoalYear").value);
       g.period = normalizePeriod(document.getElementById("mGoalPeriod").value);
       g.title = document.getElementById("mGoalTitle").value.trim() || g.title;
@@ -2641,107 +2445,6 @@
       g.images = [...modalGoalImages];
       delete g.image;
     });
-  }
-
-  // 연간 목표 뷰 (주제별 목표와 연도·기간·주제 필터 완전 연동)
-  function changeAnnualGoalYearFilter(val) {
-    const norm = val === "all" ? "all" : normalizeYear(val);
-    state.annualGoalYearFilter = norm;
-    state.goalYearFilter = norm;
-    saveState();
-    render();
-  }
-
-  function renderAnnualGoalsView() {
-    const targetYear = state.goalYearFilter === "all" ? "all" : normalizeYear(state.goalYearFilter);
-    const targetPeriod = state.goalPeriodFilter || "all";
-    const targetTopic = state.goalTopicFilter || "all";
-
-    const filtered = state.goals.filter(g => {
-      const yearOk = targetYear === "all" || normalizeYear(g.year) === targetYear;
-      const periodOk = targetPeriod === "all" || normalizePeriod(g.period) === targetPeriod;
-      const topicOk = targetTopic === "all" || g.topic === targetTopic;
-      return yearOk && periodOk && topicOk;
-    });
-
-    const totalCnt = filtered.length;
-    const doneCnt = filtered.filter(g => g.done).length;
-    const pct = totalCnt > 0 ? Math.round((doneCnt / totalCnt) * 100) : 0;
-
-    const periodsToRender = targetPeriod === "all" ? PERIODS : [targetPeriod];
-
-    const groupsHtml = periodsToRender.map(period => {
-      const items = filtered.filter(g => normalizePeriod(g.period) === period);
-      if (items.length === 0) return "";
-      return `
-        <div class="card">
-          <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-plan);">${escapeHtml(period)} (${items.filter(i => i.done).length}/${items.length})</h3>
-          <div class="item-list">
-            ${items.map(g => {
-              const key = `annual_${g.id}`;
-              return `
-                <div class="list-item ${g.done ? "done" : ""}">
-                  <div class="item-left">
-                    <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals','${g.id}')" />
-                    <div>
-                      <div class="item-title clickable-label" onclick="toggleRowActions(event, '${key}')">${escapeHtml(g.title)}</div>
-                      ${g.note ? `<div class="clickable-label" onclick="openViewGoal('${g.id}')" style="font-size:12px; color:var(--text-sub); margin-top:2px;">${escapeHtml(g.note)}</div>` : ""}
-                      <div class="item-meta">
-                        ${targetYear === "all" ? `<span class="pill">${normalizeYear(g.year)}년</span>` : ""}
-                        <span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} ${escapeHtml(g.topic)}</span>
-                        ${g.done ? renderDoneDateControl("goals", g.id, g.doneDate) : ""}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="reveal-actions ${activeActionTarget === key ? "visible" : ""}" data-action-key="${key}">
-                    <button class="icon-btn" onclick="openEditGoal('${g.id}')" title="수정">${ICONS.pencil}</button>
-                    <button class="icon-btn danger" onclick="deleteItem('goals','${g.id}')" title="삭제">${ICONS.trash}</button>
-                  </div>
-                </div>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-plan">${ICONS.plans} 연간 목표</h1>
-          <span class="topbar-sub">주제별 목표와 기간·주제 필터가 실시간 연동됩니다</span>
-        </div>
-        <div class="topbar-right">
-          ${yearSelectHtml(targetYear, "changeAnnualGoalYearFilter")}
-          <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
-            <option value="all" ${targetPeriod === "all" ? "selected" : ""}>전체 기간</option>
-            ${PERIODS.map(p => `<option value="${p}" ${targetPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
-          </select>
-          <select class="year-select" onchange="changeGoalTopicFilter(this.value)" aria-label="주제 필터">
-            <option value="all" ${targetTopic === "all" ? "selected" : ""}>전체 주제</option>
-            ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${targetTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
-          </select>
-          <button class="btn btn-primary" onclick="showGoalComposer=true; setTab('goals')">+ 새 목표 추가</button>
-        </div>
-      </div>
-
-      <div class="summary-strip">
-        <div class="summary-metrics">
-          <span>${targetYear === "all" ? "전체 연도" : `${targetYear}년`}${targetPeriod !== "all" ? ` · ${targetPeriod}` : ""}${targetTopic !== "all" ? ` · ${targetTopic}` : ""} 목표 <strong>${totalCnt}개</strong></span>
-          <span>달성 완료 <strong style="color:var(--c-goal);">${doneCnt}개</strong></span>
-          <span>달성률 <strong>${pct}%</strong></span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${pct}%;"></div>
-        </div>
-      </div>
-
-      ${groupsHtml || `
-        <div class="card">
-          <p style="font-size:13px; color:var(--text-sub); margin:0;">선택한 조건에 등록된 목표가 없습니다. 주제별 목표에서 목표를 추가해 보세요.</p>
-        </div>
-      `}
-    `;
   }
 
   // 버킷리스트 뷰
@@ -2843,7 +2546,7 @@
       <div class="topbar">
         <div class="topbar-left">
           <h1 class="page-title title-bucket">${ICONS.bucket} 버킷리스트</h1>
-          <span class="topbar-sub">총 ${totalCnt}개</span>
+          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
         </div>
         <div class="topbar-right">
           <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
@@ -2879,11 +2582,11 @@
             const isAct = state.bucketCatFilter === cat.name;
             return `
               <span class="chip-wrap ${isAct ? "active" : ""}">
-                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeBucketCatFilter('${escapeAttr(cat.name)}'); toggleChipActions(event, 'bcat_${idx}')">
+                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeBucketCatFilter('${escapeAttr(cat.name)}')">
                   ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} (${cnt})
                 </button>
                 <span class="chip-actions">
-                  <button class="chip-action-btn" onclick="openEditBucketCategory(${idx})" title="카테고리 수정">${ICONS.pencil}</button>
+                  <button class="chip-action-btn" onclick="openEditBucketCategory(${idx})" title="카테고리 수정">수정</button>
                   <button class="chip-action-btn" onclick="deleteBucketCategory(${idx})" title="카테고리 삭제">${ICONS.trash}</button>
                 </span>
               </span>
@@ -2924,28 +2627,22 @@
 
       <div class="card">
         <div class="item-list">
-          ${filtered.length ? filtered.map(b => {
-            const key = `bucket_${b.id}`;
-            return `
-              <div class="list-item ${b.done ? "done" : ""}">
-                <div class="item-left">
-                  <input type="checkbox" class="chk" ${b.done ? "checked" : ""} onchange="toggleAchieve('buckets','${b.id}')" />
-                  <div>
-                    <div class="item-title clickable-label" onclick="toggleRowActions(event, '${key}')">${escapeHtml(b.title)}</div>
-                    <div class="item-meta">
-                      <span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span>
-                      ${b.note ? `<span>${escapeHtml(b.note)}</span>` : ""}
-                      ${b.done ? renderDoneDateControl("buckets", b.id, b.doneDate) : ""}
-                    </div>
+          ${filtered.length ? filtered.map(b => `
+            <div class="list-item ${b.done ? "done" : ""}">
+              <div class="item-left">
+                <input type="checkbox" class="chk" ${b.done ? "checked" : ""} onchange="toggleAchieve('buckets','${b.id}')" />
+                <div class="tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
+                  <div class="item-title">${escapeHtml(b.title)}</div>
+                  <div class="item-meta">
+                    <span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span>
+                    ${b.note ? `<span>${escapeHtml(b.note)}</span>` : ""}
+                    ${b.done ? renderDoneDateControl("buckets", b.id, b.doneDate) : ""}
                   </div>
                 </div>
-                <div class="reveal-actions ${activeActionTarget === key ? "visible" : ""}" data-action-key="${key}">
-                  <button class="icon-btn" onclick="openEditBucket('${b.id}')" title="수정">${ICONS.pencil}</button>
-                  <button class="icon-btn danger" onclick="deleteItem('buckets','${b.id}')" title="삭제">${ICONS.trash}</button>
-                </div>
               </div>
-            `;
-          }).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 버킷리스트가 없습니다. 상단의 '+ 새 버킷 추가' 버튼으로 등록해 보세요.</p>`}
+              <button class="icon-btn danger" onclick="deleteItem('buckets','${b.id}')" title="삭제">${ICONS.trash}</button>
+            </div>
+          `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 버킷리스트가 없습니다. 상단의 '+ 새 버킷 추가' 버튼으로 등록해 보세요.</p>`}
         </div>
       </div>
     `;
@@ -2963,7 +2660,7 @@
     render();
   }
 
-  // 아카이브 뷰
+  // 아카이브 뷰 (카드를 탭하면 바로 수정 모달 열림)
   function changeArchiveCatFilter(cat) {
     state.archiveCatFilter = cat;
     saveState();
@@ -3099,7 +2796,7 @@
       <div class="topbar">
         <div class="topbar-left">
           <h1 class="page-title title-archive">${ICONS.archive} 아카이브</h1>
-          <span class="topbar-sub">총 ${filtered.length}개</span>
+          <span class="topbar-sub">총 ${filtered.length}개 · 항목을 탭하면 바로 수정</span>
         </div>
         <div class="topbar-right">
           <select class="year-select" onchange="changeArchiveSort(this.value)" aria-label="아카이브 정렬">
@@ -3124,11 +2821,11 @@
             const isAct = state.archiveCatFilter === cat.name;
             return `
               <span class="chip-wrap ${isAct ? "active" : ""}">
-                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeArchiveCatFilter('${escapeAttr(cat.name)}'); toggleChipActions(event, 'acat_${idx}')">
+                <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeArchiveCatFilter('${escapeAttr(cat.name)}')">
                   ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} (${cnt})
                 </button>
                 <span class="chip-actions">
-                  <button class="chip-action-btn" onclick="openEditArchiveCategory(${idx})" title="카테고리 수정">${ICONS.pencil}</button>
+                  <button class="chip-action-btn" onclick="openEditArchiveCategory(${idx})" title="카테고리 수정">수정</button>
                   <button class="chip-action-btn" onclick="deleteArchiveCategory(${idx})" title="카테고리 삭제">${ICONS.trash}</button>
                 </span>
               </span>
@@ -3182,10 +2879,9 @@
           ${filtered.map(a => {
             const iconKey = getArchiveCatIconKey(a.category);
             const imgs = normalizeImages(a);
-            const key = `archive_${a.id}`;
             return `
               <article class="media-card">
-                <div class="media-cover" onclick="openViewArchive('${a.id}')" title="자세히 보기">
+                <div class="media-cover" onclick="openEditArchive('${a.id}')" title="탭하여 수정">
                   ${imgs.length > 0
                     ? `<img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
                     : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(a.category)}</span></div>`
@@ -3193,15 +2889,14 @@
                 </div>
                 <div class="media-body">
                   <div class="media-top">
-                    <span class="pill" style="cursor:pointer;" onclick="selectDate('${a.date}', true)" title="해당 날짜 일기로 이동">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category)} · ${a.date}</span>
-                    <div class="reveal-actions ${activeActionTarget === key ? "visible" : ""}" data-action-key="${key}">
-                      <button class="icon-btn" onclick="openEditArchive('${a.id}')" title="수정">${ICONS.pencil}</button>
-                      <button class="icon-btn danger" onclick="deleteItem('archives','${a.id}')" title="삭제">${ICONS.trash}</button>
-                    </div>
+                    <span class="pill" onclick="event.stopPropagation(); selectDate('${a.date}', true)" style="cursor:pointer;" title="해당 날짜 일기로 이동">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category)} · ${a.date}</span>
+                    <button class="icon-btn danger" onclick="event.stopPropagation(); deleteItem('archives','${a.id}')" title="삭제">${ICONS.trash}</button>
                   </div>
-                  <h3 class="media-title clickable-label" onclick="toggleRowActions(event, '${key}')">${escapeHtml(a.title)}</h3>
-                  ${a.subtitle ? `<div class="media-sub">${escapeHtml(a.subtitle)}</div>` : ""}
-                  ${a.note ? `<div class="media-note clickable-label" onclick="openViewArchive('${a.id}')">${escapeHtml(a.note)}</div>` : ""}
+                  <div class="tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정">
+                    <h3 class="media-title">${escapeHtml(a.title)}</h3>
+                    ${a.subtitle ? `<div class="media-sub">${escapeHtml(a.subtitle)}</div>` : ""}
+                    ${a.note ? `<div class="media-note" style="margin-top:6px;">${escapeHtml(a.note)}</div>` : ""}
+                  </div>
                 </div>
               </article>
             `;
@@ -3213,22 +2908,6 @@
         </div>
       `}
     `;
-  }
-
-  function openViewArchive(id) {
-    const a = state.archives.find(x => x.id === id);
-    if (!a) return;
-    const imgs = normalizeImages(a);
-    openViewModal(
-      `${a.category} · ${a.date}`,
-      `
-        ${imgs.length ? `<div class="modal-gallery">${imgs.map(src => `<img src="${src}" alt="${escapeAttr(a.title)}" />`).join("")}</div>` : ""}
-        <h4 style="margin:0 0 4px; font-size:17px;">${escapeHtml(a.title)}</h4>
-        ${a.subtitle ? `<div style="font-size:13px; color:var(--text-sub); margin-bottom:12px;">${escapeHtml(a.subtitle)}</div>` : ""}
-        <div style="font-size:14px; line-height:1.7; white-space:pre-line;">${escapeHtml(a.note || "작성된 글이 없습니다.")}</div>
-      `,
-      () => openEditArchive(id)
-    );
   }
 
   let modalArchiveImages = [];
@@ -3322,7 +3001,6 @@
 
   function deleteItem(collection, id) {
     state[collection] = state[collection].filter(x => x.id !== id);
-    activeActionTarget = null;
     saveState();
     render();
   }
@@ -3341,21 +3019,6 @@
       closeModal();
       saveState();
       render();
-    };
-  }
-
-  function openViewModal(title, bodyHtml, onSwitchEdit) {
-    document.getElementById("modalTitle").textContent = title;
-    document.getElementById("modalBody").innerHTML = bodyHtml;
-    document.getElementById("modalActions").innerHTML = `
-      <button class="btn" id="modalSwitchEditBtn">수정하기</button>
-      <button class="btn btn-primary" onclick="closeModal()">닫기</button>
-    `;
-    const modal = document.getElementById("editModal");
-    modal.classList.add("open");
-    document.getElementById("modalSwitchEditBtn").onclick = () => {
-      closeModal();
-      onSwitchEdit();
     };
   }
 
@@ -3430,7 +3093,7 @@
       try {
         const parsed = JSON.parse(e.target.result);
         state = { ...structuredClone(defaultState), ...parsed };
-        if (state.activeTab === "todos") state.activeTab = "diary";
+        state.activeTab = normalizeTab(state.activeTab);
         state.topics = normalizeCategoryList(state.topics, "target");
         state.archiveCategories = normalizeCategoryList(state.archiveCategories, "folder");
         state.bucketCategories = normalizeCategoryList(state.bucketCategories, "star");
