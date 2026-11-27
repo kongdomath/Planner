@@ -112,13 +112,20 @@
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
     }
     .page-title {
       font-size: 20px;
       font-weight: 700;
       margin: 0;
       letter-spacing: -0.02em;
+      color: var(--text);
     }
     select, input[type="text"], input[type="date"], textarea {
       font-family: inherit;
@@ -181,7 +188,7 @@
     .year-heading {
       font-size: 16px;
       font-weight: 700;
-      color: var(--c-year);
+      color: var(--text);
       margin: 0 0 10px;
       display: flex;
       align-items: center;
@@ -230,8 +237,9 @@
       font-weight: 700;
       margin-bottom: 2px;
     }
+    .day-num { color: var(--text); }
     .day-num.sat { color: var(--sat); }
-    .day-num.sun { color: var(--sun); }
+    .day-num.sun, .day-num.holiday { color: var(--sun); }
     .cell-badges { display: flex; gap: 3px; align-items: center; }
     .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
     .cell-line {
@@ -430,16 +438,110 @@
 </div>
 
 <script>
-  const STORAGE_KEY = "personal_archive_planner_v3";
+  const STORAGE_KEY = "personal_archive_planner_v4";
   const TODAY_STR = "2026-11-27";
   const YEARS = [2026, 2027, 2028, 2029, 2030];
+
+  const HOLIDAYS = {
+    "2026-01-01": "신정",
+    "2026-02-16": "설날 연휴",
+    "2026-02-17": "설날",
+    "2026-02-18": "설날 연휴",
+    "2026-03-01": "삼일절",
+    "2026-03-02": "대체공휴일",
+    "2026-05-05": "어린이날",
+    "2026-05-24": "부처님오신날",
+    "2026-05-25": "대체공휴일",
+    "2026-06-06": "현충일",
+    "2026-08-15": "광복절",
+    "2026-08-17": "대체공휴일",
+    "2026-09-24": "추석 연휴",
+    "2026-09-25": "추석",
+    "2026-09-26": "추석 연휴",
+    "2026-10-03": "개천절",
+    "2026-10-05": "대체공휴일",
+    "2026-10-09": "한글날",
+    "2026-12-25": "기독탄신일",
+
+    "2027-01-01": "신정",
+    "2027-02-06": "설날 연휴",
+    "2027-02-07": "설날",
+    "2027-02-08": "설날 연휴",
+    "2027-02-09": "대체공휴일",
+    "2027-03-01": "삼일절",
+    "2027-05-05": "어린이날",
+    "2027-05-13": "부처님오신날",
+    "2027-06-06": "현충일",
+    "2027-08-15": "광복절",
+    "2027-08-16": "대체공휴일",
+    "2027-09-14": "추석 연휴",
+    "2027-09-15": "추석",
+    "2027-09-16": "추석 연휴",
+    "2027-10-03": "개천절",
+    "2027-10-04": "대체공휴일",
+    "2027-10-09": "한글날",
+    "2027-10-11": "대체공휴일",
+    "2027-12-25": "기독탄신일",
+
+    "2028-01-01": "신정",
+    "2028-01-26": "설날 연휴",
+    "2028-01-27": "설날",
+    "2028-01-28": "설날 연휴",
+    "2028-03-01": "삼일절",
+    "2028-05-02": "부처님오신날",
+    "2028-05-05": "어린이날",
+    "2028-06-06": "현충일",
+    "2028-08-15": "광복절",
+    "2028-10-02": "추석 연휴",
+    "2028-10-03": "개천절 · 추석",
+    "2028-10-04": "추석 연휴",
+    "2028-10-05": "대체공휴일",
+    "2028-10-09": "한글날",
+    "2028-12-25": "기독탄신일",
+
+    "2029-01-01": "신정",
+    "2029-02-12": "설날 연휴",
+    "2029-02-13": "설날",
+    "2029-02-14": "설날 연휴",
+    "2029-03-01": "삼일절",
+    "2029-05-05": "어린이날",
+    "2029-05-07": "대체공휴일",
+    "2029-05-20": "부처님오신날",
+    "2029-05-21": "대체공휴일",
+    "2029-06-06": "현충일",
+    "2029-08-15": "광복절",
+    "2029-09-21": "추석 연휴",
+    "2029-09-22": "추석",
+    "2029-09-23": "추석 연휴",
+    "2029-09-24": "대체공휴일",
+    "2029-10-03": "개천절",
+    "2029-10-09": "한글날",
+    "2029-12-25": "기독탄신일",
+
+    "2030-01-01": "신정",
+    "2030-02-02": "설날 연휴",
+    "2030-02-03": "설날",
+    "2030-02-04": "설날 연휴",
+    "2030-03-01": "삼일절",
+    "2030-05-05": "어린이날",
+    "2030-05-06": "대체공휴일",
+    "2030-05-09": "부처님오신날",
+    "2030-06-06": "현충일",
+    "2030-08-15": "광복절",
+    "2030-09-11": "추석 연휴",
+    "2030-09-12": "추석",
+    "2030-09-13": "추석 연휴",
+    "2030-10-03": "개천절",
+    "2030-10-09": "한글날",
+    "2030-12-25": "기독탄신일"
+  };
 
   const pencilIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
   const trashIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
 
   const defaultState = {
     activeTab: "year",
-    yearFilter: "2027",
+    yearFilter: "2026",
     selectedDate: TODAY_STR,
     logs: {
       "2026-11-27": {
@@ -476,7 +578,7 @@
 
   function loadState() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("personal_archive_planner_v3");
       if (!raw) return structuredClone(defaultState);
       const parsed = JSON.parse(raw);
       return { ...structuredClone(defaultState), ...parsed };
@@ -498,11 +600,24 @@
     return new Date(y, m - 1, d).getDay();
   }
 
+  function isHoliday(dateStr) {
+    return Boolean(HOLIDAYS[dateStr]);
+  }
+
+  function getDateColor(dateStr) {
+    if (isHoliday(dateStr)) return "var(--sun)";
+    const dow = getDayOfWeek(dateStr);
+    if (dow === 0) return "var(--sun)";
+    if (dow === 6) return "var(--sat)";
+    return "var(--text)";
+  }
+
   function formatDateKo(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     const dow = new Date(y, m - 1, d).getDay();
-    return `${y}년 ${m}월 ${d}일 (${days[dow]})`;
+    const hName = HOLIDAYS[dateStr] ? ` · ${HOLIDAYS[dateStr]}` : "";
+    return `${y}년 ${m}월 ${d}일 (${days[dow]})${hName}`;
   }
 
   function yearSelectHtml() {
@@ -566,7 +681,8 @@
           }
           const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const dow = getDayOfWeek(dateStr);
-          const dayCls = dow === 6 ? "sat" : dow === 0 ? "sun" : "";
+          const hol = isHoliday(dateStr);
+          const dayCls = hol ? "holiday" : dow === 0 ? "sun" : dow === 6 ? "sat" : "";
           const log = state.logs[dateStr] || {};
           const hasDiary = Boolean(log.diary && log.diary.trim());
           const hasAchieved =
@@ -578,9 +694,10 @@
           const isSelected = state.selectedDate === dateStr;
           const isToday = TODAY_STR === dateStr;
           const tdCls = [isSelected ? "selected-day" : "", isToday ? "today-cell" : ""].filter(Boolean).join(" ");
+          const tip = HOLIDAYS[dateStr] ? `${dateStr} (${HOLIDAYS[dateStr]})` : dateStr;
 
           cells += `
-            <td class="${tdCls}" onclick="selectDate('${dateStr}', true)" title="${dateStr}">
+            <td class="${tdCls}" onclick="selectDate('${dateStr}', true)" title="${escapeAttr(tip)}">
               <div class="cell-top">
                 <span class="day-num ${dayCls}">${day}</span>
                 <span class="cell-badges">
@@ -589,7 +706,7 @@
                   ${hasTodo ? `<span class="badge-dot" style="background:var(--c-todo)" title="할일 있음"></span>` : ""}
                 </span>
               </div>
-              <div class="cell-line">${escapeHtml(log.oneLine || "")}</div>
+              <div class="cell-line">${escapeHtml(log.oneLine || (hol ? HOLIDAYS[dateStr] : ""))}</div>
             </td>
           `;
         }
@@ -614,11 +731,11 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:var(--c-year)">1년 연력</h1>
-          ${yearSelectHtml()}
+          <h1 class="page-title">1년 연력</h1>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
+        <div class="topbar-right">
           <button class="btn" onclick="selectDate('${TODAY_STR}', true)">오늘 기록 (${TODAY_STR})</button>
+          ${yearSelectHtml()}
         </div>
       </div>
       ${blocks}
@@ -627,8 +744,7 @@
 
   function renderDiaryView() {
     const d = state.selectedDate;
-    const dow = getDayOfWeek(d);
-    const titleColor = dow === 6 ? "var(--sat)" : dow === 0 ? "var(--sun)" : "var(--c-diary)";
+    const titleColor = getDateColor(d);
     const log = state.logs[d] || { oneLine: "", diary: "" };
 
     const dayTodos = state.todos.filter(t => t.date === d);
@@ -641,7 +757,7 @@
         <div class="topbar-left">
           <h1 class="page-title" style="color:${titleColor}">${formatDateKo(d)}</h1>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
+        <div class="topbar-right">
           <input type="date" value="${d}" onchange="if(this.value) selectDate(this.value, false)" />
           <button class="btn" onclick="selectDate('${TODAY_STR}', false)">오늘</button>
           <button class="btn" onclick="setTab('year')">연력으로</button>
@@ -650,10 +766,10 @@
 
       <div class="grid-2">
         <div class="card">
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-year); margin-bottom:6px;">연력 한 줄 요약</label>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px;">연력 한 줄 요약</label>
           <input type="text" id="oneLineInput" style="width:100%; margin-bottom:16px;" placeholder="연력 칸에 표시될 오늘의 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="saveDiaryDraft()" />
 
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
+          <label style="display:block; font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
           <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="saveDiaryDraft()">${escapeHtml(log.diary || "")}</textarea>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
             <span id="saveStatus" style="font-size:12px; color:var(--text-sub);">자동 저장됨</span>
@@ -663,7 +779,7 @@
 
         <div>
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-todo);">이 날의 할일</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">이 날의 할일</h3>
             <div class="form-row">
               <input type="text" id="dayTodoInput" style="flex:1;" placeholder="이 날짜에 할일 추가..." onkeydown="if(event.key==='Enter') addDayTodo()" />
               <button class="btn" onclick="addDayTodo()">추가</button>
@@ -685,7 +801,7 @@
           </div>
 
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">이 날 달성한 목표 · 계획 · 버킷</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">이 날 달성한 목표 · 계획 · 버킷</h3>
             ${(doneGoals.length + donePlans.length + doneBuckets.length) === 0
               ? `<p style="font-size:13px; color:var(--text-sub); margin:0;">목표, 계획, 버킷리스트에서 완료 체크하면 달성 날짜(${d})와 자동으로 연결됩니다.</p>`
               : `<div class="item-list">
@@ -718,12 +834,19 @@
     render();
   }
 
+  function getActiveYearValue() {
+    return state.yearFilter === "all" ? "2027" : state.yearFilter;
+  }
+
   function renderGoalsView() {
     const filtered = state.goals.filter(g => state.yearFilter === "all" || g.year === state.yearFilter);
+    const curYear = getActiveYearValue();
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:var(--c-goal)">주제별 목표</h1>
+          <h1 class="page-title">주제별 목표</h1>
+        </div>
+        <div class="topbar-right">
           ${yearSelectHtml()}
         </div>
       </div>
@@ -733,10 +856,7 @@
           <select id="goalTopicSel">
             ${state.topics.map(t => `<option value="${escapeAttr(t)}">${escapeHtml(t)}</option>`).join("")}
           </select>
-          <select id="goalYearSel">
-            ${YEARS.map(y => `<option value="${y}" ${(state.yearFilter === String(y) || (state.yearFilter === "all" && y === 2027)) ? "selected" : ""}>${y}년</option>`).join("")}
-          </select>
-          <input type="text" id="goalTitleInp" style="flex:1; min-width:200px;" placeholder="새 목표 입력..." onkeydown="if(event.key==='Enter') addGoal()" />
+          <input type="text" id="goalTitleInp" style="flex:1; min-width:200px;" placeholder="${curYear}년 새 목표 입력..." onkeydown="if(event.key==='Enter') addGoal()" />
           <button class="btn btn-primary" onclick="addGoal()">목표 추가</button>
         </div>
         <div class="form-row" style="margin-bottom:0;">
@@ -749,7 +869,7 @@
         const items = filtered.filter(g => g.topic === topic);
         return `
           <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">${escapeHtml(topic)} (${items.filter(i => i.done).length}/${items.length})</h3>
+            <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">${escapeHtml(topic)} (${items.filter(i => i.done).length}/${items.length})</h3>
             <div class="item-list">
               ${items.length ? items.map(g => `
                 <div class="list-item ${g.done ? "done" : ""}">
@@ -787,7 +907,7 @@
 
   function addGoal() {
     const topic = document.getElementById("goalTopicSel").value;
-    const year = document.getElementById("goalYearSel").value;
+    const year = getActiveYearValue();
     const title = document.getElementById("goalTitleInp").value.trim();
     if (!title) return;
     state.goals.unshift({ id: uid(), topic, year, title, done: false, doneDate: "" });
@@ -797,19 +917,19 @@
 
   function renderPlansView() {
     const filtered = state.plans.filter(p => state.yearFilter === "all" || p.year === state.yearFilter);
+    const curYear = getActiveYearValue();
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:var(--c-plan)">연간 계획</h1>
+          <h1 class="page-title">연간 계획</h1>
+        </div>
+        <div class="topbar-right">
           ${yearSelectHtml()}
         </div>
       </div>
 
       <div class="card">
         <div class="form-row">
-          <select id="planYearSel">
-            ${YEARS.map(y => `<option value="${y}" ${(state.yearFilter === String(y) || (state.yearFilter === "all" && y === 2027)) ? "selected" : ""}>${y}년</option>`).join("")}
-          </select>
           <select id="planQuarterSel">
             <option value="연간">연간</option>
             <option value="상반기">상반기</option>
@@ -819,7 +939,7 @@
             <option value="3분기">3분기</option>
             <option value="4분기">4분기</option>
           </select>
-          <input type="text" id="planTitleInp" style="flex:1; min-width:180px;" placeholder="계획 제목..." />
+          <input type="text" id="planTitleInp" style="flex:1; min-width:180px;" placeholder="${curYear}년 계획 제목..." />
           <input type="text" id="planNoteInp" style="flex:1; min-width:160px;" placeholder="세부 실행 메모 (선택)" />
           <button class="btn btn-primary" onclick="addPlan()">계획 추가</button>
         </div>
@@ -853,7 +973,7 @@
   }
 
   function addPlan() {
-    const year = document.getElementById("planYearSel").value;
+    const year = getActiveYearValue();
     const quarter = document.getElementById("planQuarterSel").value;
     const title = document.getElementById("planTitleInp").value.trim();
     const note = document.getElementById("planNoteInp").value.trim();
@@ -865,22 +985,21 @@
 
   function renderBucketView() {
     const filtered = state.buckets.filter(b => state.yearFilter === "all" || b.year === state.yearFilter || b.year === "언제든");
+    const curYear = getActiveYearValue();
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:var(--c-bucket)">버킷리스트</h1>
+          <h1 class="page-title">버킷리스트</h1>
+        </div>
+        <div class="topbar-right">
           ${yearSelectHtml()}
         </div>
       </div>
 
       <div class="card">
         <div class="form-row">
-          <select id="bucketYearSel">
-            ${YEARS.map(y => `<option value="${y}" ${(state.yearFilter === String(y) || (state.yearFilter === "all" && y === 2027)) ? "selected" : ""}>${y}년</option>`).join("")}
-            <option value="언제든">언제든</option>
-          </select>
           <input type="text" id="bucketCatInp" style="width:120px;" placeholder="분류 (여행 등)" value="경험" />
-          <input type="text" id="bucketTitleInp" style="flex:1; min-width:180px;" placeholder="꼭 해보고 싶은 버킷리스트..." />
+          <input type="text" id="bucketTitleInp" style="flex:1; min-width:180px;" placeholder="${curYear}년 꼭 해보고 싶은 버킷리스트..." />
           <input type="text" id="bucketNoteInp" style="flex:1; min-width:150px;" placeholder="메모 (선택)" />
           <button class="btn btn-primary" onclick="addBucket()">추가</button>
         </div>
@@ -914,7 +1033,7 @@
   }
 
   function addBucket() {
-    const year = document.getElementById("bucketYearSel").value;
+    const year = getActiveYearValue();
     const category = document.getElementById("bucketCatInp").value.trim() || "기타";
     const title = document.getElementById("bucketTitleInp").value.trim();
     const note = document.getElementById("bucketNoteInp").value.trim();
@@ -929,7 +1048,9 @@
     return `
       <div class="topbar">
         <div class="topbar-left">
-          <h1 class="page-title" style="color:var(--c-todo)">할일</h1>
+          <h1 class="page-title">할일</h1>
+        </div>
+        <div class="topbar-right">
           ${yearSelectHtml()}
         </div>
       </div>
