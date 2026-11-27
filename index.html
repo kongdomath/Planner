@@ -1113,7 +1113,7 @@
       height: 42px; border-radius: 10px; border: 1px solid #e4dfd1; background: #fff;
       font-size: 14px; padding: 0 12px; color: var(--paper-ink);
     }
-    .auth-field input:focus { border-color: #b9b3a2; }
+    .auth-field input:focus { border-color: #8f95a0; box-shadow: 0 0 0 3px rgba(47,53,66,.12); outline: none; }
     .auth-error { min-height: 17px; margin: 2px 0 8px; font-size: 11.5px; line-height: 1.5; color: #b4453f; }
     .auth-primary {
       width: 100%; height: 44px; border-radius: 11px; border: 0; cursor: pointer;
@@ -2238,7 +2238,8 @@
       /* 일기 */
       .diary-controls { grid-template-columns: auto 1fr auto; gap: 6px; }
       .stage-nav { padding: 0 10px; font-size: 11px; height: 30px; }
-      .stage-nav span.label { display: none; }
+      .stage-nav { gap: 4px; }
+      .stage-nav span.label { font-size: 10.5px; }
       .diary-date b { font-size: 18px; }
       .diary-date span { font-size: 10.5px; }
       .diary-subcontrols { gap: 6px; margin-bottom: 12px; }
