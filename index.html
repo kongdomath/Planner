@@ -1657,6 +1657,7 @@
       flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
       padding: 30px 6px 26px;
       scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
     .nb-shelf-track::-webkit-scrollbar { display: none; }
     .nb-shelf-rail {
@@ -1852,6 +1853,16 @@
       position: absolute; right: 14px; bottom: 8px;
       font-size: 10px; font-weight: 600; color: #8a8d95; letter-spacing: .02em;
     }
+    .nb-photo-zoom {
+      position: absolute; right: 14px; top: 14px; z-index: 2;
+      width: 30px; height: 30px; border-radius: 50%; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(120,126,140,.26); background: rgba(252,251,247,.94);
+      color: #4a5162; cursor: zoom-in;
+      box-shadow: 0 2px 6px rgba(20,24,32,.12);
+    }
+    .nb-photo-zoom:hover { background: #fff; color: #23262d; }
+    .nb-photo-frame { cursor: default; }
     .nb-thumbs { display: flex; gap: 7px; flex-wrap: wrap; }
     .nb-thumb {
       width: 40px; height: 40px; border-radius: 4px; overflow: hidden; padding: 0;
@@ -1985,6 +1996,17 @@
     .nb-month-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 10px; text-align: center; }
     .nb-month-empty p { margin: 0; font-size: 12.5px; color: #8d929b; }
 
+    @keyframes nbFlipFromRight {
+      from { opacity: .25; transform: perspective(1200px) rotateY(-16deg) translateX(26px); }
+      60%  { opacity: .9; }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes nbFlipFromLeft {
+      from { opacity: .25; transform: perspective(1200px) rotateY(16deg) translateX(-26px); }
+      60%  { opacity: .9; }
+      to   { opacity: 1; transform: none; }
+    }
+
     @media (max-width: 760px) {
       .nb-stage { padding: 16px 12px 20px; border-radius: 16px; }
       .nb-stage-head { gap: 8px; }
@@ -2007,6 +2029,9 @@
       .nb-page { border-radius: 8px !important; min-height: 360px; max-height: none; padding: 24px 20px 28px; }
       .nb-spread[data-side="left"] .nb-page--right { display: none; }
       .nb-spread[data-side="right"] .nb-page--left { display: none; }
+      .nb-spread { perspective: 1200px; }
+      .nb-spread.flip-left .nb-page { animation: nbFlipFromRight .30s ease both; }
+      .nb-spread.flip-right .nb-page { animation: nbFlipFromLeft .30s ease both; }
       .nb-side-toggle { display: flex; justify-content: center; gap: 6px; margin: 12px 0 2px; }
       .nb-side-toggle button {
         height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer;
@@ -4700,10 +4725,11 @@
 
     const visual = imgs.length
       ? `
-        <div class="nb-photo-frame" onclick="openNotebookPhoto('${a.id}', 0)" title="사진 크게 보기">
+        <div class="nb-photo-frame">
           <span class="nb-photo-tape"></span>
           <img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />
-          ${imgs.length > 1 ? `<span class="nb-photo-count">사진 ${imgs.length}장 · 탭하여 크게</span>` : ""}
+          <button class="nb-photo-zoom" onclick="event.stopPropagation(); openNotebookPhoto('${a.id}', 0)" title="사진 크게 보기" aria-label="사진 크게 보기">${ICONS.search}</button>
+          ${imgs.length > 1 ? `<span class="nb-photo-count">사진 ${imgs.length}장 · 아래에서 골라 보기</span>` : ""}
         </div>
         ${imgs.length > 1 ? `
           <div class="nb-thumbs">
@@ -4867,11 +4893,59 @@
         const dx = t.clientX - sx;
         const dy = t.clientY - sy;
         if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          spread.dataset.swipedAt = String(Date.now());
           if (isYear) yearPageStep(dx < 0 ? 1 : -1);
           else notebookStep(dx < 0 ? 1 : -1);
         }
       }, { passive: true });
+      // 모바일 1면 보기: 페이지를 탭하면 사진 면 ↔ 노트 면 뒤집기
+      spread.addEventListener("click", e => {
+        if (isYear || !isMobileViewport()) return;
+        const last = Number(spread.dataset.swipedAt || 0);
+        if (last && Date.now() - last < 420) return;
+        if (e.target.closest("button, a, input, textarea, select, label, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .nb-side-toggle")) return;
+        flipNotebookPage(spread.dataset.side === "right" ? "left" : "right", spread);
+      });
     });
+
+    // 책장: 좌우로 밀어 책 넘기기
+    const shelfs = [
+      { el: document.getElementById("nbYearShelfTrack"), step: yearShelfStep },
+      { el: document.getElementById("nbShelfTrack"), step: shelfStep }
+    ];
+    shelfs.forEach(({ el, step }) => {
+      if (!el || el.dataset.swipeBound === "1") return;
+      el.dataset.swipeBound = "1";
+      let sx = 0;
+      let sy = 0;
+      el.addEventListener("touchstart", e => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        sx = t.clientX;
+        sy = t.clientY;
+      }, { passive: true });
+      el.addEventListener("touchend", e => {
+        const t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        const dx = t.clientX - sx;
+        const dy = t.clientY - sy;
+        if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.25) step(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    });
+  }
+
+  // 모바일 노트 뒤집기 (사진 면 ↔ 노트 면) + 부드러운 전환
+  function flipNotebookPage(side, spreadEl) {
+    const spread = spreadEl || document.getElementById("nbSpread");
+    if (!spread) return;
+    const next = side === "right" ? "right" : "left";
+    if (spread.dataset.side === next) return;
+    spread.classList.remove("flip-left", "flip-right");
+    void spread.offsetWidth;
+    spread.classList.add(next === "right" ? "flip-left" : "flip-right");
+    setNotebookSide(next);
+    clearTimeout(spread._flipTimer);
+    spread._flipTimer = setTimeout(() => spread.classList.remove("flip-left", "flip-right"), 320);
   }
 
   // ---------- 책 만들기 / 편집 ----------
@@ -5569,6 +5643,8 @@
     openYearDay,
     closeYearDay,
     stepYearDay,
+    setNotebookSide,
+    flipNotebookPage,
     getNotebookState: () => ({
       bookId: notebookBookId,
       page: notebookPageIndex,
