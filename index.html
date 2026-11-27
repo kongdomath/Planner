@@ -6747,10 +6747,14 @@
     setAuthError("");
     setAuthButtonsBusy(true, authMode === "signup" ? "가입 중…" : "로그인 중…");
 
+    let watchdog = null;
     const done = () => {
+      clearTimeout(watchdog);
       authBusy = false;
       setAuthButtonsBusy(false);
     };
+    // 팝업이 비정상 종료되어 약속이 끝나지 않는 경우를 대비한 안전장치
+    watchdog = setTimeout(() => { if (authBusy) done(); }, 90000);
     const fail = err => {
       if (String((err && err.code) || "").includes("configuration-not-found")) {
         authConfigState = "not-configured";
