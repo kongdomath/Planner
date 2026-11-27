@@ -6439,6 +6439,7 @@
   let authConfigState = "unknown"; // unknown | ok | not-configured
   let authStartupNoticeShown = false;
   let firebaseCtx = null;
+  let firebaseInitPromise = null;
   let cloudTimer = null;
   let cloudSyncing = false;
   let cloudPending = false;
@@ -6505,9 +6506,34 @@
     return isIOSDevice() || isStandalonePWA();
   }
 
+  // 리디렉트 로그인을 시작했다가 세션을 못 읽고 돌아온 경우를 구분하기 위한 표시
+  const AUTH_REDIRECT_FLAG = "personal_archiver_auth_redirect_v1";
+  function markRedirectStarted() { try { sessionStorage.setItem(AUTH_REDIRECT_FLAG, "1"); } catch (_) {} }
+  function clearRedirectFlag() { try { sessionStorage.removeItem(AUTH_REDIRECT_FLAG); } catch (_) {} }
+  function hadRedirectStarted() { try { return sessionStorage.getItem(AUTH_REDIRECT_FLAG) === "1"; } catch (_) { return false; } }
+
+  // 앱이 뜨는 즉시 Firebase SDK를 미리 받아 둡니다.
+  // 아이폰 사파리는 클릭 핸들러 안에서 await를 지나면 사용자 제스처를 잃어 팝업이 차단되므로,
+  // 로그인 버튼을 누를 때는 이미 준비된 firebaseCtx로 바로 팝업을 엽니다.
+  function preloadFirebase() {
+    if (!isFirebaseConfigured()) return Promise.resolve(null);
+    if (firebaseCtx) return Promise.resolve(firebaseCtx);
+    return getFirebase().catch(() => null);
+  }
+
   async function getFirebase() {
     if (!isFirebaseConfigured()) return null;
     if (firebaseCtx) return firebaseCtx;
+    if (!firebaseInitPromise) {
+      firebaseInitPromise = initFirebase().catch(err => {
+        firebaseInitPromise = null;
+        throw err;
+      });
+    }
+    return firebaseInitPromise;
+  }
+
+  async function initFirebase() {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/`;
     const [appMod, authMod, dbMod] = await Promise.all([
       import(`${base}firebase-app.js`),
@@ -6519,7 +6545,8 @@
     const db = dbMod.getFirestore(app);
     firebaseCtx = { app, auth, db, authMod, dbMod };
 
-    // 모바일 Safari·PWA에서도 로그인이 유지되도록 (막힌 환경은 SDK 기본값 사용)
+    // 모바일 Safari·PWA에서도 로그인이 유지되도록 로컬 지속성(browserLocalPersistence)을
+    // 명시적으로 설정합니다. 이 await는 워밍업 단계에서 끝나므로 로그인 클릭 시점에는 영향이 없습니다.
     try { await authMod.setPersistence(auth, authMod.browserLocalPersistence); } catch (_) {}
 
     authMod.onAuthStateChanged(auth, user => {
@@ -6545,9 +6572,16 @@
 
     // Google 로그인 리디렉트로 돌아온 경우
     authMod.getRedirectResult(auth).then(result => {
-      if (result && result.user) showToast("Google 계정으로 로그인했습니다.", "ok");
+      if (result && result.user) {
+        clearRedirectFlag();
+        showToast("Google 계정으로 로그인했습니다.", "ok");
+      } else if (hadRedirectStarted()) {
+        clearRedirectFlag();
+        showToast("Google 로그인 연결을 마치지 못했습니다. 다시 시도해 주세요.", "warn", 6500);
+      }
     }).catch(err => {
       const code = String((err && err.code) || "");
+      if (hadRedirectStarted()) clearRedirectFlag();
       if (code && !code.includes("no-auth-event") && !code.includes("configuration-not-found")) showToast(authErrorText(err), "warn", 6000);
     });
 
@@ -6618,6 +6652,8 @@
     if (!el) return;
     el.classList.add("open");
     el.setAttribute("aria-hidden", "false");
+    // 로그인 화면이 뜬 순간 미리 받아 두어, Google 버튼을 누를 때 await 없이 팝업을 엽니다.
+    preloadFirebase();
     setTimeout(() => {
       const email = document.getElementById("authEmail");
       if (email) { try { email.focus(); } catch (_) {} }
@@ -6695,7 +6731,9 @@
     }
   }
 
-  async function submitGoogleLogin() {
+  // Google 로그인: 아이폰 Safari에서도 팝업이 열리도록 클릭 즉시(await 없이) signInWithPopup을 호출합니다.
+  // 팝업이 실제로 차단된 경우(auth/popup-blocked)나 이 환경에서 팝업이 지원되지 않을 때만 리다이렉트로 이어갑니다.
+  function submitGoogleLogin() {
     if (authBusy) return;
     if (!isFirebaseConfigured()) {
       setAuthError("Firebase 설정이 아직 연결되지 않았습니다. 아래 ‘로컬 모드’로 앱을 그대로 사용할 수 있어요.");
@@ -6708,37 +6746,75 @@
     authBusy = true;
     setAuthError("");
     setAuthButtonsBusy(true, authMode === "signup" ? "가입 중…" : "로그인 중…");
-    try {
-      const fb = await getFirebase();
-      if (!fb) { setAuthError("Firebase 설정이 아직 연결되지 않았습니다."); return; }
-      const provider = new fb.authMod.GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const googleBtn = document.getElementById("authGoogleBtn");
-      if (prefersRedirectAuth()) {
-        if (googleBtn) googleBtn.innerHTML = `<span class="auth-g">G</span>Google 화면으로 이동 중…`;
-        await fb.authMod.signInWithRedirect(fb.auth, provider);
-        return;
-      }
-      try {
-        await fb.authMod.signInWithPopup(fb.auth, provider);
-        closeAuthScreen();
-      } catch (err) {
-        const code = String((err && err.code) || "");
-        const shouldRedirect = code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment";
-        if (!shouldRedirect) throw err;
-        if (googleBtn) googleBtn.innerHTML = `<span class="auth-g">G</span>Google 화면으로 이동 중…`;
-        await fb.authMod.signInWithRedirect(fb.auth, provider);
-      }
-    } catch (err) {
+
+    const done = () => {
+      authBusy = false;
+      setAuthButtonsBusy(false);
+    };
+    const fail = err => {
       if (String((err && err.code) || "").includes("configuration-not-found")) {
         authConfigState = "not-configured";
         renderAuthScreen();
       }
       setAuthError(authErrorText(err));
-    } finally {
-      authBusy = false;
-      setAuthButtonsBusy(false);
+      done();
+    };
+    const showBusy = text => {
+      const googleBtn = document.getElementById("authGoogleBtn");
+      if (googleBtn) googleBtn.innerHTML = `<span class="auth-g">G</span>${text}`;
+    };
+    const runPopup = fb => {
+      const provider = new fb.authMod.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      let pending;
+      try {
+        // await를 끼우지 않고 바로 호출해야 아이폰 Safari가 사용자 제스처를 유지해 팝업을 열어 줍니다.
+        pending = fb.authMod.signInWithPopup(fb.auth, provider);
+      } catch (err) {
+        fail(err);
+        return;
+      }
+      pending.then(() => {
+        clearRedirectFlag();
+        closeAuthScreen();
+        done();
+      }).catch(err => {
+        const code = String((err && err.code) || "");
+        if (code === "auth/cancelled-popup-request" || code === "auth/popup-closed-by-user") {
+          done();
+          return;
+        }
+        const blocked = code === "auth/popup-blocked"
+          || code === "auth/operation-not-supported-in-this-environment"
+          || code === "auth/popup-error";
+        if (!blocked) {
+          fail(err);
+          return;
+        }
+        // 팝업이 막힌 환경에서만 리다이렉트로 이어갑니다.
+        showBusy("Google 화면으로 이동 중…");
+        markRedirectStarted();
+        Promise.resolve()
+          .then(() => (fb.authMod.setPersistence ? fb.authMod.setPersistence(fb.auth, fb.authMod.browserLocalPersistence) : null))
+          .catch(() => {})
+          .then(() => fb.authMod.signInWithRedirect(fb.auth, provider))
+          .catch(fail);
+      });
+    };
+
+    // 미리 받아 둔 SDK가 있으면 await 없이 곧바로 팝업 (제스처 유지)
+    if (firebaseCtx) {
+      runPopup(firebaseCtx);
+      return;
     }
+    preloadFirebase().then(fb => {
+      if (!fb) {
+        setAuthError("Firebase 설정이 아직 연결되지 않았습니다.");
+        done();
+        return;
+      }
+      runPopup(fb);
+    }).catch(fail);
   }
 
   async function signOutOfAccount() {
@@ -7505,6 +7581,8 @@
 
   mountNavIcons();
   render();
+  // 로그인 버튼을 누르는 순간 팝업이 바로 열리도록 SDK를 미리 받아 둡니다.
+  preloadFirebase();
   bootstrapAuth();
 </script>
 </body>
