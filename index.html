@@ -1653,11 +1653,14 @@
     /* 책장 */
     .nb-shelf { position: relative; display: flex; align-items: center; gap: 4px; padding: 6px 0 0; }
     .nb-shelf-track {
-      display: flex; align-items: flex-end; justify-content: center; justify-content: safe center; gap: 12px;
+      --cover-w: 128px;
+      --cover-gap: 12px;
+      display: flex; align-items: flex-end; justify-content: flex-start; gap: var(--cover-gap);
       flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden;
-      padding: 30px 6px 26px;
+      padding: 30px 0 26px;
       scrollbar-width: none; -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
+      scroll-behavior: auto;
     }
     .nb-shelf-track::-webkit-scrollbar { display: none; }
     .nb-shelf-rail {
@@ -2012,7 +2015,7 @@
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-shelf-track { padding: 22px 0 20px; gap: 8px; justify-content: flex-start; }
+      .nb-shelf-track { --cover-w: 108px; --cover-gap: 8px; padding: 22px 0 20px; }
       .nb-cover { width: 108px; height: 150px; }
       .nb-cover-label { left: 20px; right: 11px; top: 20px; padding: 8px 7px; }
       .nb-cover-label b { font-size: 12px; }
@@ -4537,18 +4540,40 @@
     state.shelfSelectedBookId = books[notebookShelfIndex].id;
   }
 
-  function scrollShelfCenter(el) {
-    if (!el) return;
-    const track = el.parentElement;
+  // 첫 책과 마지막 책도 가운데에 올 수 있도록 좌우 여백을 맞춘다
+  function applyShelfPadding(track) {
     if (!track) return;
+    const cover = track.querySelector(".nb-cover");
+    if (!cover) return;
+    const pad = Math.max(0, Math.round((track.clientWidth - cover.offsetWidth) / 2));
+    track.style.paddingLeft = `${pad}px`;
+    track.style.paddingRight = `${pad}px`;
+  }
+
+  // 선택된 책이 책장 가운데에 오도록 스크롤
+  function centerShelfOn(track, el, smooth) {
+    if (!track || !el) return;
     const trackRect = track.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
     const delta = (elRect.left + elRect.width / 2) - (trackRect.left + trackRect.width / 2);
-    try {
-      track.scrollBy({ left: delta, behavior: "smooth" });
-    } catch (_) {
-      track.scrollLeft = track.scrollLeft + delta;
+    if (Math.abs(delta) < 1) return;
+    const max = Math.max(0, track.scrollWidth - track.clientWidth);
+    const target = Math.min(max, Math.max(0, track.scrollLeft + delta));
+    if (smooth) {
+      try {
+        track.scrollTo({ left: target, behavior: "smooth" });
+      } catch (_) {
+        track.scrollLeft = target;
+      }
+    } else {
+      track.scrollLeft = target;
     }
+  }
+
+  function scrollShelfCenter(el) {
+    if (!el) return;
+    const track = el.closest(".nb-shelf-track") || el.parentElement;
+    centerShelfOn(track, el, true);
   }
 
   function renderArchiveNotebookView() {
@@ -4559,9 +4584,7 @@
 
   function renderShelfCover(book, isActive) {
     const recs = bookArchives(book.id);
-    const latest = recs.length ? recs[recs.length - 1] : null;
-    const latestImgs = latest ? normalizeImages(latest) : [];
-    const coverImg = book.cover || (latestImgs.length ? latestImgs[0] : "");
+    const coverImg = book.cover || "";
     const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" onclick="openNotebook('${book.id}')" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
@@ -4864,16 +4887,22 @@
       const label = (b.textContent || "").replace(/\s+/g, " ").trim();
       if (label) b.setAttribute("aria-label", label);
     });
-    const track = document.getElementById("nbShelfTrack") || document.getElementById("nbYearShelfTrack");
-    if (track) {
+    ["nbShelfTrack", "nbYearShelfTrack"].forEach(id => {
+      const track = document.getElementById(id);
+      if (!track) return;
       const active = track.querySelector(".nb-cover-btn.is-active");
-      if (active) {
-        const trackRect = track.getBoundingClientRect();
-        const elRect = active.getBoundingClientRect();
-        const delta = (elRect.left + elRect.width / 2) - (trackRect.left + trackRect.width / 2);
-        track.scrollLeft = Math.max(0, track.scrollLeft + delta);
-      }
-    }
+      if (!active) return;
+      applyShelfPadding(track);
+      centerShelfOn(track, active);
+      requestAnimationFrame(() => {
+        applyShelfPadding(track);
+        centerShelfOn(track, active);
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        applyShelfPadding(track);
+        centerShelfOn(track, active);
+      }));
+    });
     const spreads = [document.getElementById("nbSpread"), document.getElementById("nbYearSpread")].filter(Boolean);
     spreads.forEach(spread => {
       const isYear = spread.id === "nbYearSpread";
@@ -5595,6 +5624,20 @@
         }
       }
     }
+  });
+
+  let shelfResizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(shelfResizeTimer);
+    shelfResizeTimer = setTimeout(() => {
+      ["nbShelfTrack", "nbYearShelfTrack"].forEach(id => {
+        const track = document.getElementById(id);
+        if (!track) return;
+        applyShelfPadding(track);
+        const active = track.querySelector(".nb-cover-btn.is-active");
+        if (active) centerShelfOn(track, active);
+      });
+    }, 140);
   });
 
   const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
