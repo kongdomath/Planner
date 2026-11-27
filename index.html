@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="아카이브 플래너" />
   <meta name="theme-color" content="#faf9f6" />
-  <title>index</title>
+  <title>아카이브 &amp; 플래너</title>
   <style>
     :root {
       --bg: #faf9f6;
@@ -25,6 +25,20 @@
       --c-archive: #5b4b8a;
       --c-todo: #6441a5;
       --radius: 12px;
+
+      /* v2.6 공통 스테이지 · 종이 시스템 */
+      --stage-top: #353c56;
+      --stage-mid: #2d334b;
+      --stage-bottom: #262b40;
+      --stage-ink: #e8ebf4;
+      --stage-ink-sub: rgba(232,235,244,.62);
+      --stage-line: rgba(255,255,255,.15);
+      --stage-chip: rgba(255,255,255,.08);
+      --paper: #fcfbf6;
+      --paper-ink: #2b2f37;
+      --paper-sub: #7d818b;
+      --paper-line: rgba(120,126,140,.26);
+      --header-h: 58px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -107,45 +121,184 @@
       padding: 0 2px;
       line-height: 1.5;
     }
+    .app-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
     .main {
       flex: 1;
-      padding: 24px 28px 92px;
+      padding: 20px 28px 92px;
       max-width: 1320px;
       margin: 0 auto;
       width: 100%;
       min-width: 0;
     }
-    .topbar {
+
+    /* ===== 공통 앱 헤더 (v2.6) ===== */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 34;
+      background: rgba(250,249,246,.94);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+    }
+    .ah-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      height: var(--header-h);
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px 12px;
-      min-height: 40px;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
+      gap: 12px;
     }
-    .topbar-left {
+    .ah-left {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      min-height: 36px;
+      gap: 11px;
       min-width: 0;
     }
-    .topbar-right {
+    .ah-brand {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+    .ah-sep {
+      width: 1px;
+      height: 15px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .ah-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .ah-tab svg { color: var(--ah-accent, var(--text)); }
+    .ah-right {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-left: auto;
-      min-height: 36px;
+      gap: 7px;
+      flex-shrink: 0;
     }
-    .topbar-sub {
-      font-size: 13px;
+    .ah-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background .14s, color .14s, border-color .14s;
+    }
+    .ah-btn:hover { background: var(--surface-muted); color: var(--text); }
+    .ah-btn.on {
+      background: var(--text);
+      border-color: var(--text);
+      color: #fff;
+    }
+
+    /* ===== 공통 검색 드로어 ===== */
+    .search-host {
+      position: sticky;
+      top: var(--header-h);
+      z-index: 33;
+      padding: 0 28px;
+    }
+    .search-host:empty { display: none; }
+    .search-drawer {
+      max-width: 1320px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 0;
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 18px 30px -18px rgba(28,32,48,.35);
+      padding: 12px 14px 14px;
+    }
+    .search-drawer-bar {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 6px 0 11px;
+      height: 42px;
+    }
+    .sd-icon { display: inline-flex; color: var(--text-sub); flex-shrink: 0; }
+    .sd-input {
+      flex: 1;
+      min-width: 0;
+      border: 0 !important;
+      background: transparent !important;
+      height: 40px;
+      font-size: 14px;
+      padding: 0 !important;
+    }
+    .sd-close {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 0;
+      background: transparent;
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sd-close:hover { background: var(--surface-muted); color: var(--text); }
+    .search-empty {
+      margin: 10px 2px 0;
+      font-size: 12.5px;
       color: var(--text-sub);
     }
+    .search-count {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin: 12px 2px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .search-result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 48vh;
+      overflow-y: auto;
+    }
+    .search-result-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--bg);
+    }
+    .search-result-item:hover { background: var(--surface-muted); }
+
     .page-title {
       display: inline-flex;
       align-items: center;
@@ -160,21 +313,6 @@
     .title-goal { color: var(--c-goal); }
     .title-bucket { color: var(--c-bucket); }
     .title-archive { color: var(--c-archive); }
-
-    /* 공통 상단 유틸리티 (검색 · 설정) */
-    .global-tools {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: 4px;
-    }
-    .global-tools.search-open { margin-left: 0; }
-    .search-open-inner {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .search-open-inner .search-input { min-width: 220px; }
 
     .diary-date-badge {
       font-size: 16px;
@@ -357,41 +495,6 @@
       align-items: center;
       gap: 5px;
     }
-
-    /* 검색 결과 패널 */
-    .search-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      margin-bottom: 20px;
-    }
-    .search-panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .search-result-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 340px;
-      overflow-y: auto;
-    }
-    .search-result-item {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      cursor: pointer;
-      background: var(--bg);
-    }
-    .search-result-item:hover { background: var(--surface-muted); }
 
     /* 연력 뷰 */
     .year-block { margin-bottom: 32px; }
@@ -1153,6 +1256,354 @@
     .goal-card-top .icon-btn { margin-left: auto; }
     .goal-card .media-note { margin-top: 7px; }
 
+    /* ===== v2.6 공통 스테이지 · 종이 카드 시스템 ===== */
+    .stage-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stage-bar-lead { min-width: 0; }
+    .stage-bar-side { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+    .stage-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+    .stage-tools .spacer { flex: 1; }
+    .stage-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .stage-chips .chip-manage-btn { margin-left: auto; }
+
+    /* 스테이지 안의 컨트롤은 슬레이트 톤으로 */
+    .nb-stage .chip-btn {
+      background: var(--stage-chip);
+      border-color: var(--stage-line);
+      color: rgba(232,235,244,.8);
+      height: 30px;
+      font-size: 12.5px;
+      padding: 0 11px;
+    }
+    .nb-stage .chip-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .nb-stage .chip-btn.active { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+    .nb-stage .chip-btn.active .chip-count { color: rgba(43,49,69,.60); }
+    .nb-stage .chip-manage-btn { background: transparent; border-color: var(--stage-line); color: rgba(232,235,244,.8); }
+
+    .nb-stage select,
+    .nb-stage input[type="date"],
+    .nb-stage input[type="text"],
+    .nb-stage input[type="search"] {
+      background: rgba(255,255,255,.07);
+      border-color: var(--stage-line);
+      color: var(--stage-ink);
+      height: 32px;
+      font-size: 12.5px;
+      border-radius: 9px;
+    }
+    .nb-stage select { padding: 0 10px; font-weight: 600; }
+    .nb-stage select option { color: #1f2421; background: #fff; }
+    .nb-stage select:focus,
+    .nb-stage input:focus { border-color: rgba(255,255,255,.5); }
+    .nb-stage .btn {
+      background: rgba(255,255,255,.08);
+      border-color: var(--stage-line);
+      color: var(--stage-ink);
+      height: 32px;
+      font-size: 12.5px;
+      border-radius: 9px;
+    }
+    .nb-stage .btn:hover { background: rgba(255,255,255,.18); }
+    .nb-stage .btn-primary { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+    .nb-stage .btn-primary:hover { background: #fff; }
+    .nb-stage .btn-sm { height: 28px; font-size: 11.5px; }
+    .nb-stage .icon-btn { background: rgba(255,255,255,.06); border-color: var(--stage-line); color: rgba(232,235,244,.78); }
+    .nb-stage .icon-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .nb-stage .icon-btn.danger:hover { background: rgba(200,75,75,.28); color: #ffdede; border-color: rgba(255,255,255,.2); }
+    .nb-stage .segmented { background: rgba(255,255,255,.07); border-color: var(--stage-line); height: 32px; }
+    .nb-stage .segmented button { color: rgba(232,235,244,.72); height: 26px; font-size: 11.5px; }
+    .nb-stage .segmented button.active { background: #f6f7fb; color: #2b3145; box-shadow: none; }
+
+    /* 달성률 요약 */
+    .stage-summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 16px;
+      padding: 11px 14px;
+      border: 1px solid var(--stage-line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.055);
+      margin-bottom: 12px;
+    }
+    .stage-summary .summary-metrics { gap: 12px; }
+    .stage-summary .summary-metrics span { color: rgba(232,235,244,.66); font-size: 12px; }
+    .stage-summary .summary-metrics strong { color: #fff; font-size: 12.5px; }
+    .stage-summary .progress-track {
+      flex: 1 1 130px;
+      max-width: 240px;
+      margin-left: auto;
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.14);
+    }
+    .stage-summary .progress-fill { background: #a9cbb8; }
+
+    /* 일기: 날짜 컨트롤 */
+    .diary-controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .stage-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stage-line);
+      background: var(--stage-chip);
+      color: rgba(232,235,244,.86);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .stage-nav:hover { background: rgba(255,255,255,.17); color: #fff; }
+    .stage-nav.prev { justify-self: start; }
+    .stage-nav.next { justify-self: end; }
+    .diary-date { text-align: center; min-width: 0; }
+    .diary-date b {
+      display: block;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f4f6fb;
+      line-height: 1.25;
+    }
+    .diary-date span { display: block; margin-top: 2px; font-size: 11px; letter-spacing: .05em; color: var(--stage-ink-sub); }
+    .diary-date em { color: #e8b4b4; font-style: normal; }
+    .diary-subcontrols {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .diary-subcontrols .stage-date { width: 148px; }
+    .stage-hint { font-size: 11px; color: rgba(232,235,244,.45); }
+
+    .day-controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stage-chip {
+      height: 30px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stage-line);
+      background: var(--stage-chip);
+      color: rgba(232,235,244,.85);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .stage-chip:hover { background: rgba(255,255,255,.17); color: #fff; }
+    .stage-chip.is-today { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
+    .diary-figure { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+    .diary-figure .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+    .diary-figure .item-title { font-size: 13px; font-weight: 600; color: #2f343d; }
+
+    .diary-stage-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .diary-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    .diary-side .paper { margin-bottom: 0; }
+
+    /* ===== 종이 카드 ===== */
+    .paper {
+      position: relative;
+      background: var(--paper);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      color: var(--paper-ink);
+      box-shadow: 0 14px 26px -16px rgba(6,9,18,.7), inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    .paper:last-child { margin-bottom: 0; }
+    .paper--dot {
+      background-image: radial-gradient(rgba(122,128,142,.13) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position: 10px 12px;
+    }
+    .paper-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: #9aa0a9;
+    }
+    .paper-label svg { flex-shrink: 0; }
+    .paper-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #2b2f37; }
+    .paper-sub { font-size: 11.5px; color: var(--paper-sub); }
+    .paper-rule { height: 1px; margin: 14px 0; background: linear-gradient(90deg, var(--paper-line), rgba(120,126,140,0)); }
+    .paper-empty { margin: 0; font-size: 12.5px; color: var(--paper-sub); line-height: 1.7; }
+    .nb-stage .paper input[type="text"],
+    .nb-stage .paper input[type="date"],
+    .nb-stage .paper select,
+    .nb-stage .paper textarea {
+      background: #fff;
+      border-color: #e4dfd1;
+      color: var(--paper-ink);
+    }
+    .nb-stage .paper input:focus, .nb-stage .paper textarea:focus, .nb-stage .paper select:focus { border-color: #b9b3a2; }
+    .paper-input-line {
+      width: 100%;
+      height: 36px !important;
+      border: 0 !important;
+      border-bottom: 1px solid var(--paper-line) !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      padding: 0 2px !important;
+      font-size: 15.5px !important;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .paper-input-line:focus { border-color: #8f9299 !important; }
+    textarea.diary-area {
+      width: 100%;
+      min-height: 292px;
+      resize: vertical;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      padding: 0 2px !important;
+      font-size: 14px;
+      line-height: 32px;
+      color: #33383f;
+      background-image: repeating-linear-gradient(to bottom, transparent 0 31px, rgba(120,126,140,.24) 31px 32px) !important;
+    }
+    .diary-note .diary-save-line { margin-top: 8px; }
+    .nb-stage .save-status { color: #9aa0a9; }
+    .paper .item-list { gap: 0; }
+    .paper .list-item {
+      background: transparent;
+      border: 0;
+      border-bottom: 1px dashed rgba(120,126,140,.28);
+      border-radius: 0;
+      padding: 10px 0;
+    }
+    .paper .list-item:last-child { border-bottom: 0; padding-bottom: 2px; }
+    .paper .list-item.done .item-title { color: #9aa0a9; }
+    .paper .item-title { color: #2f343d; }
+    .paper .item-meta { color: var(--paper-sub); }
+    .paper .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+    .paper .btn { background: #fff; border-color: #e4dfd1; color: #3b404a; }
+    .paper .btn:hover { background: #f5f2e9; }
+    .paper .btn-primary { background: #33383f; border-color: #33383f; color: #fff; }
+    .paper .btn-primary:hover { background: #22262c; }
+    .paper .chk { accent-color: #4a5162; }
+
+    /* 목표 카드 (종이) */
+    .goal-list { display: flex; flex-direction: column; gap: 12px; }
+    .goal-card {
+      background: var(--paper);
+      border: 0;
+      border-radius: 12px;
+      padding: 15px 17px 16px;
+      color: var(--paper-ink);
+      box-shadow: 0 14px 26px -16px rgba(6,9,18,.7), inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    .goal-card.done { background: #f3f0e6; }
+    .goal-card.done .media-title { color: #9aa0a9; }
+    .goal-card .media-title { color: #2b2f37; }
+    .goal-card .media-note { color: #3f444e; }
+    .goal-card .item-meta { color: var(--paper-sub); }
+    .goal-card .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+    .goal-card .icon-btn { background: transparent; border-color: transparent; color: #9aa0a9; }
+    .goal-card .icon-btn:hover { background: rgba(200,75,75,.1); color: var(--sun); }
+
+    /* 버킷 체크리스트 (종이 한 장) */
+    .bucket-sheet { padding: 8px 20px; }
+    .bucket-sheet .paper-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 13px 0;
+      border-bottom: 1px dashed rgba(120,126,140,.3);
+    }
+    .bucket-sheet .paper-row:last-child { border-bottom: 0; }
+    .bucket-sheet .bucket-main { flex: 1; min-width: 0; cursor: pointer; }
+    .bucket-sheet .bucket-title { font-size: 14px; font-weight: 600; color: #2f343d; word-break: break-word; }
+    .bucket-sheet .paper-row.done .bucket-title { color: #9aa0a9; text-decoration: line-through; }
+    .bucket-sheet .bucket-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 5px; font-size: 11.5px; color: var(--paper-sub); }
+    .bucket-sheet .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+
+    /* 아카이브 카드 (종이) */
+    .media-card {
+      background: var(--paper);
+      border: 0;
+      border-radius: 12px;
+      box-shadow: 0 14px 26px -16px rgba(6,9,18,.7), inset 0 1px 0 rgba(255,255,255,.7);
+      color: var(--paper-ink);
+    }
+    .media-cover { height: 172px; background: #ecebe2; border-bottom: 1px solid rgba(120,126,140,.2); }
+    .media-body { padding: 13px 15px 15px; }
+    .media-title { color: #2b2f37; }
+    .media-sub { color: var(--paper-sub); }
+    .media-note { color: #3f444e; }
+    .media-card .pill { background: rgba(120,126,140,.13); color: #5b6478; }
+    .media-card .icon-btn { background: transparent; border-color: transparent; color: #9aa0a9; }
+    .media-card .icon-btn:hover { background: rgba(200,75,75,.1); color: var(--sun); }
+    .cover-placeholder { color: #7d818b; }
+    .cover-placeholder .big-pictogram { background: rgba(255,255,255,.85); border-color: rgba(120,126,140,.22); color: #7d818b; }
+
+    /* 스테이지 안의 작성 폼·빈 상태 */
+    .nb-stage .card {
+      background: var(--paper);
+      border-color: rgba(120,126,140,.3);
+      border-radius: 12px;
+      color: var(--paper-ink);
+      margin-bottom: 14px;
+      box-shadow: 0 14px 26px -16px rgba(6,9,18,.7);
+    }
+    .nb-stage .composer-card { background: #f7f4ea; border: 1px dashed rgba(120,126,140,.42); box-shadow: none; }
+    .composer-card .composer-header { border-bottom-color: rgba(120,126,140,.26); }
+    .stage-empty {
+      border: 1px dashed rgba(255,255,255,.2);
+      background: rgba(255,255,255,.04);
+      border-radius: 12px;
+      padding: 30px 18px;
+      text-align: center;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--stage-ink-sub);
+    }
+    .stage-empty strong { display: block; margin-bottom: 4px; color: #eef0f7; font-size: 13.5px; }
+
     /* ===== 주제별 책장 + 스프링 노트북 뷰 ===== */
     .nb-stage {
       position: relative;
@@ -1284,17 +1735,19 @@
 
     /* 펼친 노트 */
     .nb-reader-head {
-      display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center; gap: 10px; margin-bottom: 6px;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 10px; margin-bottom: 10px;
     }
     .nb-back {
+      justify-self: start;
       display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 11px 0 8px;
       border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.08);
       color: #e8ebf4; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit;
     }
     .nb-back:hover { background: rgba(255,255,255,.17); }
-    .nb-reader-title { text-align: center; min-width: 0; }
-    .nb-reader-title b { display: block; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-reader-head .nb-stage-count { justify-self: end; }
+    .nb-reader-title { text-align: center; min-width: 0; justify-self: center; }
+    .nb-reader-title b { display: block; font-size: 16px; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .nb-reader-title span { display: block; margin-top: 2px; font-size: 11px; color: rgba(232,235,244,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .nb-book { position: relative; display: flex; align-items: center; justify-content: center; padding: 16px 46px 4px; }
     .nb-nav {
@@ -1472,20 +1925,6 @@
     .nb-legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
     .nb-legend-hint { color: rgba(232,235,244,.48); }
 
-    /* 월 점프 바 */
-    .nb-jumpbar {
-      display: flex; gap: 4px; overflow-x: auto; padding: 8px 0 12px;
-      scrollbar-width: none; -webkit-overflow-scrolling: touch;
-    }
-    .nb-jumpbar::-webkit-scrollbar { display: none; }
-    .nb-jump {
-      flex: 0 0 auto; height: 28px; padding: 0 11px; border-radius: 999px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06);
-      color: rgba(232,235,244,.78); font-size: 11.5px; font-weight: 600; font-family: inherit;
-    }
-    .nb-jump:hover { background: rgba(255,255,255,.16); color: #fff; }
-    .nb-jump.active { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
-
     /* 월 페이지 (달력 + 기록 목록) */
     .nb-month-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .nb-month-name { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.1; letter-spacing: .01em; color: #2b3141; }
@@ -1546,8 +1985,8 @@
       .nb-actions { gap: 14px; margin-top: 14px; }
       .nb-action { font-size: 10px; }
       .nb-action-icon { width: 40px; height: 40px; }
-      .nb-reader-head { grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
-      .nb-reader-head .nb-stage-count { display: none; }
+      .nb-reader-head { grid-template-columns: 1fr auto 1fr; gap: 6px; }
+      .nb-reader-head .nb-stage-count { display: inline-flex; font-size: 10.5px; padding: 3px 8px; }
       .nb-book { padding: 10px 30px 0; }
       .nb-spread { grid-template-columns: 1fr; max-width: 100%; }
       .nb-spine, .nb-rings, .nb-edge { display: none; }
@@ -1564,7 +2003,7 @@
       .nb-nav { width: 32px; height: 32px; }
       .nb-nav.prev { left: -2px; }
       .nb-nav.next { right: -2px; }
-      .nb-jumpbar { padding: 6px 0 10px; }
+      .nb-jumpbar { display: none; }
       .nb-month-name { font-size: 26px; }
       .nb-day { min-height: 34px; }
       .nb-day-num { font-size: 11.5px; }
@@ -1581,50 +2020,60 @@
         display: flex;
         padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
       }
-      .main { padding: 14px 14px calc(96px + env(safe-area-inset-bottom, 0px)); }
+      .main { padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px)); }
       .grid-2 { grid-template-columns: minmax(0, 1fr); }
       .months-grid, .media-grid { grid-template-columns: minmax(0, 1fr); }
 
-      /* 상단 바: 1줄 제목 + 유틸리티, 2줄 필터 그리드 */
-      .topbar { align-items: flex-start; gap: 8px 10px; }
-      .topbar-left { flex: 1 1 auto; }
-      .global-tools { order: 1; flex: 0 0 auto; margin-left: auto; }
-      .global-tools.search-open { order: 1; flex: 1 1 100%; margin-left: 0; }
-      .global-tools.search-open .search-open-inner { flex: 1 1 auto; width: 100%; }
-      .global-tools.search-open .search-input {
-        flex: 1 1 auto;
-        min-width: 0;
-        width: 100%;
-      }
-      .topbar-right {
-        order: 2;
-        flex: 1 1 100%;
-        margin-left: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .topbar-right > select {
-        flex: 1 1 calc(50% - 3px);
-        width: auto;
-        min-width: 0;
-        height: 34px;
-      }
-      .topbar-right > input[type="date"] {
-        flex: 1 1 110px;
-        width: auto;
-        min-width: 0;
-        height: 34px;
-      }
-      .topbar-right > .segmented { flex: 1 1 100%; }
-      .topbar-right > .segmented button { flex: 1; }
-      .topbar-right > .btn-primary { flex: 1 1 100%; }
-      .topbar-right > .btn-nav-arrow { flex: 0 0 34px; width: 34px; height: 34px; }
-      .topbar-right > .btn { height: 34px; }
-      .page-title { font-size: 18px; }
-      .diary-date-badge { font-size: 14px; }
-      .topbar-sub { font-size: 12px; }
+      /* 공통 헤더 */
+      .app-header { padding: 0 14px; }
+      .ah-brand, .ah-sep { display: none; }
+      .ah-tab { font-size: 15px; gap: 6px; }
+      .ah-tab svg { width: 15px; height: 15px; }
+      .ah-btn { width: 34px; height: 34px; border-radius: 9px; }
+      .search-host { padding: 0 12px; }
+      .search-drawer { padding: 10px 10px 12px; }
+      .search-result-list { max-height: 46vh; }
 
+      /* 스테이지 안의 컨트롤 */
+      .stage-bar { gap: 8px; margin-bottom: 12px; }
+      .stage-bar-side .segmented button { padding: 0 9px; font-size: 11px; }
+      .stage-tools > select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+      .stage-tools > .btn { height: 34px; }
+      .stage-tools > .btn-primary { flex: 1 1 100%; }
+      .stage-tools > .segmented { flex: 1 1 100%; }
+      .stage-tools > .segmented button { flex: 1; }
+      .stage-chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 10px;
+      }
+      .stage-chips::-webkit-scrollbar { display: none; }
+      .stage-chips .chip-manage-btn { margin-left: 0; }
+      .stage-summary { padding: 10px 12px; gap: 8px; margin-bottom: 10px; }
+      .stage-summary .summary-metrics { gap: 10px; }
+      .stage-summary .progress-track { flex: 1 1 100%; max-width: none; height: 6px; }
+
+      /* 일기 */
+      .diary-controls { grid-template-columns: auto 1fr auto; gap: 6px; }
+      .stage-nav { padding: 0 10px; font-size: 11px; height: 30px; }
+      .stage-nav span.label { display: none; }
+      .diary-date b { font-size: 18px; }
+      .diary-date span { font-size: 10.5px; }
+      .diary-subcontrols { gap: 6px; margin-bottom: 12px; }
+      .diary-subcontrols .stage-date { width: 132px; }
+      .diary-stage-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      textarea.diary-area { min-height: 220px; }
+
+      .paper { padding: 15px 16px; margin-bottom: 12px; }
+      .goal-list { gap: 10px; }
+      .goal-card { padding: 13px 14px 14px; }
+      .bucket-sheet { padding: 4px 16px; }
+
+      .page-title { font-size: 18px; }
       .filter-chips {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -1634,9 +2083,7 @@
         -webkit-overflow-scrolling: touch;
       }
       .filter-chips::-webkit-scrollbar { display: none; }
-      .chip-manage-btn { margin-left: auto; }
 
-      .search-panel { padding: 12px 14px; }
       .modal { padding: 16px; }
       .icon-picker-grid { grid-template-columns: repeat(6, 1fr); }
       .composer-actions { margin-left: auto; }
@@ -1651,8 +2098,7 @@
       <h1>아카이브 &amp; 플래너</h1>
       <p id="sidebarDateLabel"></p>
     </div>
-    <button class="nav-btn active" data-tab="year"><span class="nav-icon" id="navIconYear"></span>1년 연력</button>
-    <button class="nav-btn" data-tab="diary"><span class="nav-icon" id="navIconDiary"></span>하루 기록 · 일기</button>
+    <button class="nav-btn active" data-tab="year"><span class="nav-icon" id="navIconYear"></span>연력 · 일기</button>
     <button class="nav-btn" data-tab="goals"><span class="nav-icon" id="navIconGoals"></span>목표</button>
     <button class="nav-btn" data-tab="bucket"><span class="nav-icon" id="navIconBucket"></span>버킷리스트</button>
     <button class="nav-btn" data-tab="archive"><span class="nav-icon" id="navIconArchive"></span>아카이브</button>
@@ -1662,12 +2108,15 @@
     </div>
   </aside>
 
-  <main class="main" id="mainView"></main>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <div class="search-host" id="searchPanelHost"></div>
+    <main class="main" id="mainView"></main>
+  </div>
 </div>
 
 <nav class="mobile-nav" id="mobileNav">
-  <button class="active" data-tab="year"><span class="nav-icon" id="mIconYear"></span>연력</button>
-  <button data-tab="diary"><span class="nav-icon" id="mIconDiary"></span>일기</button>
+  <button class="active" data-tab="year"><span class="nav-icon" id="mIconYear"></span>연력·일기</button>
   <button data-tab="goals"><span class="nav-icon" id="mIconGoals"></span>목표</button>
   <button data-tab="bucket"><span class="nav-icon" id="mIconBucket"></span>버킷</button>
   <button data-tab="archive"><span class="nav-icon" id="mIconArchive"></span>아카이브</button>
@@ -1717,7 +2166,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "2.5";
+  const APP_VERSION = "2.6";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -1850,7 +2299,6 @@
   function mountNavIcons() {
     const pairs = [
       ["navIconYear", ICONS.year], ["mIconYear", ICONS.year],
-      ["navIconDiary", ICONS.diary], ["mIconDiary", ICONS.diary],
       ["navIconGoals", ICONS.goals], ["mIconGoals", ICONS.goals],
       ["navIconBucket", ICONS.bucket], ["mIconBucket", ICONS.bucket],
       ["navIconArchive", ICONS.archive], ["mIconArchive", ICONS.archive],
@@ -1994,7 +2442,6 @@
     bucketSort: "newest",
     archiveCatFilter: "all",
     archiveSort: "newest",
-    archiveViewMode: "card",
     shelfSelectedBookId: "",
     books: [],
     booksSeeded: false,
@@ -2111,8 +2558,6 @@
   let searchOpen = false;
   let showGoalComposer = false;
   let showBucketComposer = false;
-  let showArchiveComposer = false;
-  let draftArchiveImages = [];
   let lastSavedAt = null;
   let quotaWarned = false;
   let diaryTimer = null;
@@ -2131,7 +2576,9 @@
   let draftBookSpine = "";
 
   function normalizeTab(tab) {
+    if (tab === "diary") return "year";
     if (!tab || tab === "todos" || tab === "plans") return "goals";
+    if (!["year", "goals", "bucket", "archive"].includes(tab)) return "year";
     return tab;
   }
 
@@ -2212,7 +2659,6 @@
       if (!s.books.length) s.books = seedBooksFromCategories(s.archiveCategories);
       s.booksSeeded = true;
     }
-    s.archiveViewMode = s.archiveViewMode === "notebook" ? "notebook" : "card";
 
     const ids = new Set(s.books.map(b => b.id));
     (s.archives || []).forEach(a => {
@@ -2268,7 +2714,7 @@
     if (merged.yearFilter !== "all" && !YEARS.includes(Number(normalizeYear(merged.yearFilter)))) {
       merged.yearFilter = defaultState.yearFilter;
     }
-    if (!["year", "diary", "goals", "bucket", "archive"].includes(merged.activeTab)) merged.activeTab = "year";
+    if (!["year", "goals", "bucket", "archive"].includes(merged.activeTab)) merged.activeTab = "year";
     applyBookModel(merged);
     return merged;
   }
@@ -2683,15 +3129,21 @@
 
   function setTab(tab) {
     flushDiaryDraft();
-    state.activeTab = normalizeTab(tab);
+    const next = normalizeTab(tab);
+    state.activeTab = next;
+    yearDayDate = "";
+    if (next === "archive") notebookBookId = "";
     saveState();
     render();
   }
 
-  function selectDate(dateStr, goDiary = false) {
+  function selectDate(dateStr, openDay = false) {
+    if (openDay) {
+      openYearDay(dateStr);
+      return;
+    }
     flushDiaryDraft();
     state.selectedDate = dateStr;
-    if (goDiary) state.activeTab = "diary";
     saveState();
     render();
   }
@@ -2700,6 +3152,7 @@
   function openSearch() {
     searchOpen = true;
     render();
+    try { if (typeof window.scrollTo === "function") window.scrollTo({ top: 0, behavior: "smooth" }); } catch (_) {}
     const inp = document.getElementById("globalSearchInput");
     if (inp) {
       inp.focus();
@@ -2716,8 +3169,8 @@
 
   function updateSearchQuery(val) {
     searchQuery = val;
-    const host = document.getElementById("searchPanelHost");
-    if (host) host.innerHTML = renderSearchPanel();
+    const host = document.getElementById("searchResultsHost");
+    if (host) host.innerHTML = renderSearchResults();
   }
 
   function findSearchResults(q) {
@@ -2777,14 +3230,19 @@
           title: String(a.title || ""),
           sub: `${a.date || ""}${a.subtitle ? ` · ${a.subtitle}` : ""}`,
           action: () => {
-            state.archiveCatFilter = "all";
-            if (state.archiveViewMode === "notebook" && a.bookId) {
+            state.activeTab = "archive";
+            yearDayDate = "";
+            if (a.bookId) {
               notebookBookId = a.bookId;
+              state.shelfSelectedBookId = a.bookId;
               const recs = bookArchives(a.bookId);
               notebookPageIndex = Math.max(0, recs.findIndex(r => r.id === a.id));
               notebookMobileSide = "left";
+            } else {
+              notebookBookId = "";
             }
-            setTab("archive");
+            saveState();
+            render();
           }
         });
       }
@@ -2804,31 +3262,43 @@
     return results;
   }
 
-  function renderSearchPanel() {
+  function renderSearchResults() {
     const term = searchQuery.trim();
-    if (!term) return "";
+    if (!term) {
+      return `<p class="search-empty">기록 · 일기 · 목표 · 버킷 · 아카이브를 한번에 찾습니다. 검색어를 입력해 주세요.</p>`;
+    }
     const list = findSearchResults(term);
     currentSearchList = list;
+    if (!list.length) {
+      return `<p class="search-empty">“${escapeHtml(term)}”와 일치하는 기록이 없습니다.</p>`;
+    }
     return `
-      <section class="search-panel">
-        <div class="search-panel-header">
-          <strong style="font-size:14px;">“${escapeHtml(term)}” 검색 결과 (${list.length}건)</strong>
-          <button class="btn btn-sm" onclick="closeSearch()">닫기</button>
-        </div>
-        ${list.length ? `
-          <div class="search-result-list">
-            ${list.map((item, i) => `
-              <div class="search-result-item" onclick="runSearchAction(${i})">
-                <div style="min-width:0;">
-                  <span class="pill">${escapeHtml(item.type)}</span>
-                  <strong style="font-size:13px; margin-left:4px;">${escapeHtml(item.title)}</strong>
-                  <div class="item-meta">${escapeHtml(item.sub)}</div>
-                </div>
-              </div>
-            `).join("")}
+      <div class="search-count"><span>“${escapeHtml(term)}” 검색 결과</span><span>${list.length}건</span></div>
+      <div class="search-result-list">
+        ${list.map((item, i) => `
+          <div class="search-result-item" onclick="runSearchAction(${i})">
+            <div style="min-width:0;">
+              <span class="pill">${escapeHtml(item.type)}</span>
+              <strong style="font-size:13px; margin-left:4px;">${escapeHtml(item.title)}</strong>
+              <div class="item-meta">${escapeHtml(item.sub)}</div>
+            </div>
           </div>
-        ` : `<p style="font-size:13px; color:var(--text-sub); margin:0;">일치하는 기록이 없습니다.</p>`}
-      </section>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderSearchArea() {
+    if (!searchOpen) return "";
+    return `
+      <div class="search-drawer" role="search">
+        <div class="search-drawer-bar">
+          <span class="sd-icon">${ICONS.search}</span>
+          <input type="text" id="globalSearchInput" class="sd-input" placeholder="기록 · 일기 · 목표 · 버킷 · 아카이브 검색" value="${escapeAttr(searchQuery)}" oninput="updateSearchQuery(this.value)" aria-label="전체 검색" />
+          <button class="sd-close" onclick="closeSearch()" title="검색 닫기" aria-label="검색 닫기">${ICONS.close}</button>
+        </div>
+        <div id="searchResultsHost">${renderSearchResults()}</div>
+      </div>
     `;
   }
 
@@ -2840,21 +3310,28 @@
     item.action();
   }
 
-  function renderGlobalTools() {
-    if (searchOpen) {
-      return `
-        <div class="global-tools search-open">
-          <div class="search-open-inner">
-            <input type="text" id="globalSearchInput" class="search-input" placeholder="기록·일기·목표·버킷·아카이브 검색" value="${escapeAttr(searchQuery)}" oninput="updateSearchQuery(this.value)" aria-label="전체 검색" />
-            <button class="icon-btn icon-btn-lg" onclick="closeSearch()" title="검색 닫기" aria-label="검색 닫기">${ICONS.close}</button>
-          </div>
-        </div>
-      `;
-    }
+  // 탭별 공통 헤더 정보
+  const TAB_META = {
+    year: { label: "연력 · 일기", icon: "year", accent: "#93a6cb" },
+    goals: { label: "목표", icon: "goals", accent: "#9cc6ab" },
+    bucket: { label: "버킷리스트", icon: "bucket", accent: "#e2b78c" },
+    archive: { label: "아카이브", icon: "archive", accent: "#b4a6d6" }
+  };
+
+  function renderAppHeader() {
+    const tab = normalizeTab(state.activeTab);
+    const meta = TAB_META[tab] || TAB_META.year;
     return `
-      <div class="global-tools">
-        <button class="icon-btn icon-btn-lg" onclick="openSearch()" title="검색" aria-label="검색">${ICONS.search}</button>
-        <button class="icon-btn icon-btn-lg" onclick="openSettings()" title="설정 · 데이터 관리" aria-label="설정">${ICONS.settings}</button>
+      <div class="ah-inner" style="--ah-accent:${meta.accent}">
+        <div class="ah-left">
+          <span class="ah-brand">아카이브 &amp; 플래너</span>
+          <span class="ah-sep"></span>
+          <span class="ah-tab">${ICONS[meta.icon]}${meta.label}</span>
+        </div>
+        <div class="ah-right">
+          <button class="ah-btn ${searchOpen ? "on" : ""}" onclick="openSearch()" title="전체 검색" aria-label="전체 검색">${ICONS.search}</button>
+          <button class="ah-btn" onclick="openSettings()" title="설정 · 데이터 관리" aria-label="설정">${ICONS.settings}</button>
+        </div>
       </div>
     `;
   }
@@ -2871,16 +3348,19 @@
     if (diaryPending) flushDiaryDraft();
     state.activeTab = normalizeTab(state.activeTab);
     updateNavUI();
+    const hdr = document.getElementById("appHeader");
+    if (hdr) hdr.innerHTML = renderAppHeader();
+    const sHost = document.getElementById("searchPanelHost");
+    if (sHost) sHost.innerHTML = renderSearchArea();
     const main = document.getElementById("mainView");
     let bodyHtml = "";
     if (state.activeTab === "year") bodyHtml = renderYearView();
-    else if (state.activeTab === "diary") bodyHtml = renderDiaryView();
     else if (state.activeTab === "goals") bodyHtml = renderGoalsView();
     else if (state.activeTab === "bucket") bodyHtml = renderBucketView();
     else if (state.activeTab === "archive") bodyHtml = renderArchiveView();
     else bodyHtml = renderYearView();
 
-    main.innerHTML = `<div id="searchPanelHost">${renderSearchPanel()}</div>` + bodyHtml;
+    main.innerHTML = bodyHtml;
     bindNotebookGestures();
   }
 
@@ -2901,6 +3381,7 @@
   let yearShelfIndex = 0;
   let yearBookYear = 0;   // 0이면 책장 화면
   let yearPageIndex = 0;  // 0 ~ 11 (1월 ~ 12월)
+  let yearDayDate = "";   // 값이 있으면 그 날짜의 하루 페이지
   let yearMobileSide = "left";
 
   function pad2(n) {
@@ -2950,7 +3431,7 @@
         <span><i style="background:var(--c-goal)"></i>목표·버킷 달성</span>
         <span><i style="background:var(--c-archive)"></i>아카이브</span>
         <span><i style="background:var(--c-todo)"></i>할일</span>
-        <span class="nb-legend-hint">날짜를 누르면 하루 기록으로 이동합니다</span>
+        <span class="nb-legend-hint">날짜를 누르면 그 날의 하루 기록이 열립니다</span>
       </div>
     `;
   }
@@ -2991,7 +3472,7 @@
     return `
       <button class="nb-action primary" onclick="openYearBook(${y})"><span class="nb-action-icon">${NB_ICONS.book}</span>연도 책 펼치기</button>
       <button class="nb-action" onclick="openYearBook(${y}, ${monthIdx})"><span class="nb-action-icon">${NB_ICONS.calendar}</span>${isThis ? "이번 달 열기" : "1월 열기"}</button>
-      <button class="nb-action" onclick="selectDate('${TODAY_STR}', true)"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
+      <button class="nb-action" onclick="openYearDay('${TODAY_STR}')"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
     `;
   }
 
@@ -2999,20 +3480,9 @@
     yearShelfIndex = Math.min(Math.max(yearShelfIndex, 0), YEARS.length - 1);
     const activeYear = YEARS[yearShelfIndex];
     return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-year">${ICONS.year} 1년 연력</h1>
-          <span class="topbar-sub">연도별 책을 펼쳐 1월부터 12월까지 넘겨 봅니다</span>
-        </div>
-        <div class="topbar-right">
-          <button class="btn" onclick="openTodayYearBook()">오늘 (${TODAY_STR})</button>
-        </div>
-        ${renderGlobalTools()}
-      </div>
-
       <div class="nb-stage">
-        <div class="nb-stage-head">
-          <div>
+        <div class="stage-bar">
+          <div class="stage-bar-lead">
             <div class="nb-stage-title">연도별 책장</div>
             <div class="nb-stage-sub">책을 누르면 그 해의 1월~12월 노트가 펼쳐집니다</div>
           </div>
@@ -3050,25 +3520,50 @@
     yearBookYear = y;
     yearShelfIndex = Math.max(0, YEARS.indexOf(y));
     yearPageIndex = Number.isInteger(monthIndex) ? Math.min(11, Math.max(0, monthIndex)) : 0;
+    yearDayDate = "";
     yearMobileSide = "left";
     render();
   }
 
+  // 그 연도 노트 안에서 하루 페이지 열기
+  function openYearDay(dateStr) {
+    const ds = String(dateStr || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) return;
+    flushDiaryDraft();
+    state.selectedDate = ds;
+    state.activeTab = "year";
+    yearBookYear = Number(ds.slice(0, 4));
+    yearPageIndex = Number(ds.slice(5, 7)) - 1;
+    yearDayDate = ds;
+    yearMobileSide = "left";
+    saveState();
+    render();
+  }
+
+  function closeYearDay() {
+    yearDayDate = "";
+    render();
+  }
+
+  function stepYearDay(delta) {
+    if (!yearDayDate) return;
+    openYearDay(shiftDate(yearDayDate, delta));
+  }
+
   function openTodayYearBook() {
-    const todayYear = Number(TODAY_STR.slice(0, 4));
-    const year = YEARS.includes(todayYear) ? todayYear : (todayYear < YEARS[0] ? YEARS[0] : YEARS[YEARS.length - 1]);
-    const monthIdx = year === todayYear ? Number(TODAY_STR.slice(5, 7)) - 1 : 0;
-    openYearBook(year, monthIdx);
+    openYearDay(TODAY_STR);
   }
 
   function closeYearBook() {
     yearBookYear = 0;
     yearPageIndex = 0;
+    yearDayDate = "";
     render();
   }
 
   function openYearPage(idx, side) {
     yearPageIndex = Math.min(11, Math.max(0, Number(idx) || 0));
+    yearDayDate = "";
     if (side === "right" || side === "left") yearMobileSide = side;
     render();
   }
@@ -3119,7 +3614,7 @@
         meta.hasAny ? "has-rec" : ""
       ].filter(Boolean).join(" ");
       cells += `
-        <button class="${cls}" onclick="selectDate('${ds}', true)" title="${escapeAttr(formatDateKo(ds))}" aria-label="${escapeAttr(formatDateKo(ds))}">
+        <button class="${cls}" onclick="openYearDay('${ds}')" title="${escapeAttr(formatDateKo(ds))}" aria-label="${escapeAttr(formatDateKo(ds))}">
           <span class="nb-day-num">${d}</span>
           <span class="nb-day-dots">${dayDotsHtml(meta)}</span>
         </button>
@@ -3138,7 +3633,7 @@
   function renderMonthRow(item) {
     const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
     return `
-      <button class="nb-month-row" onclick="selectDate('${item.dateStr}', true)" title="이 날의 하루 기록 열기">
+      <button class="nb-month-row" onclick="openYearDay('${item.dateStr}')" title="이 날의 하루 기록 열기">
         <b>${item.day}일(${dowNames[item.dow]})</b>
         <span class="txt">${escapeHtml(daySummaryText(item.dateStr, item.meta))}</span>
         <span class="dots">${dayDotsHtml(item.meta)}</span>
@@ -3149,18 +3644,9 @@
   function renderYearReader(year) {
     const month = Math.min(11, Math.max(0, yearPageIndex)) + 1;
     const monthRecords = collectMonthDays(year, month);
-    const totalDays = countYearDays(year);
     const monthIdx = month - 1;
     const isThisMonth = `${year}-${pad2(month)}` === TODAY_STR.slice(0, 7);
     const monthHeads = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-
-    const jumpBar = `
-      <div class="nb-jumpbar" role="tablist" aria-label="월 빠른 이동">
-        ${Array.from({ length: 12 }, (_, i) => `
-          <button class="nb-jump ${i === monthIdx ? "active" : ""}" onclick="openYearPage(${i})" role="tab" aria-selected="${i === monthIdx ? "true" : "false"}">${i + 1}월</button>
-        `).join("")}
-      </div>
-    `;
 
     const leftPage = `
       <section class="nb-page nb-page--left">
@@ -3191,7 +3677,7 @@
           ` : `
             <div class="nb-month-empty">
               <p>이 달에는 아직 기록이 없습니다.</p>
-              <button class="btn btn-sm" onclick="selectDate('${year}-${pad2(month)}-01', true)">이 달 기록 시작하기</button>
+              <button class="btn btn-sm" onclick="openYearDay('${year}-${pad2(month)}-01')">이 달 기록 시작하기</button>
             </div>
           `}
         </div>
@@ -3200,17 +3686,6 @@
     `;
 
     return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-year">${ICONS.year} 1년 연력</h1>
-          <span class="topbar-sub">${year}년 · 기록 있는 날 ${totalDays}일</span>
-        </div>
-        <div class="topbar-right">
-          <button class="btn" onclick="selectDate('${TODAY_STR}', true)">오늘 (${TODAY_STR})</button>
-        </div>
-        ${renderGlobalTools()}
-      </div>
-
       <div class="nb-stage">
         <div class="nb-reader-head">
           <button class="nb-back" onclick="closeYearBook()">${ICONS.chevLeft}책장</button>
@@ -3220,7 +3695,6 @@
           </div>
           <span class="nb-stage-count">${month} / 12</span>
         </div>
-        ${jumpBar}
         <div class="nb-book">
           <button class="nb-nav prev" onclick="yearPageStep(-1)" ${yearPageIndex <= 0 ? "disabled" : ""} aria-label="이전 달">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="nbYearSpread" data-side="${yearMobileSide}">
@@ -3238,9 +3712,7 @@
           <button data-year-side="right" class="${yearMobileSide === "right" ? "active" : ""}" onclick="setYearMobileSide('right')">기록 목록</button>
         </div>
         <div class="nb-actions">
-          <button class="nb-action" onclick="closeYearBook()"><span class="nb-action-icon">${NB_ICONS.back}</span>책장으로</button>
-          <button class="nb-action" onclick="selectDate('${TODAY_STR}', true)"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
-          <button class="nb-action primary" onclick="openYearPage(${monthIdx >= 11 ? 0 : monthIdx + 1})"><span class="nb-action-icon">${ICONS.chevRight}</span>${monthIdx >= 11 ? "1월로" : "다음 달"}</button>
+          <button class="nb-action primary" onclick="openYearDay('${TODAY_STR}')"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
         </div>
         ${renderYearLegend()}
       </div>
@@ -3249,80 +3721,89 @@
 
   function renderYearView() {
     const year = Number(yearBookYear);
-    if (year && YEARS.includes(year)) return renderYearReader(year);
+    if (yearDayDate) return renderYearDay(yearDayDate);
+    if (year >= 1900) return renderYearReader(year);
     return renderYearShelf();
   }
 
-  // 하루 기록 · 일기 뷰 (할일 항목을 탭하면 바로 수정 모달 열림)
-  function renderDiaryView() {
-    const d = state.selectedDate;
-    const prevDate = shiftDate(d, -1);
-    const nextDate = shiftDate(d, 1);
-    const dateColor = getDateColor(d);
+  // 연력 · 일기: 노트 안에서 열리는 하루 페이지 (한 줄 요약 + 긴 일기 + 할일 + 달성)
+  function renderYearDay(dateStr) {
+    const d = dateStr;
+    const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
+    const dow = getDayOfWeek(d);
+    const y = d.slice(0, 4);
+    const m = Number(d.slice(5, 7));
+    const day = Number(d.slice(8, 10));
+    const maxDay = new Date(Number(y), m, 0).getDate();
     const log = state.logs[d] || { oneLine: "", diary: "" };
+    const isToday = d === TODAY_STR;
 
     const dayTodos = state.todos.filter(t => t.date === d);
     const doneGoals = state.goals.filter(g => g.done && g.doneDate === d);
     const doneBuckets = state.buckets.filter(b => b.done && b.doneDate === d);
     const dayArchives = state.archives.filter(a => a.date === d);
+    const doneCount = doneGoals.length + doneBuckets.length + dayArchives.length;
 
     return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-diary">${ICONS.diary} 하루 기록 · 일기</h1>
-          <span class="diary-date-badge" style="color:${dateColor}">${formatDateKo(d)}</span>
-        </div>
-        <div class="topbar-right">
-          <button class="btn btn-nav-arrow" onclick="selectDate('${prevDate}', false)" title="이전 날" aria-label="이전 날">${ICONS.chevLeft}</button>
-          <input type="date" value="${d}" onchange="if (this.value) selectDate(this.value, false)" aria-label="날짜 선택" />
-          <button class="btn btn-nav-arrow" onclick="selectDate('${nextDate}', false)" title="다음 날" aria-label="다음 날">${ICONS.chevRight}</button>
-          <button class="btn btn-primary" onclick="selectDate('${TODAY_STR}', false)">오늘</button>
-        </div>
-        ${renderGlobalTools()}
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">연력 한 줄 요약</label>
-          <input type="text" id="oneLineInput" style="width:100%; margin-bottom:16px;" placeholder="연력 칸에 표시될 오늘의 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" />
-
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--c-diary); margin-bottom:6px;">오늘의 긴 기록 · 일기</label>
-          <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="onDiaryInput()">${escapeHtml(log.diary || "")}</textarea>
-          <div class="diary-save-line">
-            <span id="saveStatus" class="save-status">입력하면 자동으로 저장됩니다</span>
+      <div class="nb-stage">
+        <div class="nb-reader-head">
+          <button class="nb-back" onclick="closeYearDay()">${ICONS.chevLeft}${m}월 달력</button>
+          <div class="nb-reader-title">
+            <b>${m}월 ${day}일 <em style="font-style:normal; color:${dow === 0 ? "#e8b4b4" : "inherit"};">${dowNames[dow]}</em></b>
+            <span>${y}년 · 연력 한 줄 · 일기 · 할일</span>
           </div>
+          <span class="nb-stage-count">${isToday ? "오늘" : `${day} / ${maxDay}`}</span>
         </div>
 
-        <div>
-          <div class="card">
-            <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-todo);">이 날의 할일</h3>
-            <div class="form-row">
-              <input type="text" id="dayTodoInput" style="flex:1; min-width:0;" placeholder="이 날짜에 할일 추가..." onkeydown="if (event.key === 'Enter') addDayTodo()" />
-              <button class="btn" onclick="addDayTodo()">추가</button>
-            </div>
-            <div class="item-list">
-              ${dayTodos.length ? dayTodos.map(t => `
-                <div class="list-item ${t.done ? "done" : ""}">
-                  <div class="item-left">
-                    <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" />
-                    <div class="item-title tap-edit-target" onclick="openEditTodo('${t.id}')" title="탭하여 수정">${escapeHtml(t.title)}</div>
-                  </div>
-                  <button class="icon-btn danger" onclick="deleteItem('todos', '${t.id}')" title="삭제" aria-label="할일 삭제">${ICONS.trash}</button>
-                </div>
-              `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 할일이 없습니다.</p>`}
-            </div>
-          </div>
+        <div class="day-controls">
+          <button class="stage-nav prev" onclick="stepYearDay(-1)" aria-label="이전 날">${ICONS.chevLeft}<span class="label">이전 날</span></button>
+          <button class="stage-chip ${isToday ? "is-today" : ""}" onclick="openYearDay('${TODAY_STR}')">오늘</button>
+          <button class="stage-nav next" onclick="stepYearDay(1)" aria-label="다음 날"><span class="label">다음 날</span>${ICONS.chevRight}</button>
+        </div>
 
-          ${(doneGoals.length + doneBuckets.length + dayArchives.length) > 0 ? `
-            <div class="card">
-              <h3 style="margin:0 0 10px; font-size:15px; color:var(--c-goal);">이 날의 달성 · 아카이브</h3>
-              <div class="item-list">
-                ${doneGoals.map(g => `<div class="list-item tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} 목표 · ${escapeHtml(g.topic)}</span>${escapeHtml(g.title)}</div>`).join("")}
-                ${doneBuckets.map(b => `<div class="list-item tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} 버킷 · ${escapeHtml(b.category)}</span>${escapeHtml(b.title)}</div>`).join("")}
-                ${dayArchives.map(a => `<div class="list-item tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span>${escapeHtml(a.title)}</div>`).join("")}
+        <div class="diary-stage-grid">
+          <section class="paper diary-note paper--dot">
+            <div class="paper-label">${ICONS.diary}연력 한 줄 요약</div>
+            <input type="text" id="oneLineInput" class="paper-input-line" placeholder="연력 칸에 표시될 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" aria-label="연력 한 줄 요약" />
+            <div class="paper-rule"></div>
+            <div class="paper-label">${ICONS.diary}${m}월 ${day}일의 긴 기록 · 일기</div>
+            <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="onDiaryInput()" aria-label="긴 기록 일기">${escapeHtml(log.diary || "")}</textarea>
+            <div class="diary-save-line">
+              <span id="saveStatus" class="save-status">입력하면 자동으로 저장됩니다</span>
+            </div>
+          </section>
+
+          <div class="diary-side">
+            <section class="paper">
+              <div class="paper-label">${ICONS.year}이 날의 할일</div>
+              <div class="form-row" style="margin-bottom:8px;">
+                <input type="text" id="dayTodoInput" style="flex:1; min-width:0;" placeholder="이 날짜에 할일 추가..." onkeydown="if (event.key === 'Enter') addDayTodo()" aria-label="할일 추가" />
+                <button class="btn" onclick="addDayTodo()">추가</button>
               </div>
-            </div>
-          ` : ""}
+              <div class="item-list">
+                ${dayTodos.length ? dayTodos.map(t => `
+                  <div class="list-item ${t.done ? "done" : ""}">
+                    <div class="item-left">
+                      <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" aria-label="할일 완료" />
+                      <div class="item-title tap-edit-target" onclick="openEditTodo('${t.id}')" title="탭하여 수정">${escapeHtml(t.title)}</div>
+                    </div>
+                    <button class="icon-btn danger" onclick="deleteItem('todos', '${t.id}')" title="삭제" aria-label="할일 삭제">${ICONS.trash}</button>
+                  </div>
+                `).join("") : `<p class="paper-empty">등록된 할일이 없습니다.</p>`}
+              </div>
+            </section>
+
+            <section class="paper">
+              <div class="paper-label">${ICONS.goals}이 날의 달성 · 아카이브</div>
+              ${doneCount ? `
+                <div class="item-list">
+                  ${doneGoals.map(g => `<div class="list-item tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} 목표 · ${escapeHtml(g.topic)}</span><span class="item-title">${escapeHtml(g.title)}</span></div></div>`).join("")}
+                  ${doneBuckets.map(b => `<div class="list-item tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} 버킷 · ${escapeHtml(b.category)}</span><span class="item-title">${escapeHtml(b.title)}</span></div></div>`).join("")}
+                  ${dayArchives.map(a => `<div class="list-item tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span><span class="item-title">${escapeHtml(a.title)}</span></div></div>`).join("")}
+                </div>
+              ` : `<p class="paper-empty">이 날 달성한 목표·버킷이나 남긴 아카이브가 아직 없습니다.</p>`}
+            </section>
+          </div>
         </div>
       </div>
     `;
@@ -3592,7 +4073,7 @@
     `).join("");
   }
 
-  // 통합 목표 뷰 (기간 설정 + 카테고리 관리 모달 + 탭 시 바로 수정 모달)
+  // 목표 뷰 (스테이지 + 종이 카드)
   function renderGoalsView() {
     let filtered = state.goals.filter(g => {
       const topicOk = state.goalTopicFilter === "all" || g.topic === state.goalTopicFilter;
@@ -3620,12 +4101,43 @@
     const defaultAddPeriod = state.goalPeriodFilter === "all" ? "연간" : state.goalPeriodFilter;
 
     return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-goal">${ICONS.goals} 목표</h1>
-          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
+      <div class="nb-stage">
+        <div class="stage-bar">
+          <div class="stage-bar-lead">
+            <div class="nb-stage-title">목표</div>
+            <div class="nb-stage-sub">기간별 목표를 세우고 달성률을 봅니다 · 항목을 누르면 바로 수정</div>
+          </div>
+          <span class="nb-stage-count">총 ${totalCnt}개</span>
         </div>
-        <div class="topbar-right">
+
+        <div class="stage-summary">
+          <div class="summary-metrics">
+            <span>현재 목표 <strong>${totalCnt}개</strong></span>
+            <span>달성 완료 <strong>${doneCnt}개</strong></span>
+            <span>달성률 <strong>${pct}%</strong></span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%;"></div>
+          </div>
+        </div>
+
+        <div class="stage-chips">
+          <button class="chip-btn ${state.goalTopicFilter === "all" ? "active" : ""}" onclick="changeGoalTopicFilter('all')">
+            전체 <span class="chip-count">${state.goals.length}</span>
+          </button>
+          ${state.topics.map(t => {
+            const cnt = state.goals.filter(g => g.topic === t.name).length;
+            const isAct = state.goalTopicFilter === t.name;
+            return `
+              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter(${jsArg(t.name)})">
+                ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} <span class="chip-count">${cnt}</span>
+              </button>
+            `;
+          }).join("")}
+          <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('goals')">${ICONS.sliders} 카테고리 관리</button>
+        </div>
+
+        <div class="stage-tools">
           ${yearSelectHtml(state.goalYearFilter, "changeGoalYearFilter", "전체 연도")}
           <select class="year-select" onchange="changeGoalPeriodFilter(this.value)" aria-label="기간 필터">
             <option value="all" ${state.goalPeriodFilter === "all" ? "selected" : ""}>전체 기간</option>
@@ -3641,94 +4153,65 @@
             ${showGoalComposer ? "닫기" : "+ 새 목표 추가"}
           </button>
         </div>
-        ${renderGlobalTools()}
-      </div>
 
-      <div class="summary-strip">
-        <div class="summary-metrics">
-          <span>현재 필터 목표 <strong>${totalCnt}개</strong></span>
-          <span>달성 완료 <strong style="color:var(--c-goal);">${doneCnt}개</strong></span>
-          <span>달성률 <strong>${pct}%</strong></span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${pct}%;"></div>
-        </div>
-      </div>
-
-      <div class="filter-bar-wrap">
-        <div class="filter-chips">
-          <button class="chip-btn ${state.goalTopicFilter === "all" ? "active" : ""}" onclick="changeGoalTopicFilter('all')">
-            전체 <span class="chip-count">${state.goals.length}</span>
-          </button>
-          ${state.topics.map(t => {
-            const cnt = state.goals.filter(g => g.topic === t.name).length;
-            const isAct = state.goalTopicFilter === t.name;
-            return `
-              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeGoalTopicFilter(${jsArg(t.name)})">
-                ${renderPictogram(t.icon, 13)} ${escapeHtml(t.name)} <span class="chip-count">${cnt}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
-        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('goals')">${ICONS.sliders} 카테고리 관리</button>
-      </div>
-
-      ${showGoalComposer ? `
-        <div class="card composer-card">
-          <div class="composer-header">
-            <h3 style="color:var(--c-goal);">새 목표 등록</h3>
-          </div>
-          <div class="form-row">
-            <select id="goalTopicSel" aria-label="목표 카테고리">
-              ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
-            </select>
-            <select id="goalYearSel" aria-label="목표 연도">
-              ${YEARS.map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
-            </select>
-            <select id="goalPeriodSel" aria-label="목표 기간">
-              ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
-            </select>
-            <input type="text" id="goalTitleInp" style="flex:1; min-width:190px;" placeholder="목표 제목 입력..." onkeydown="if (event.key === 'Enter') addGoal()" />
-          </div>
-          <div class="form-row">
-            <textarea id="goalNoteInp" style="width:100%; min-height:70px; resize:vertical;" placeholder="목표의 구체적인 실행 계획, 다짐, 기준 등 본문 내용을 작성하세요..."></textarea>
-          </div>
-          <div class="composer-footer">
-            <div class="composer-actions">
-              <button class="btn btn-primary" onclick="addGoal()">목표 저장</button>
+        ${showGoalComposer ? `
+          <div class="card composer-card">
+            <div class="composer-header">
+              <h3 style="color:var(--c-goal);">새 목표 등록</h3>
+            </div>
+            <div class="form-row">
+              <select id="goalTopicSel" aria-label="목표 카테고리">
+                ${state.topics.map(t => `<option value="${escapeAttr(t.name)}" ${defaultAddTopic === t.name ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}
+              </select>
+              <select id="goalYearSel" aria-label="목표 연도">
+                ${YEARS.map(y => `<option value="${y}" ${defaultAddYear === String(y) ? "selected" : ""}>${y}년</option>`).join("")}
+              </select>
+              <select id="goalPeriodSel" aria-label="목표 기간">
+                ${PERIODS.map(p => `<option value="${p}" ${defaultAddPeriod === p ? "selected" : ""}>${p}</option>`).join("")}
+              </select>
+              <input type="text" id="goalTitleInp" style="flex:1; min-width:190px;" placeholder="목표 제목 입력..." onkeydown="if (event.key === 'Enter') addGoal()" />
+            </div>
+            <div class="form-row">
+              <textarea id="goalNoteInp" style="width:100%; min-height:70px; resize:vertical;" placeholder="목표의 구체적인 실행 계획, 다짐, 기준 등 본문 내용을 작성하세요..."></textarea>
+            </div>
+            <div class="composer-footer">
+              <div class="composer-actions">
+                <button class="btn btn-primary" onclick="addGoal()">목표 저장</button>
+              </div>
             </div>
           </div>
-        </div>
-      ` : ""}
+        ` : ""}
 
-      ${filtered.length ? `
-        <div class="goal-list">
-          ${filtered.map(g => {
-            const iconKey = getTopicIconKey(g.topic);
-            const yr = normalizeYear(g.year);
-            const pr = normalizePeriod(g.period);
-            return `
-              <article class="goal-card ${g.done ? "done" : ""}">
-                <div class="goal-card-top">
-                  <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
-                  <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
-                  <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
-                </div>
-                <div class="media-title-row">
-                  <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
-                  <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
-                </div>
-                ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
-                ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
-              </article>
-            `;
-          }).join("")}
-        </div>
-      ` : `
-        <div class="card">
-          <p style="font-size:13px; color:var(--text-sub); margin:0;">해당 조건에 맞는 목표가 없습니다. 상단의 ‘+ 새 목표 추가’ 버튼으로 목표를 등록해 보세요.</p>
-        </div>
-      `}
+        ${filtered.length ? `
+          <div class="goal-list">
+            ${filtered.map(g => {
+              const iconKey = getTopicIconKey(g.topic);
+              const yr = normalizeYear(g.year);
+              const pr = normalizePeriod(g.period);
+              return `
+                <article class="goal-card ${g.done ? "done" : ""}">
+                  <div class="goal-card-top">
+                    <span class="pill">${renderPictogram(iconKey, 12)} ${escapeHtml(g.topic)}</span>
+                    <span class="pill">${yr}년 · ${escapeHtml(pr)}</span>
+                    <button class="icon-btn danger" onclick="deleteItem('goals', '${g.id}')" title="삭제" aria-label="목표 삭제">${ICONS.trash}</button>
+                  </div>
+                  <div class="media-title-row">
+                    <input type="checkbox" class="chk" ${g.done ? "checked" : ""} onchange="toggleAchieve('goals', '${g.id}')" aria-label="달성 체크" />
+                    <h3 class="media-title tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.title)}</h3>
+                  </div>
+                  ${g.note ? `<div class="media-note tap-edit-target" onclick="openEditGoal('${g.id}')" title="탭하여 수정">${escapeHtml(g.note)}</div>` : ""}
+                  ${g.done ? `<div class="item-meta">${renderDoneDateControl("goals", g.id, g.doneDate)}</div>` : ""}
+                </article>
+              `;
+            }).join("")}
+          </div>
+        ` : `
+          <div class="stage-empty">
+            <strong>이 조건에 맞는 목표가 없습니다</strong>
+            위의 ‘+ 새 목표 추가’로 목표를 등록해 보세요.
+          </div>
+        `}
+      </div>
     `;
   }
 
@@ -3840,38 +4323,27 @@
       : state.bucketCatFilter;
 
     return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-bucket">${ICONS.bucket} 버킷리스트</h1>
-          <span class="topbar-sub">총 ${totalCnt}개 · 항목을 탭하면 바로 수정</span>
+      <div class="nb-stage">
+        <div class="stage-bar">
+          <div class="stage-bar-lead">
+            <div class="nb-stage-title">버킷리스트</div>
+            <div class="nb-stage-sub">언젠가 해보고 싶은 일을 모아 둡니다 · 항목을 누르면 바로 수정</div>
+          </div>
+          <span class="nb-stage-count">총 ${totalCnt}개</span>
         </div>
-        <div class="topbar-right">
-          <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
-            <option value="newest" ${state.bucketSort === "newest" ? "selected" : ""}>최신순</option>
-            <option value="oldest" ${state.bucketSort === "oldest" ? "selected" : ""}>오래된순</option>
-            <option value="undone" ${state.bucketSort === "undone" ? "selected" : ""}>미달성 우선</option>
-            <option value="done" ${state.bucketSort === "done" ? "selected" : ""}>달성 완료 우선</option>
-          </select>
-          <button class="btn btn-primary" onclick="toggleBucketComposer()">
-            ${showBucketComposer ? "닫기" : "+ 새 버킷 추가"}
-          </button>
-        </div>
-        ${renderGlobalTools()}
-      </div>
 
-      <div class="summary-strip">
-        <div class="summary-metrics">
-          <span>현재 목록 <strong>${totalCnt}개</strong></span>
-          <span>달성 완료 <strong style="color:var(--c-bucket);">${doneCnt}개</strong></span>
-          <span>달성률 <strong>${pct}%</strong></span>
+        <div class="stage-summary">
+          <div class="summary-metrics">
+            <span>현재 목록 <strong>${totalCnt}개</strong></span>
+            <span>달성 완료 <strong>${doneCnt}개</strong></span>
+            <span>달성률 <strong>${pct}%</strong></span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%; background:#e3bb94;"></div>
+          </div>
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${pct}%; background:var(--c-bucket);"></div>
-        </div>
-      </div>
 
-      <div class="filter-bar-wrap">
-        <div class="filter-chips">
+        <div class="stage-chips">
           <button class="chip-btn ${state.bucketCatFilter === "all" ? "active" : ""}" onclick="changeBucketCatFilter('all')">
             전체 <span class="chip-count">${state.buckets.length}</span>
           </button>
@@ -3884,50 +4356,65 @@
               </button>
             `;
           }).join("")}
+          <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('bucket')">${ICONS.sliders} 카테고리 관리</button>
         </div>
-        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('bucket')">${ICONS.sliders} 카테고리 관리</button>
-      </div>
 
-      ${showBucketComposer ? `
-        <div class="card composer-card">
-          <div class="composer-header">
-            <h3 style="color:var(--c-bucket);">새 버킷리스트 등록</h3>
-          </div>
-          <div class="form-row">
-            <select id="bucketCatSel" aria-label="버킷 카테고리">
-              ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
-            </select>
-            <input type="text" id="bucketTitleInp" style="flex:1; min-width:190px;" placeholder="언젠가 꼭 해보고 싶은 버킷리스트..." onkeydown="if (event.key === 'Enter') addBucket()" />
-            <input type="text" id="bucketNoteInp" style="flex:1; min-width:150px;" placeholder="세부 메모 (선택)" onkeydown="if (event.key === 'Enter') addBucket()" />
-          </div>
-          <div class="composer-footer">
-            <span style="font-size:12px; color:var(--text-sub);">Enter 키로 바로 저장할 수 있습니다</span>
-            <div class="composer-actions">
-              <button class="btn btn-primary" onclick="addBucket()">버킷 저장</button>
+        <div class="stage-tools">
+          <select class="year-select" onchange="changeBucketSort(this.value)" aria-label="정렬">
+            <option value="newest" ${state.bucketSort === "newest" ? "selected" : ""}>최신순</option>
+            <option value="oldest" ${state.bucketSort === "oldest" ? "selected" : ""}>오래된순</option>
+            <option value="undone" ${state.bucketSort === "undone" ? "selected" : ""}>미달성 우선</option>
+            <option value="done" ${state.bucketSort === "done" ? "selected" : ""}>달성 완료 우선</option>
+          </select>
+          <button class="btn btn-primary" onclick="toggleBucketComposer()">
+            ${showBucketComposer ? "닫기" : "+ 새 버킷 추가"}
+          </button>
+        </div>
+
+        ${showBucketComposer ? `
+          <div class="card composer-card">
+            <div class="composer-header">
+              <h3 style="color:var(--c-bucket);">새 버킷리스트 등록</h3>
+            </div>
+            <div class="form-row">
+              <select id="bucketCatSel" aria-label="버킷 카테고리">
+                ${state.bucketCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
+              </select>
+              <input type="text" id="bucketTitleInp" style="flex:1; min-width:190px;" placeholder="언젠가 꼭 해보고 싶은 버킷리스트..." onkeydown="if (event.key === 'Enter') addBucket()" />
+              <input type="text" id="bucketNoteInp" style="flex:1; min-width:150px;" placeholder="세부 메모 (선택)" onkeydown="if (event.key === 'Enter') addBucket()" />
+            </div>
+            <div class="composer-footer">
+              <span style="font-size:12px; color:var(--text-sub);">Enter 키로 바로 저장할 수 있습니다</span>
+              <div class="composer-actions">
+                <button class="btn btn-primary" onclick="addBucket()">버킷 저장</button>
+              </div>
             </div>
           </div>
-        </div>
-      ` : ""}
+        ` : ""}
 
-      <div class="card">
-        <div class="item-list">
-          ${filtered.length ? filtered.map(b => `
-            <div class="list-item ${b.done ? "done" : ""}">
-              <div class="item-left">
+        ${filtered.length ? `
+          <section class="paper bucket-sheet">
+            ${filtered.map(b => `
+              <div class="paper-row ${b.done ? "done" : ""}">
                 <input type="checkbox" class="chk" ${b.done ? "checked" : ""} onchange="toggleAchieve('buckets', '${b.id}')" aria-label="달성 체크" />
-                <div class="tap-edit-target" style="flex:1; min-width:0;" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
-                  <div class="item-title">${escapeHtml(b.title)}</div>
-                  <div class="item-meta">
+                <div class="bucket-main tap-edit-target" onclick="openEditBucket('${b.id}')" title="탭하여 수정">
+                  <div class="bucket-title">${escapeHtml(b.title)}</div>
+                  <div class="bucket-meta">
                     <span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span>
                     ${b.note ? `<span>${escapeHtml(b.note)}</span>` : ""}
                     ${b.done ? renderDoneDateControl("buckets", b.id, b.doneDate) : ""}
                   </div>
                 </div>
+                <button class="icon-btn danger" onclick="deleteItem('buckets', '${b.id}')" title="삭제" aria-label="버킷리스트 삭제">${ICONS.trash}</button>
               </div>
-              <button class="icon-btn danger" onclick="deleteItem('buckets', '${b.id}')" title="삭제" aria-label="버킷리스트 삭제">${ICONS.trash}</button>
-            </div>
-          `).join("") : `<p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 버킷리스트가 없습니다. 상단의 ‘+ 새 버킷 추가’ 버튼으로 등록해 보세요.</p>`}
-        </div>
+            `).join("")}
+          </section>
+        ` : `
+          <div class="stage-empty">
+            <strong>등록된 버킷리스트가 없습니다</strong>
+            위의 ‘+ 새 버킷 추가’로 첫 버킷을 남겨 보세요.
+          </div>
+        `}
       </div>
     `;
   }
@@ -3954,192 +4441,9 @@
     render();
   }
 
-  // ---------- 아카이브 ----------
-  function changeArchiveCatFilter(cat) {
-    state.archiveCatFilter = cat;
-    saveState();
-    render();
-  }
-
-  function changeArchiveSort(val) {
-    state.archiveSort = val;
-    saveState();
-    render();
-  }
-
-  function toggleArchiveComposer() {
-    showArchiveComposer = !showArchiveComposer;
-    render();
-  }
-
-  async function handleNewArchiveImages(event) {
-    try {
-      draftArchiveImages = await processMultipleFiles(event.target.files, draftArchiveImages, 5);
-      event.target.value = "";
-      const prev = document.getElementById("newArchiveImgPreview");
-      if (prev) prev.innerHTML = renderThumbList(draftArchiveImages, "removeDraftArchiveImage");
-    } catch (_) {
-      alert("이미지를 불러오는 중 오류가 발생했습니다.");
-    }
-  }
-
-  function removeDraftArchiveImage(idx) {
-    draftArchiveImages.splice(idx, 1);
-    const prev = document.getElementById("newArchiveImgPreview");
-    if (prev) prev.innerHTML = renderThumbList(draftArchiveImages, "removeDraftArchiveImage");
-  }
-
-  function addArchiveItem() {
-    const catSel = document.getElementById("archiveCatSel");
-    const category = catSel && catSel.value ? catSel.value : ensureCategory("archive", "기타", "folder");
-    const date = document.getElementById("archiveDateInp").value || state.selectedDate || TODAY_STR;
-    const titleEl = document.getElementById("archiveTitleInp");
-    const title = titleEl.value.trim();
-    if (!title) {
-      titleEl.focus();
-      return;
-    }
-    state.archives.unshift({
-      id: uid(),
-      category,
-      bookId: resolveArchiveBookId(document.getElementById("archiveBookSel") ? document.getElementById("archiveBookSel").value : "", category),
-      date,
-      title,
-      subtitle: document.getElementById("archiveSubInp").value.trim(),
-      note: document.getElementById("archiveNoteInp").value.trim(),
-      images: [...draftArchiveImages]
-    });
-    draftArchiveImages = [];
-    showArchiveComposer = false;
-    saveState();
-    render();
-  }
-
+  // ---------- 아카이브 (주제별 책장 + 스프링 노트북 단일 뷰) ----------
   function renderArchiveView() {
-    const mode = state.archiveViewMode === "notebook" ? "notebook" : "card";
-    if (mode === "notebook") return renderArchiveNotebookView();
-    return renderArchiveCardView();
-  }
-
-  function renderArchiveCardView() {
-    let filtered = state.archives.filter(a => state.archiveCatFilter === "all" || a.category === state.archiveCatFilter);
-    if (state.archiveSort === "date_desc") {
-      filtered = [...filtered].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-    } else if (state.archiveSort === "date_asc") {
-      filtered = [...filtered].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-    } else if (state.archiveSort === "oldest") {
-      filtered = [...filtered].reverse();
-    }
-
-    const defaultCat = state.archiveCatFilter === "all"
-      ? (state.archiveCategories[0] ? state.archiveCategories[0].name : "")
-      : state.archiveCatFilter;
-
-    return `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-archive">${ICONS.archive} 아카이브</h1>
-          <span class="topbar-sub">총 ${filtered.length}개 · 항목을 탭하면 바로 수정</span>
-        </div>
-        <div class="topbar-right">
-          ${archiveViewToggle("card")}
-          <select class="year-select" onchange="changeArchiveSort(this.value)" aria-label="아카이브 정렬">
-            <option value="newest" ${state.archiveSort === "newest" ? "selected" : ""}>등록 최신순</option>
-            <option value="oldest" ${state.archiveSort === "oldest" ? "selected" : ""}>등록 오래된순</option>
-            <option value="date_desc" ${state.archiveSort === "date_desc" ? "selected" : ""}>기록 날짜 최신순</option>
-            <option value="date_asc" ${state.archiveSort === "date_asc" ? "selected" : ""}>기록 날짜 오래된순</option>
-          </select>
-          <button class="btn btn-primary" onclick="toggleArchiveComposer()">
-            ${showArchiveComposer ? "닫기" : "+ 새 아카이브 추가"}
-          </button>
-        </div>
-        ${renderGlobalTools()}
-      </div>
-
-      <div class="filter-bar-wrap">
-        <div class="filter-chips">
-          <button class="chip-btn ${state.archiveCatFilter === "all" ? "active" : ""}" onclick="changeArchiveCatFilter('all')">
-            전체 <span class="chip-count">${state.archives.length}</span>
-          </button>
-          ${state.archiveCategories.map(cat => {
-            const cnt = state.archives.filter(a => a.category === cat.name).length;
-            const isAct = state.archiveCatFilter === cat.name;
-            return `
-              <button class="chip-btn ${isAct ? "active" : ""}" onclick="changeArchiveCatFilter(${jsArg(cat.name)})">
-                ${renderPictogram(cat.icon, 13)} ${escapeHtml(cat.name)} <span class="chip-count">${cnt}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
-        <button class="btn btn-sm chip-manage-btn" onclick="openCategoryManager('archive')">${ICONS.sliders} 카테고리 관리</button>
-      </div>
-
-      ${showArchiveComposer ? `
-        <div class="card composer-card">
-          <div class="composer-header">
-            <h3 style="color:var(--c-archive);">새 아카이브 등록</h3>
-          </div>
-          <div class="form-row">
-            <select id="archiveCatSel" aria-label="아카이브 분류" onchange="syncBookSelect('archiveBookSel', this.value)">
-              ${state.archiveCategories.map(c => `<option value="${escapeAttr(c.name)}" ${defaultCat === c.name ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
-            </select>
-            <select id="archiveBookSel" aria-label="넣을 책">${bookOptionsHtml(defaultBookIdForCat(defaultCat))}</select>
-            <input type="date" id="archiveDateInp" value="${state.selectedDate}" aria-label="기록 날짜" />
-            <input type="text" id="archiveTitleInp" style="flex:1; min-width:170px;" placeholder="제목 (책 제목, 공부 주제, 여행지, 전시명, 차 이름 등)" />
-            <input type="text" id="archiveSubInp" style="flex:1; min-width:140px;" placeholder="세부 정보 (저자, 장소, 다구 등 · 선택)" />
-          </div>
-          <div class="form-row">
-            <textarea id="archiveNoteInp" style="width:100%; min-height:74px; resize:vertical;" placeholder="감상, 배운 내용, 시음 메모 등 글을 자유롭게 남겨보세요..."></textarea>
-          </div>
-          <div class="composer-footer">
-            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
-              <label class="btn" style="cursor:pointer;">
-                사진 추가 (최대 5장)
-                <input type="file" id="archiveImgInp" accept="image/*" multiple style="display:none" onchange="handleNewArchiveImages(event)" />
-              </label>
-              <div id="newArchiveImgPreview" class="img-preview-box">${renderThumbList(draftArchiveImages, "removeDraftArchiveImage")}</div>
-            </div>
-            <div class="composer-actions">
-              <button class="btn btn-primary" onclick="addArchiveItem()">아카이브 저장</button>
-            </div>
-          </div>
-        </div>
-      ` : ""}
-
-      ${filtered.length ? `
-        <div class="media-grid">
-          ${filtered.map(a => {
-            const iconKey = getArchiveCatIconKey(a.category);
-            const imgs = normalizeImages(a);
-            return `
-              <article class="media-card">
-                <div class="media-cover" onclick="openCardCover('archive', '${a.id}')" title="${imgs.length ? "사진 크게 보기" : "탭하여 수정"}">
-                  ${imgs.length > 0
-                    ? `<img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />${imgs.length > 1 ? `<span class="photo-count-badge">+${imgs.length - 1}장</span>` : ""}`
-                    : `<div class="cover-placeholder"><div class="big-pictogram">${renderPictogram(iconKey, 22)}</div><span>${escapeHtml(a.category)}</span></div>`
-                  }
-                </div>
-                <div class="media-body">
-                  <div class="media-top">
-                    <button class="pill" onclick="event.stopPropagation(); selectDate('${a.date}', true)" style="cursor:pointer; border:none; font-family:inherit;" title="해당 날짜 일기로 이동">${renderPictogram(iconKey, 12)} ${escapeHtml(a.category)} · ${a.date}</button>
-                    <button class="icon-btn danger" onclick="event.stopPropagation(); deleteItem('archives', '${a.id}')" title="삭제" aria-label="아카이브 삭제">${ICONS.trash}</button>
-                  </div>
-                  <div class="tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정">
-                    <h3 class="media-title">${escapeHtml(a.title)}</h3>
-                    ${a.subtitle ? `<div class="media-sub">${escapeHtml(a.subtitle)}</div>` : ""}
-                    ${a.note ? `<div class="media-note" style="margin-top:6px;">${escapeHtml(a.note)}</div>` : ""}
-                  </div>
-                </div>
-              </article>
-            `;
-          }).join("")}
-        </div>
-      ` : `
-        <div class="card">
-          <p style="font-size:13px; color:var(--text-sub); margin:0;">등록된 아카이브 기록이 없습니다. 상단의 ‘+ 새 아카이브 추가’ 버튼으로 첫 기록을 남겨보세요.</p>
-        </div>
-      `}
-    `;
+    return renderArchiveNotebookView();
   }
 
   // ---------- 아카이브: 주제별 책장 + 스프링 노트북 ----------
@@ -4207,42 +4511,10 @@
     }
   }
 
-  function archiveViewToggle(mode) {
-    return `
-      <div class="segmented" role="group" aria-label="아카이브 보기 방식">
-        <button class="${mode === "card" ? "active" : ""}" onclick="setArchiveViewMode('card')">카드 보기</button>
-        <button class="${mode === "notebook" ? "active" : ""}" onclick="setArchiveViewMode('notebook')">노트북 보기</button>
-      </div>
-    `;
-  }
-
-  function setArchiveViewMode(mode) {
-    const next = mode === "notebook" ? "notebook" : "card";
-    if (state.archiveViewMode === next) return;
-    state.archiveViewMode = next;
-    notebookBookId = "";
-    notebookPageIndex = 0;
-    saveState();
-    render();
-  }
-
   function renderArchiveNotebookView() {
     const book = notebookBookId ? getBookById(notebookBookId) : null;
     if (notebookBookId && !book) notebookBookId = "";
-    const books = getBooks();
-    const head = `
-      <div class="topbar">
-        <div class="topbar-left">
-          <h1 class="page-title title-archive">${ICONS.archive} 아카이브</h1>
-          <span class="topbar-sub">${books.length}권의 책 · 기록 ${state.archives.length}개</span>
-        </div>
-        <div class="topbar-right">
-          ${archiveViewToggle("notebook")}
-        </div>
-        ${renderGlobalTools()}
-      </div>
-    `;
-    return head + (book ? renderNotebookReader(book) : renderNotebookShelf());
+    return book ? renderNotebookReader(book) : renderNotebookShelf();
   }
 
   function renderShelfCover(book, isActive) {
@@ -4290,9 +4562,19 @@
 
   function renderNotebookShelf() {
     const books = getBooks();
+    const bar = `
+      <div class="stage-bar">
+        <div class="stage-bar-lead">
+          <div class="nb-stage-title">주제별 책장</div>
+          <div class="nb-stage-sub">표지를 누르면 스프링 노트가 펼쳐집니다 · 좌우 화살표로 책을 고를 수 있습니다</div>
+        </div>
+        <span class="nb-stage-count">책 ${books.length}권 · 기록 ${state.archives.length}개</span>
+      </div>
+    `;
     if (!books.length) {
       return `
         <div class="nb-stage">
+          ${bar}
           <div class="nb-shelf-empty">
             <h3>아직 책장이 비어 있습니다</h3>
             <p>주제별로 책을 만들고 기록을 페이지처럼 모아 보세요.<br />독서 기록, 여행 노트, 공부 노트 무엇이든 좋습니다.</p>
@@ -4305,13 +4587,7 @@
     const active = books[notebookShelfIndex];
     return `
       <div class="nb-stage">
-        <div class="nb-stage-head">
-          <div>
-            <div class="nb-stage-title">주제별 책장</div>
-            <div class="nb-stage-sub">표지를 누르면 스프링 노트가 펼쳐집니다 · 좌우 화살표로 책을 고를 수 있습니다</div>
-          </div>
-          <span class="nb-stage-count">책 ${books.length}권</span>
-        </div>
+        ${bar}
         <div class="nb-shelf">
           <button class="nb-shelf-arrow prev" onclick="shelfStep(-1)" aria-label="이전 책">${ICONS.chevLeft}</button>
           <div class="nb-shelf-track" id="nbShelfTrack">${books.map((b, i) => renderShelfCover(b, i === notebookShelfIndex)).join("")}</div>
@@ -4533,7 +4809,6 @@
           <button data-side="right" class="${notebookMobileSide === "right" ? "active" : ""}" onclick="setNotebookSide('right')">노트 페이지</button>
         </div>
         <div class="nb-actions">
-          <button class="nb-action" onclick="closeNotebookBook()"><span class="nb-action-icon">${NB_ICONS.back}</span>책장으로</button>
           ${onGuide ? "" : `<button class="nb-action" onclick="openEditArchive('${current.id}')"><span class="nb-action-icon">${NB_ICONS.edit}</span>이 페이지 수정</button>`}
           <button class="nb-action primary" onclick="openNewArchiveModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.plus}</span>새 기록 추가</button>
           <button class="nb-action" onclick="openBookModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.dots}</span>책 설정</button>
@@ -5211,14 +5486,17 @@
     });
     if (!typing && !modalOpen) {
       if (state.activeTab === "year") {
-        if (yearBookYear) {
+        if (yearDayDate) {
+          if (event.key === "ArrowLeft") { stepYearDay(-1); return; }
+          if (event.key === "ArrowRight") { stepYearDay(1); return; }
+        } else if (yearBookYear) {
           if (event.key === "ArrowLeft") { yearPageStep(-1); return; }
           if (event.key === "ArrowRight") { yearPageStep(1); return; }
         } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
           yearShelfStep(event.key === "ArrowLeft" ? -1 : 1);
           return;
         }
-      } else if (state.activeTab === "archive" && state.archiveViewMode === "notebook") {
+      } else if (state.activeTab === "archive") {
         if (notebookBookId) {
           if (event.key === "ArrowLeft") { notebookStep(-1); return; }
           if (event.key === "ArrowRight") { notebookStep(1); return; }
@@ -5247,6 +5525,10 @@
     getStorageUsage,
     getPhotoCount,
     render,
+    setTab,
+    selectDate,
+    toggleGoalComposer,
+    toggleBucketComposer,
     openSearch,
     closeSearch,
     openSettings,
@@ -5255,7 +5537,6 @@
     closeCategoryManager,
     openLightbox,
     closeLightbox,
-    setArchiveViewMode,
     openNotebook,
     closeNotebookBook,
     notebookStep,
@@ -5270,12 +5551,15 @@
     openTodayYearBook,
     openYearPage,
     yearPageStep,
+    openYearDay,
+    closeYearDay,
+    stepYearDay,
     getNotebookState: () => ({
-      view: state.archiveViewMode,
       bookId: notebookBookId,
       page: notebookPageIndex,
       yearBook: yearBookYear,
       yearPage: yearPageIndex,
+      yearDay: yearDayDate,
       mobileSide: notebookMobileSide
     }),
     errors: () => window.__errors
