@@ -2910,6 +2910,24 @@
     try { window.__errors.push(String(event.reason)); } catch (_) {}
   });
 
+  const GOAL_TOPIC_ALIASES = {
+    "학업": "학업 · 전공", "전공": "학업 · 전공", "학업·전공": "학업 · 전공", "학업 · 전공": "학업 · 전공",
+    "운동": "운동 · 건강", "건강": "운동 · 건강", "운동·건강": "운동 · 건강", "운동 · 건강": "운동 · 건강",
+    "독서": "독서 · 문화", "문화": "독서 · 문화", "독서·문화": "독서 · 문화", "독서 · 문화": "독서 · 문화",
+    "자산": "자산 · 경제", "경제": "자산 · 경제", "자산·경제": "자산 · 경제", "자산 · 경제": "자산 · 경제",
+    "생활": "생활 · 루틴", "루틴": "생활 · 루틴", "생활·루틴": "생활 · 루틴", "생활 · 루틴": "생활 · 루틴",
+    "경험": "경험 · 성취", "성취": "경험 · 성취", "경험·성취": "경험 · 성취", "경험 · 성취": "경험 · 성취"
+  };
+  const TOPIC_TAB_COLORS = ["#4f74a8", "#8b94a6", "#b4787f", "#6f9270", "#b98a4d", "#8074ad", "#4d8b91", "#a86f5d"];
+
+  function canonicalTopicName(name) {
+    const raw = String(name || "").trim();
+    if (!raw) return "";
+    if (GOAL_TOPIC_ALIASES[raw]) return GOAL_TOPIC_ALIASES[raw];
+    const compact = raw.replace(/\s+/g, "");
+    return GOAL_TOPIC_ALIASES[compact] || raw;
+  }
+
   function getSystemTodayStr() {
     const now = new Date();
     const y = now.getFullYear();
@@ -5965,24 +5983,6 @@
 
   // ---------- 목표 · 버킷 책자 (v2.9 통합 노트) ----------
   // 기존 목표 주제와 버킷 분류를 같은 이름 기준으로 한 페이지에 묶습니다.
-  const GOAL_TOPIC_ALIASES = {
-    "학업": "학업 · 전공", "전공": "학업 · 전공", "학업·전공": "학업 · 전공", "학업 · 전공": "학업 · 전공",
-    "운동": "운동 · 건강", "건강": "운동 · 건강", "운동·건강": "운동 · 건강", "운동 · 건강": "운동 · 건강",
-    "독서": "독서 · 문화", "문화": "독서 · 문화", "독서·문화": "독서 · 문화", "독서 · 문화": "독서 · 문화",
-    "자산": "자산 · 경제", "경제": "자산 · 경제", "자산·경제": "자산 · 경제", "자산 · 경제": "자산 · 경제",
-    "생활": "생활 · 루틴", "루틴": "생활 · 루틴", "생활·루틴": "생활 · 루틴", "생활 · 루틴": "생활 · 루틴",
-    "경험": "경험 · 성취", "성취": "경험 · 성취", "경험·성취": "경험 · 성취", "경험 · 성취": "경험 · 성취"
-  };
-
-  const TOPIC_TAB_COLORS = ["#4f74a8", "#8b94a6", "#b4787f", "#6f9270", "#b98a4d", "#8074ad", "#4d8b91", "#a86f5d"];
-
-  function canonicalTopicName(name) {
-    const raw = String(name || "").trim();
-    if (!raw) return "";
-    if (GOAL_TOPIC_ALIASES[raw]) return GOAL_TOPIC_ALIASES[raw];
-    const compact = raw.replace(/\s+/g, "");
-    return GOAL_TOPIC_ALIASES[compact] || raw;
-  }
 
   // v3.1: 주제 관리는 하나의 목록(state.topics)만 쓴다. 인덱스 탭과 페이지도 이 목록에만 생긴다.
   function goalBookTopics() {
