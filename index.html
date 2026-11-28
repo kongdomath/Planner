@@ -1817,7 +1817,7 @@
       border-radius: 20px;
       padding: 18px 22px 18px;
       color: #e8ebf4;
-      --book-h: clamp(460px, calc(100dvh - 258px), 900px);
+      --book-h: clamp(420px, calc(100dvh - 300px), 880px);
       background:
         radial-gradient(120% 90% at 50% -10%, rgba(128,138,182,.38) 0%, rgba(128,138,182,0) 62%),
         linear-gradient(168deg, #383f5b 0%, #2d334b 54%, #262b40 100%);
@@ -2478,7 +2478,7 @@
     }
 
     @media (max-width: 860px) {
-      .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(440px, calc(100dvh - 272px), 820px); }
+      .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(400px, calc(100dvh - 340px), 760px); }
       .nb-stage--shelf { padding: 18px 4px 16px; }
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
@@ -2509,7 +2509,7 @@
       .nb-coil-ring::before { display: none; }
       .nb-coil-ring::after { right: 1px; width: 11px; height: 11px; }
       .nb-spine, .nb-edge { display: none; }
-      .nb-page { border-radius: 8px !important; height: 100%; padding: 24px 20px 24px 42px; }
+      .nb-page { border-radius: 8px !important; height: 100%; padding: 24px 30px 24px 42px; }
       .nb-page--left, .nb-page--right { transform-origin: left center; }
       .nb-page--left::after, .nb-page--right::after { background: linear-gradient(90deg, rgba(44,36,24,.55), rgba(44,36,24,.16) 52%, rgba(255,255,255,0) 88%); }
       .nb-page-no { font-size: 9.5px; padding-top: 10px; }
@@ -5742,7 +5742,7 @@
     const all = unifiedGoalItems().filter(e => goalEntryTopic(e) === topic.name);
     const ordered = goalBookOrderEntries(all);
     const doneCnt = all.filter(e => Boolean(e.item.done)).length;
-    const half = ordered.length ? Math.ceil(ordered.length / 2) : 0;
+    const half = ordered.length > 10 ? Math.ceil(ordered.length / 2) : ordered.length;
     const leftItems = ordered.slice(0, half);
     const rightItems = ordered.slice(half);
     // FAB·모달이 지금 페이지의 주제를 기본값으로 쓰도록 맞춰 둠
@@ -5824,10 +5824,6 @@
             <div class="idx-tabs idx-tabs--topic" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
           </div>
           <button class="nb-nav next" onclick="goalBookStep(1)" ${idx >= topics.length - 1 ? "disabled" : ""} aria-label="다음 주제">${ICONS.chevRight}</button>
-        </div>
-
-        <div class="nb-actions">
-          <button class="nb-action" onclick="openBookTopicManager()"><span class="nb-action-icon">${NB_ICONS.edit}</span>주제 관리</button>
         </div>
       </div>
       <button class="fab" onclick="openGoalModal(${jsArg(topic.name)})" title="이 주제에 항목 추가" aria-label="항목 추가">${NB_ICONS.plus}</button>
