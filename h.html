@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>v3.1 harness</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #1a1d24; }
+  body { display: flex; gap: 0; align-items: flex-start; }
+  iframe { border: 0; background: #fff; display: block; }
+</style>
+</head>
+<body>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = Number(q.get("w") || 390);
+  var h = Number(q.get("h") || 844);
+  var src = q.get("src") || "preview-v31-tmp.html";
+  var count = Number(q.get("n") || 1);
+  for (var i = 0; i < count; i++) {
+    var f = document.createElement("iframe");
+    f.width = String(w);
+    f.height = String(h);
+    f.dataset.idx = String(i);
+    f.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "frame=" + i;
+    document.body.appendChild(f);
+  }
+  window.F = function (i) { return document.querySelectorAll("iframe")[i || 0]; };
+</script>
+</body>
+</html>
