@@ -2843,7 +2843,8 @@
     .nbf-shut {
       --shut-fold: 540ms; --shut-turn: 480ms;
       position: absolute; inset: 0; z-index: 14;
-      perspective: 2600px; perspective-origin: 50% 46%;
+      /* 원근을 낮게(멀리) 두어 접히는 장이 화면 가까이 부푸는 느낌을 줄인다 */
+      perspective: 4600px; perspective-origin: 50% 50%;
       pointer-events: none;
     }
     .nbf-shut-body { position: absolute; inset: 0; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
