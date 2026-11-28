@@ -1776,7 +1776,7 @@
     }
 
     /* 사진: 대표 1장이 아니라 첨부한 모든 사진을 노트에 폴라로이드처럼 붙인다 */
-    .nb-photos { display: grid; gap: 11px; margin-top: 2px; }
+    .nb-photos { display: grid; gap: 11px; margin-top: 2px; padding: 3px 5px 1px; }
     .nb-photos--n1 { grid-template-columns: minmax(0, 1fr); }
     .nb-photos--n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .nb-photos--n3, .nb-photos--n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1801,14 +1801,16 @@
     }
     .nb-photos--n5 .nb-pola-tape, .nb-photos--n6 .nb-pola-tape { width: 42px; height: 13px; top: -6px; }
     .nb-pola-del {
-      position: absolute; right: 4px; top: 4px; z-index: 3;
-      width: 22px; height: 22px; border-radius: 50%; padding: 0;
+      position: absolute; right: 0; top: 0; z-index: 3;
+      width: 18px; height: 18px; border-radius: 50%; padding: 0;
+      transform: translate(34%, -34%);
       display: inline-flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(120,126,140,.24); background: rgba(252,251,247,.92);
-      color: #7d818b; cursor: pointer; opacity: 0; transition: opacity .14s ease;
+      border: 1px solid rgba(120,126,140,.22); background: #fdfcf7;
+      color: #8d929b; cursor: pointer; opacity: 0; transition: opacity .14s ease;
+      box-shadow: 0 1px 3px rgba(20,24,32,.16);
     }
     .nb-pola:hover .nb-pola-del, .nb-pola:focus-within .nb-pola-del { opacity: 1; }
-    .nb-pola-del svg { width: 11px; height: 11px; }
+    .nb-pola-del svg { width: 9px; height: 9px; }
 
     .nb-day-side .nb-day-block + .nb-day-block { margin-top: 18px; }    .nb-day-block-head {
       display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
