@@ -6098,6 +6098,7 @@
     const latest = recs.length ? recs[recs.length - 1] : null;
     const bits = [`${recs.length}페이지`];
     if (latest && latest.date) bits.push(`최근 ${latest.date}`);
+    const sub = String(book.subtitle || "").trim();
     return `
       <div class="nb-book-meta">
         <h3>${escapeHtml(book.title)}</h3>
