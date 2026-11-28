@@ -2590,6 +2590,9 @@
       transform-origin: 50% 50%;
       overflow: hidden;
     }
+    /* v3.4: 모바일 단면에서 '지금 보이지 않는 면'을 숨기는 규칙이 넘어가는 종이까지 숨겨
+       넘김이 사라지던 문제 수정 — 넘김 종이의 앞·뒷면은 항상 보이게 */
+    .nb-spread .nb-flip .nb-flip-face { display: block !important; }
     /* 넘어가는 종이 앞·뒷면도 속지와 똑같은 둥근 모서리 (책등 쪽 직각 · 바깥쪽 둥글게) */
     .nb-flip-face.nb-page--left { border-radius: var(--nb-r-left, 14px 0 0 14px); }
     .nb-flip-face.nb-page--right { border-radius: var(--nb-r-right, 0 14px 14px 0); }
