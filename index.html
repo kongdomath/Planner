@@ -3177,6 +3177,12 @@
     .spine-swatch.selected { border-color: #1f2421; box-shadow: inset 0 0 0 2px #fff; }
     .book-cover-preview { display: flex; align-items: center; gap: 14px; }
     .book-cover-preview .nb-cover { width: 92px; height: 128px; box-shadow: 0 8px 16px rgba(10,13,22,.22); }
+    /* v3.9: 미니 표지(하드커버 결)를 미리보기 크기에 맞게 줄인다 */
+    .book-cover-preview .nb-cover-frame { inset: 5px 4px 5px 13px; }
+    .book-cover-preview .nb-cover-title { left: 14px; right: 5px; }
+    .book-cover-preview .nb-cover-title b { font-size: 10.5px; line-height: 1.2; -webkit-line-clamp: 3; }
+    .book-cover-preview .nb-cover-title i { width: 14px; margin: 4px auto; }
+    .book-cover-preview .nb-cover-title span { font-size: 5.5px; letter-spacing: .12em; }
     .book-cover-preview .nb-cover-label { left: 18px; right: 10px; top: 18px; padding: 7px 7px 8px; }
     .book-cover-preview .nb-cover-label b { font-size: 11px; }
     .book-cover-preview .nb-year-plate { left: 14px; right: 8px; }
@@ -5381,7 +5387,7 @@
     state.activeTab = next;
     yearDayDate = "";
     // 방금 담은 기록이 있으면 그 책을 바로 펼쳐서 보여 준다
-    if (next === "archive" && !notebookFocusId) notebookBookId = "";
+    if (next === "archive" && !notebookFocusId) { notebookBookId = ""; notebookCoverOpen = false; }
     saveState();
     render();
   }
@@ -5649,7 +5655,7 @@
     }
     if (pendingStageIn) {
       pendingStageIn = false;
-      const stage = main.querySelector(".nb-stage");
+      const stage = main ? main.querySelector(".nb-stage") : null;
       if (stage && !unchanged) {
         stage.classList.remove("is-swapping");
         void stage.offsetWidth;
