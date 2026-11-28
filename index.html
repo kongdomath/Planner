@@ -2037,27 +2037,27 @@
       display: flex; flex-direction: column; justify-content: space-between; align-items: center;
     }
     .nb-coil-ring {
-      position: relative; display: block; width: 50px; height: 5px; border-radius: 999px;
+      position: relative; display: block; width: 50px; height: 8px; border-radius: 999px;
       background:
-        linear-gradient(180deg, #ffffff 0%, #dbe1ea 26%, #929bab 52%, #5f6776 64%, #bcc4d1 84%, #f2f5fa 100%);
+        linear-gradient(180deg, #ffffff 0%, #e2e7ef 18%, #a8b0bf 42%, #6e7686 62%, #c3cad6 84%, #f4f7fb 100%);
       box-shadow:
-        0 1.5px 2px -.5px rgba(14,18,28,.55),
+        0 1.5px 2px -.5px rgba(14,18,28,.5),
         inset 0 .5px 0 rgba(255,255,255,.95),
         inset 0 -.5px 1px rgba(20,26,38,.35);
     }
     /* 고리가 종이 구멍 속으로 들어가는 부분: 어두운 펀치 구멍 + 종이 두께 */
     .nb-coil-ring::before,
     .nb-coil-ring::after {
-      content: ""; position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%;
+      content: ""; position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%;
       transform: translateY(-50%);
-      background: radial-gradient(circle at 50% 34%, #161b26 0 40%, #262c3a 58%, #40485a 78%, #6f7789 100%);
+      background: radial-gradient(circle at 50% 32%, #161b26 0 44%, #2a3040 64%, #4c5466 84%, #7d8496 100%);
       box-shadow:
-        inset 0 2px 3px rgba(0,0,0,.85),
-        0 0 0 1.5px rgba(255,252,242,.9),
-        0 0 0 2.5px rgba(120,116,102,.32);
+        inset 0 2px 3px rgba(0,0,0,.8),
+        0 0 0 1.2px rgba(255,252,242,.85),
+        0 0 0 2px rgba(120,116,102,.28);
     }
-    .nb-coil-ring::before { left: -1px; }
-    .nb-coil-ring::after { right: -1px; }
+    .nb-coil-ring::before { left: -3px; }
+    .nb-coil-ring::after { right: -3px; }
     .nb-page-inner { display: flex; flex-direction: column; gap: 14px; min-height: 100%; }
     .nb-page-no {
       display: block;
@@ -2425,7 +2425,7 @@
     }
     .nb-cal { margin-top: 14px; display: flex; flex-direction: column; flex: 0 0 auto; min-height: 0; }
     .nb-cal-head, .nb-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
-    .nb-cal-grid { grid-auto-rows: minmax(36px, 56px); }
+    .nb-cal-grid { flex: 1 1 auto; grid-auto-rows: minmax(36px, 1fr); max-height: 440px; }
     .nb-cal-head span { text-align: center; font-size: 9px; font-weight: 700; color: #a0a5ae; letter-spacing: .06em; padding-bottom: 5px; }
     .nb-cal-head .sun { color: #c05a60; }
     .nb-cal-head .sat { color: #4e6f9a; }
@@ -3283,7 +3283,7 @@
   }
 
   // 스프링: 종이를 뚫은 구멍을 지나 연결되는 메탈 고리 (모든 펼침면 공용)
-  const BOOK_COIL = `<span class="nb-coil" aria-hidden="true">${Array.from({ length: 15 }, () => `<i class="nb-coil-ring"></i>`).join("")}</span>`;
+  const BOOK_COIL = `<span class="nb-coil" aria-hidden="true">${Array.from({ length: 22 }, () => `<i class="nb-coil-ring"></i>`).join("")}</span>`;
 
   // ---------- 날짜(없음 · 하루 · 기간) 공용 도우미 ----------
   function dateModeOf(item) {
@@ -5811,8 +5811,8 @@
       <section class="nb-page nb-page--right">
         <div class="nb-page-inner">
           <div class="gb-section-head">
-            <b>${rightItems.length ? "이어서" : "메모"}</b>
-            <span class="gb-count">${rightItems.length ? `${half + 1} – ${ordered.length}` : "—"}</span>
+            <b>이어서</b>
+            <span class="gb-count">${rightItems.length ? `${half + 1} – ${ordered.length}` : ""}</span>
           </div>
           ${rightItems.length
             ? listHtml(rightItems)
