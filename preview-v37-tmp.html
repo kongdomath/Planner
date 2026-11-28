@@ -6063,7 +6063,7 @@
       const ySub = yearBookSubtitle(year);
       bookCloseMotion({
         side: next < 0 ? "front" : "back",
-        coverFront: nbClosedCoverHtml({ title: yTitle, sub: ySub, foot: "Yearly Note", spine: yearSpineColor(year) }),
+        coverFront: nbClosedCoverHtml({ title: yTitle, sub: ySub, foot: "Archive Planner", spine: yearSpineColor(year) }),
         coverBack: nbClosedCoverHtml({ title: yTitle, sub: "뒤표지", foot: "Archive Planner", spine: yearSpineColor(year), back: true }),
         after: () => { closeYearBook(); }
       });
