@@ -7814,7 +7814,7 @@
             ${BOOK_COIL}
             <div class="idx-tabs idx-tabs--topic ${tabClass}" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
           </div>
-          <button class="nb-nav next" onclick="goalBookStep(1)" ${spreadIdx >= totalSpreads - 1 ? "disabled" : ""} aria-label="다음 페이지">${ICONS.chevRight}</button>
+          <button class="nb-nav next" onclick="goalBookStep(1)" aria-label="다음 페이지">${ICONS.chevRight}</button>
         </div>
         <div class="nb-bottom-bar">
           <span class="nb-bar-left"></span>
@@ -7853,7 +7853,7 @@
     const total = spreads.total;
     const cur = Math.max(0, Math.min(total - 1, Math.round(Number(state.goalBookPage) || 0)));
     const next = cur + delta;
-    if (next < 0 || next >= total) return;
+    if (next < 0) return;
     const apply = () => {
       state.goalBookPage = next;
       goalBookSide = "left";
@@ -7873,7 +7873,7 @@
     // 앞표지에서 열 때
     if (cur === 0) { goalCoverTurn(1, "front", apply); return; }
     // 책의 진짜 마지막 장에서 다음: 뒤에서 닫고(Y축 180도) 앞표지로 돌아선 뒤 앞표지 화면으로
-    if (cur === total - 1) {
+    if (delta > 0 && cur === total - 1) {
       bookCloseMotion({
         side: "back",
         coverFront: goalCoverFaceHtml("front"),
@@ -7889,6 +7889,7 @@
       });
       return;
     }
+    if (next >= total) return;
     turnToPage(delta, apply);
   }
 
