@@ -8673,12 +8673,22 @@
   const mobileMq = window.matchMedia ? window.matchMedia("(max-width: 860px)") : null;
   if (mobileMq) {
     const onMqChange = () => {
-      const onShelf = (state.activeTab === "year" && !yearBookYear) || (state.activeTab === "archive" && !notebookBookId);
-      if (state.yearViewMode === "auto" || onShelf) render();
+      goalLayoutCache = { sig: "", model: null };
+      render();
     };
     if (mobileMq.addEventListener) mobileMq.addEventListener("change", onMqChange);
     else if (mobileMq.addListener) mobileMq.addListener(onMqChange);
   }
+
+  // 화면 회전·창 크기가 바뀌면 책 높이가 달라지므로 목표 페이지 나눔을 다시 잰다
+  let layoutResizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(layoutResizeTimer);
+    layoutResizeTimer = setTimeout(() => {
+      goalLayoutCache = { sig: "", model: null };
+      if (state.activeTab === "goals") render();
+    }, 280);
+  });
 
   // 테스트/디버깅용 (화면에는 영향 없음)
   window.__planner = {
