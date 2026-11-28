@@ -3922,8 +3922,10 @@
     ],
     todos: [
       { id: "t1", date: TODAY_STR, title: "오늘의 연력 한 줄과 일기 작성하기", done: false },
-      { id: "t2", date: "2027-01-01", title: "2027년 목표 세부 항목 확정", done: false }
-    ]
+      { id: "t2", date: "2027-01-01", title: "2027년 목표 세부 항목 확인", done: false }
+    ],
+    // v3.7: 다른 기기에서 지운 항목이 되살아나지 않도록 지운 id와 시각을 남긴다
+    deleted: {}
   };
 
   let state = normalizeState(loadState());
@@ -4863,7 +4865,13 @@
       done: false,
       ...t
     }));
+    // 지운 표시가 있는 항목은 목록에서도 걷어낸다 (예전 기기 기록이 되살아나는 것 방지)
+    ["goals", "buckets", "archives", "todos", "books"].forEach(key => {
+      const list = Array.isArray(merged[key]) ? merged[key] : [];
+      merged[key] = list.filter(it => !it || !it.id || !merged.deleted[key + ":" + it.id]);
+    });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(merged.selectedDate))) merged.selectedDate = TODAY_STR;
+    merged.deleted = (merged.deleted && typeof merged.deleted === "object" && !Array.isArray(merged.deleted)) ? merged.deleted : {};
     if (merged.yearFilter !== "all" && !YEARS.includes(Number(normalizeYear(merged.yearFilter)))) {
       merged.yearFilter = defaultState.yearFilter;
     }
@@ -5133,6 +5141,9 @@
 
   function clearSamples() {
     if (!confirm("모든 기록(일기·목표·버킷리스트·아카이브·할일)을 지우고 빈 상태로 시작할까요?\n\n되돌릴 수 없으니 먼저 ‘데이터 백업 (JSON)’을 권장합니다.")) return;
+    // 지운 것을 다른 기기에서 되살리지 않도록 표시해 둔다
+    ["goals", "buckets", "archives", "todos", "books"].forEach(k => (state[k] || []).forEach(it => markDeleted(k, it && it.id)));
+    Object.keys(state.logs || {}).forEach(d => markDeleted("logs", d));
     state.logs = {};
     state.goals = [];
     state.buckets = [];
@@ -6917,14 +6928,17 @@
     if (!confirm(msg)) return;
     list.splice(idx, 1);
     if (state[cfg.filterKey] === target.name) state[cfg.filterKey] = "all";
-    if (kind === "goals") state.goals = state.goals.filter(g => canonicalTopicName(g.topic) !== canonicalTopicName(target.name));
-    else if (kind === "bucket") state.buckets = state.buckets.filter(b => b.category !== target.name);
-    else state.archives = state.archives.filter(a => a.category !== target.name);
-    // v3.1: 주제를 지우면 같은 주제의 버킷 항목도 함께 정리
     if (kind === "goals") {
+      state.goals.filter(g => canonicalTopicName(g.topic) === canonicalTopicName(target.name)).forEach(g => markDeleted("goals", g.id));
+      state.buckets.filter(b => canonicalTopicName(b.category) === canonicalTopicName(target.name)).forEach(b => markDeleted("buckets", b.id));
+      state.goals = state.goals.filter(g => canonicalTopicName(g.topic) !== canonicalTopicName(target.name));
       state.buckets = state.buckets.filter(b => canonicalTopicName(b.category) !== canonicalTopicName(target.name));
-      state.bucketCategories = state.topics.map(t => ({ name: t.name, icon: t.icon }));
-      if (state.goalBookTopic === target.name) state.goalBookTopic = (state.topics[0] || {}).name || "";
+    } else if (kind === "bucket") {
+      state.buckets.filter(b => b.category === target.name).forEach(b => markDeleted("buckets", b.id));
+      state.buckets = state.buckets.filter(b => b.category !== target.name);
+    } else {
+      state.archives.filter(a => a.category === target.name).forEach(a => markDeleted("archives", a.id));
+      state.archives = state.archives.filter(a => a.category !== target.name);
     }
     if (kind === "archive") {
       state.books.forEach(b => { if (b.category === target.name) b.category = ""; });
@@ -8053,6 +8067,7 @@
       deleteLabel: "삭제",
       onDelete: () => {
         if (!confirm(deleteMsg)) return false;
+        markDeleted(entry.src, it.id);
         state[entry.src] = state[entry.src].filter(x => x.id !== it.id);
         return true;
       }
@@ -8728,6 +8743,7 @@
       : `‘${book.title}’ 책을 삭제할까요?`;
     if (!confirm(msg)) return;
     state.books = state.books.filter(b => b.id !== id);
+    markDeleted("books", id);
     state.archives.forEach(a => { if (a.bookId === id) a.bookId = ""; });
     applyBookModel(state);
     if (notebookBookId === id) {
@@ -9076,6 +9092,7 @@
       deleteLabel: "삭제",
       onDelete: () => {
         if (!confirm("이 아카이브 기록을 삭제할까요?")) return false;
+        markDeleted("archives", id);
         state.archives = state.archives.filter(x => x.id !== id);
         applyBookModel(state);
         return true;
@@ -9168,6 +9185,7 @@
       archives: "이 아카이브 기록을 삭제할까요?"
     };
     if (messages[collection] && !confirm(messages[collection])) return;
+    markDeleted(collection, id);
     state[collection] = state[collection].filter(x => x.id !== id);
     if (collection === "archives") applyBookModel(state);
     saveState();
@@ -9275,6 +9293,9 @@
   let cloudSyncing = false;
   let cloudPending = false;
   let cloudAdopting = false;
+  let cloudUnsub = null;
+  let cloudAdoptRetryTimer = null;
+  let pendingCloudAdopt = false;
   let lastPushedSerialized = "";
   let lastCloudAt = null;
   let cloudBytes = 0;
@@ -9655,6 +9676,7 @@
   async function signOutOfAccount() {
     clearTimeout(cloudTimer);
     cloudTimer = null;
+    stopCloudWatch();
     try {
       if (firebaseCtx) await firebaseCtx.authMod.signOut(firebaseCtx.auth);
     } catch (_) {}
@@ -9664,6 +9686,58 @@
     refreshSettingsIfOpen();
     showToast("로그아웃했습니다. 기록은 이 기기에 그대로 남아 있습니다.", "info", 4000);
     openAuthScreen();
+  }
+
+  // 계정 기록을 실시간으로 지켜보기: 다른 기기가 저장하면 바로 당겨 온다
+  function stopCloudWatch() {
+    try { if (cloudUnsub) cloudUnsub(); } catch (_) {}
+    cloudUnsub = null;
+    clearTimeout(cloudAdoptRetryTimer);
+    cloudAdoptRetryTimer = null;
+    pendingCloudAdopt = false;
+  }
+
+  function isTypingNow() {
+    const ae = document.activeElement;
+    if (!ae) return false;
+    const tag = String(ae.tagName || "").toUpperCase();
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || ae.isContentEditable === true;
+  }
+
+  function scheduleCloudAdoptRetry() {
+    clearTimeout(cloudAdoptRetryTimer);
+    cloudAdoptRetryTimer = setTimeout(() => {
+      if (!pendingCloudAdopt) return;
+      if (!authUser || anyOverlayOpen() || isTypingNow() || document.visibilityState !== "visible") {
+        scheduleCloudAdoptRetry();
+        return;
+      }
+      pendingCloudAdopt = false;
+      lastAdoptAt = Date.now();
+      adoptCloudState();
+    }, 3000);
+  }
+
+  function watchCloudState(fb) {
+    if (!fb || !authUser || cloudUnsub) return;
+    const { dbMod } = fb;
+    if (!dbMod || typeof dbMod.onSnapshot !== "function") return;
+    try {
+      cloudUnsub = dbMod.onSnapshot(cloudStateRef(fb), snap => {
+        if (!authUser) return;
+        const data = (snap && snap.data && snap.data()) || {};
+        const stamp = Number(data.updatedAt) || 0;
+        if (!stamp) return;
+        if (stamp <= readCloudBaseline(authUser.uid)) return; // 내가(또는 이미 받은) 저장
+        if (anyOverlayOpen() || isTypingNow() || document.visibilityState !== "visible") {
+          pendingCloudAdopt = true;
+          scheduleCloudAdoptRetry();
+          return;
+        }
+        lastAdoptAt = Date.now();
+        adoptCloudState();
+      }, () => {});
+    } catch (_) { cloudUnsub = null; }
   }
 
   // ---------- Firestore 동기화 ----------
@@ -9834,12 +9908,39 @@
     return out;
   }
 
-  function mergeLogEntry(localLog, cloudLog) {
+  // ---------- 지운 항목 표시 (기기 사이 되살아나기 방지) ----------
+  function deletedMap() {
+    if (!state.deleted || typeof state.deleted !== "object" || Array.isArray(state.deleted)) state.deleted = {};
+    return state.deleted;
+  }
+  function markDeleted(listKey, id) {
+    if (!listKey || !id) return;
+    const map = deletedMap();
+    map[listKey + ":" + id] = Date.now();
+    const keys = Object.keys(map);
+    if (keys.length > 500) {
+      keys.sort((a, b) => (Number(map[a]) || 0) - (Number(map[b]) || 0))
+        .slice(0, keys.length - 500)
+        .forEach(k => { delete map[k]; });
+    }
+  }
+  function mergeDeletedMaps(a, b) {
+    const out = {};
+    [a, b].forEach(src => {
+      if (!src || typeof src !== "object" || Array.isArray(src)) return;
+      Object.keys(src).forEach(k => { out[k] = Math.max(Number(out[k]) || 0, Number(src[k]) || 0); });
+    });
+    return out;
+  }
+
+  function mergeLogEntry(localLog, cloudLog, cloudWins) {
     const l = (localLog && typeof localLog === "object") ? localLog : {};
     const c = (cloudLog && typeof cloudLog === "object") ? cloudLog : {};
-    const out = { ...c, ...l };
+    const out = cloudWins ? { ...l, ...c } : { ...c, ...l };
+    const win = cloudWins ? c : l;
+    const lose = cloudWins ? l : c;
     ["oneLine", "diary", "memo", "text", "mood"].forEach(k => {
-      if (k in c && isEmptyText(l[k]) && !isEmptyText(c[k])) out[k] = c[k];
+      if (k in lose && isEmptyText(win[k]) && !isEmptyText(lose[k])) out[k] = lose[k];
     });
     const images = mergeImageLists(normalizeImages(l), normalizeImages(c));
     if (images.length) out.images = images;
@@ -9849,17 +9950,23 @@
     return cleanUndefined(out);
   }
 
-  // 같은 id는 이 기기 내용을 기준으로 하고, 계정 쪽에만 있는 항목은 더합니다.
-  function mergeItemLists(localList, cloudList) {
+  // 같은 id는 한쪽 기준으로 맞추고, 반대쪽에만 있는 항목은 더한다.
+  //  · cloudWins=true (계정 쪽이 새로 바뀜): 계정 값이 기준 — 폰에서 고친 것이 패드에도 그대로 반영
+  //  · cloudWins=false: 이 기기 값이 기준
+  function mergeItemLists(localList, cloudList, cloudWins) {
+    const locals = Array.isArray(localList) ? localList : [];
+    const clouds = Array.isArray(cloudList) ? cloudList : [];
     const out = [];
     const index = new Map();
-    (Array.isArray(localList) ? localList : []).forEach(item => {
+    const push = item => {
       if (!item || !item.id || index.has(item.id)) return;
       index.set(item.id, out.length);
       out.push({ ...item });
-    });
+    };
+    (cloudWins ? clouds : locals).forEach(push);
+    const other = cloudWins ? locals : clouds;
     let added = 0;
-    (Array.isArray(cloudList) ? cloudList : []).forEach(item => {
+    other.forEach(item => {
       if (!item || !item.id) return;
       const at = index.get(item.id);
       if (at === undefined) {
@@ -9868,17 +9975,18 @@
         added += 1;
         return;
       }
-      const local = out[at];
-      const merged = { ...item, ...local };
-      Object.keys(item).forEach(k => {
+      const win = out[at];
+      const lose = item;
+      const merged = { ...lose, ...win };
+      Object.keys(lose).forEach(k => {
         if (k === "images") return;
-        // 제목·부제목은 빈 값도 사용자가 지운 결과로 본다 (구름 값으로 되살리지 않음)
+        // 제목·부제목은 빈 값도 사용자가 지운 결과로 본다 (반대쪽 값으로 되살리지 않음)
         if (k === "title" || k === "subtitle" || k === "subject") return;
         const cur = merged[k];
         const emptyCur = cur === undefined || cur === null || cur === "" || (Array.isArray(cur) && !cur.length);
-        if (emptyCur && item[k] !== undefined && item[k] !== null && item[k] !== "") merged[k] = item[k];
+        if (emptyCur && lose[k] !== undefined && lose[k] !== null && lose[k] !== "") merged[k] = lose[k];
       });
-      const images = mergeImageLists(normalizeImages(local), normalizeImages(item));
+      const images = mergeImageLists(normalizeImages(win), normalizeImages(lose));
       if (images.length) merged.images = images;
       out[at] = merged;
     });
@@ -9906,17 +10014,21 @@
     return out.sort((a, b) => a.year - b.year);
   }
 
-  function mergeStates(localState, cloudState) {
+  function mergeStates(localState, cloudState, opts) {
+    const cloudWins = Boolean(opts && opts.cloudWins);
     const local = normalizeState(localState);
     const cloud = normalizeState(cloudState);
     const stats = { logsAdded: 0, itemsAdded: 0 };
     const merged = { ...local };
+    // 지운 표시는 양쪽 것을 합쳐서 가장 강한 기준으로 쓴다
+    merged.deleted = mergeDeletedMaps(local.deleted, cloud.deleted);
 
     const localLogs = local.logs || {};
     const cloudLogs = cloud.logs || {};
     const logs = {};
     const dates = new Set([...Object.keys(cloudLogs), ...Object.keys(localLogs)]);
     dates.forEach(date => {
+      if (merged.deleted["logs:" + date]) return;
       const l = localLogs[date];
       const c = cloudLogs[date];
       if (!l) {
@@ -9924,12 +10036,12 @@
         if (!DEFAULT_LOG_DATES.has(date)) stats.logsAdded += 1;
         return;
       }
-      logs[date] = c ? mergeLogEntry(l, c) : l;
+      logs[date] = c ? mergeLogEntry(l, c, cloudWins) : l;
     });
     merged.logs = logs;
 
     ["goals", "buckets", "archives", "todos", "books"].forEach(key => {
-      const res = mergeItemLists(local[key], cloud[key]);
+      const res = mergeItemLists(local[key], cloud[key], cloudWins);
       merged[key] = res.list;
       stats.itemsAdded += res.added;
     });
@@ -9954,10 +10066,12 @@
   async function adoptCloudStateInner(manual = false) {
     if (!isFirebaseConfigured() || !authUser) return;
     let cloud;
+    let fb = null;
     try {
-      const fb = await getFirebase();
+      fb = await getFirebase();
       if (!fb) return;
       cloud = await readCloudState(fb);
+      watchCloudState(fb);
     } catch (err) {
       notifyCloudError(err);
       return;
@@ -10010,8 +10124,9 @@
       return;
     }
 
-    // 양쪽 모두에 기록이 있고 계정 쪽이 새로 바뀌었을 때만 안전하게 합칩니다.
-    const result = mergeStates(state, cloud.state);
+    // 계정 쪽이 새로 바뀌었으면 계정 값이 기준입니다 — 폰에서 고치거나 지운 것이 이 기기에도 그대로 반영됩니다.
+    // 이때 이 기기에만 있는 새 항목·사진은 잃지 않도록 더하고, 지운 표시(deleted)는 양쪽을 합쳐 되살아나지 않게 합니다.
+    const result = mergeStates(state, cloud.state, { cloudWins: true });
     state = result.state;
     saveState({ skipCloud: true });
     const mergedCanon = stableStringify(state);
@@ -10035,8 +10150,8 @@
     if (result.stats.itemsAdded) bits.push(`항목 ${result.stats.itemsAdded}개`);
     if (ok) {
       showToast(bits.length
-        ? `이 기기 기록과 계정 기록을 합쳤습니다 (${bits.join(" · ")} 추가).`
-        : "이 기기 기록과 계정 기록을 합쳐 저장했습니다.", "ok", 5000);
+        ? `다른 기기 기록을 불러와 합쳤습니다 (${bits.join(" · ")} 추가).`
+        : "다른 기기에서 바뀐 기록을 이 기기에 반영했습니다.", "ok", 5000);
     }
   }
 
@@ -10453,9 +10568,10 @@
   function pullCloudIfIdle(force) {
     if (!authUser || !isFirebaseConfigured() || cloudAdopting) return;
     if (document.visibilityState !== "visible") return;
-    if (!force && anyOverlayOpen()) return;
-    if (Date.now() - lastAdoptAt < 8000) return;
+    if (!force && (anyOverlayOpen() || isTypingNow())) return;
+    if (!force && Date.now() - lastAdoptAt < 8000) return;
     lastAdoptAt = Date.now();
+    pendingCloudAdopt = false;
     adoptCloudState();
   }
   document.addEventListener("visibilitychange", () => {
