@@ -2916,8 +2916,8 @@
 
     /* ===== v3.7 책 닫힘: 펼친 책이 그 자리에서 덮혀 '세로로 선 닫힌 책'이 된다 =====
        · 앞에서 닫힘: 왼쪽 장이 오른쪽으로 접혀 덮이며 앞표지(책등 왼쪽)가 위로 온다
-       · 뒤에서 닫힘: 오른쪽 장이 왼쪽으로 접혀 덮이며 뒤표지(책등 오른쪽)가 위로 온 뒤,
-                     닫힌 책이 Y축으로 180도 돌아 앞표지(책등 왼쪽)가 되어 완전히 닫힌다 */
+       · 뒤에서 닫힘(v4.0 A안): 오른쪽 장이 왼쪽으로 접혀 덮이고, 180도 빙글 돌리지 않고
+                          그 자리에서 앞표지로 앉아 바로 책장/앞표지 화면으로 돌아간다 */
     .nbf-shut {
       --shut-fold: 420ms;
       position: absolute; inset: 0; z-index: 14;
@@ -5824,7 +5824,7 @@
       return;
     }
     cancelAnimationFrame(carouselRaf);
-    const dur = 430;
+    const dur = 280;
     const t0 = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
     const frame = now => {
       const t = Math.min(1, (now - t0) / dur);
