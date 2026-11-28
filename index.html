@@ -7,6 +7,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Archive Planner" />
   <meta name="theme-color" content="#faf9f6" />
+  <!-- v3.6: 폰·패드에서 예전 화면이 캐시로 남지 않도록 캐시를 막는다 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Archive Planner</title>
   <style>
     :root {
@@ -1245,6 +1249,7 @@
     .modal-head h3 { margin: 0; }
     .modal-field { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
     .modal-field label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+    .modal-hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: #9aa0aa; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
     .btn-danger {
       margin-right: auto; color: var(--sun); border-color: #f0c9c9; background: #fff;
@@ -2245,15 +2250,7 @@
       box-shadow: 0 26px 46px -18px rgba(6,9,18,.62), 0 4px 10px rgba(6,9,18,.3);
     }
     .nb-spread[data-turning="1"] { pointer-events: none; }
-    .nb-spread[data-turning="1"] .idx-tabs,
-    .nb-spread[data-turning="1"] .nb-edge { opacity: .18; transition: opacity .2s ease; }
-    .nb-edge {
-      position: absolute; top: 10px; bottom: 10px; width: 13px; z-index: 0;
-      background-image: repeating-linear-gradient(to right, #f7f5ee 0 1px, #d7d3c6 1px 2px);
-      border-radius: 3px;
-    }
-    .nb-edge--left { left: -10px; transform: rotate(-.6deg); }
-    .nb-edge--right { right: -10px; transform: rotate(.6deg); }
+    .nb-spread[data-turning="1"] .idx-tabs { opacity: .18; transition: opacity .2s ease; }
     .nb-page {
       position: relative; z-index: 1;
       height: 100%; min-height: 0; max-height: none; overflow-y: auto;
@@ -2444,15 +2441,23 @@
     .nb-note--edit:hover { background: rgba(120,126,140,.05); }
     .nb-note--edit:hover .nb-note-title { color: #14181f; }
     .nb-note-empty { color: #a0a4ad; font-size: 12.5px; }
-    .nb-guide { align-items: center; justify-content: center; text-align: center; gap: 12px; }
-    .nb-guide-plus {
-      width: 58px; height: 58px; border-radius: 50%; cursor: pointer;
-      border: 1.5px dashed rgba(90,98,116,.45); background: rgba(255,255,255,.5);
-      color: #3a4152; display: flex; align-items: center; justify-content: center; padding: 0;
+    /* v3.6 사진 없는 기록: 넓은 한 면에 제목·부제목·도장·감상을 함께 */
+    .nb-page--wide {
+      grid-column: 1 / -1;
+      padding: 40px 64px 34px;
+      border-radius: 8px;
+      background-image: radial-gradient(rgba(122,128,142,.15) 1px, transparent 1px);
+      background-size: 19px 19px;
+      background-position: 14px 16px;
+      box-shadow: inset 0 0 90px -70px rgba(30,34,44,.5);
     }
-    .nb-guide-plus:hover { background: #fff; }
-    .nb-guide-title { font-size: 15.5px; font-weight: 700; color: #2b2f37; letter-spacing: -0.01em; }
-    .nb-guide-sub { margin: 0; font-size: 12px; line-height: 1.75; color: #7d818b; max-width: 260px; }
+    .nb-note-single { gap: 0; }
+    .nb-note--wide { margin: 0; padding: 0; }
+    .nb-note-head { display: flex; flex-direction: column; gap: 7px; }
+    .nb-note-head .nb-note-title { margin: 0; }
+    .nb-stamps--inline { margin-top: 6px; }
+    /* v3.6 책 안쪽의 + 버튼은 없앴다 — 마지막 면은 책 요약과 뒤표지 */
+    .nb-guide-summary { gap: 10px; justify-content: center; }
     .nb-summary-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #2b2f37; }
     .nb-summary-list { list-style: none; margin: 4px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 9px; }
     .nb-summary-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 12px; color: #7d818b; border-bottom: 1px dashed rgba(120,126,140,.28); padding-bottom: 8px; }
@@ -2693,8 +2698,54 @@
     }
     .nb-page--cover--back { cursor: default; }
     /* 앞표지·뒤표지는 덮힌 책이라 가운데 제본 그늘·종이 단면이 없다 */
-    .nb-spread[data-cover] .nb-spine,
-    .nb-spread[data-cover] .nb-edge { display: none; }
+    .nb-spread[data-cover] .nb-spine { display: none; }
+    /* v3.6 닫힌 책: 펼친 두 면을 가로로 늘리지 않고 1페이지(세로형 하드커버) 너비로 중앙에 닫힌다 */
+    .nb-spread[data-cover] {
+      grid-template-columns: 1fr;
+      width: min(50%, 600px);
+      max-width: 600px;
+    }
+    .nb-spread[data-cover] .nb-page--cover { border-radius: 10px 4px 4px 10px; }
+    .nb-spread[data-cover="back"] .nb-page--cover { border-radius: 4px 10px 10px 4px; }
+    /* 닫힌 책이 덮이거나 열릴 때 표지만 살짝 흔들려 앉는다 */
+    @keyframes nbCoverEnter {
+      from { opacity: .62; transform: rotateY(-9deg) translateX(-8px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes nbCoverEnterBack {
+      from { opacity: .62; transform: rotateY(9deg) translateX(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    .nb-page--cover.nb-cover-enter { animation: nbCoverEnter .42s cubic-bezier(.22,.72,.28,1) both; }
+    .nb-page--cover--back.nb-cover-enter { animation: nbCoverEnterBack .42s cubic-bezier(.22,.72,.28,1) both; }
+    /* 표지를 여닫는 동안 종이 면이 함께 밝아지고 어두워진다 */
+    @keyframes nbCoverPagesOut { 0%, 38% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes nbCoverPagesIn { 0% { opacity: .08; } 100% { opacity: 1; } }
+    .nb-spread.cover-closing > .nb-page { animation: nbCoverPagesOut .74s ease-in both; }
+    .nb-spread.cover-opening > .nb-page { animation: nbCoverPagesIn .62s ease-out both; }
+    /* 닫힌 책 너비의 표지 한 장(여닫는 애니메이션용) — 책등 쪽을 축으로 돈다 */
+    .nbf-cover--narrow {
+      left: 50%; right: auto;
+      width: min(50%, 600px);
+      margin-left: calc(-1 * min(25%, 300px));
+      top: 0; bottom: 0;
+      border-radius: 10px 4px 4px 10px;
+      transform-origin: left center;
+    }
+    .nbf-cover--narrow.nbf-cover--back { border-radius: 4px 10px 10px 4px; transform-origin: right center; }
+    @keyframes nbfNarrowOpenLeft { from { transform: rotateY(0deg); opacity: 1; } 62% { opacity: 1; } to { transform: rotateY(-104deg); opacity: 0; } }
+    @keyframes nbfNarrowCloseLeft { from { transform: rotateY(-104deg); opacity: 0; } 34% { opacity: 1; } to { transform: rotateY(0deg); opacity: 1; } }
+    @keyframes nbfNarrowOpenRight { from { transform: rotateY(0deg); opacity: 1; } 62% { opacity: 1; } to { transform: rotateY(104deg); opacity: 0; } }
+    @keyframes nbfNarrowCloseRight { from { transform: rotateY(104deg); opacity: 0; } 34% { opacity: 1; } to { transform: rotateY(0deg); opacity: 1; } }
+    .nbf-cover--narrow.nbf-cover--open-left { animation: nbfNarrowOpenLeft .74s cubic-bezier(.42,.02,.58,1) both; }
+    .nbf-cover--narrow.nbf-cover--close-left { animation: nbfNarrowCloseLeft .74s cubic-bezier(.42,.02,.58,1) both; }
+    .nbf-cover--narrow.nbf-cover--open-right { animation: nbfNarrowOpenRight .74s cubic-bezier(.42,.02,.58,1) both; }
+    .nbf-cover--narrow.nbf-cover--close-right { animation: nbfNarrowCloseRight .74s cubic-bezier(.42,.02,.58,1) both; }
+    /* v3.6 사진 없는 아카이브 기록: 빈 사진 면 없이 한 면에 제목·도장·감상을 모아 쓴다 */
+    .nb-page--wide { grid-column: 1 / -1; }
+    .nb-spread[data-single] { grid-template-columns: 1fr; }
+    .nb-spread[data-single] .nb-spine { display: none; }
+    .nb-spread[data-single] .nb-page--wide { border-radius: 8px; box-shadow: inset 0 0 80px -60px rgba(30,34,44,.5); }
     .nb-page--cover--back .nb-coverface-plate b { font-size: 27px; }
     .nb-page--cover--back .nb-coverface-plate i { width: 40px; margin: 12px auto; }
     .nb-page--cover--back .nb-coverface-plate span { letter-spacing: .24em; color: rgba(255,255,255,.5); }
@@ -2848,7 +2899,8 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       pointer-events: none;
     }
-    .date-row.is-empty .date-pill-text { color: #a9adb6; font-weight: 500; }
+    .date-row.is-empty .date-pill-text,
+    .date-pill-text.is-empty { color: #a9adb6; font-weight: 500; }
     /* 실제 date 입력은 글자·테두리·아이콘 없이 투명하게 덮어 두기만 한다 (브라우저 기본 달력 아이콘 숨김) */
     .date-pill input[type="date"],
     .date-pill input[type="date"]:focus {
@@ -3083,7 +3135,11 @@
       .gb-fab { right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); }
       .nb-head-btn { height: 28px; padding: 0 9px; font-size: 10.5px; }
       .nb-head-btn-label { display: none; }
-      .nb-spine, .nb-edge { display: none; }
+      .nb-spine { display: none; }
+      .nb-spread[data-cover] { width: 100%; max-width: 100%; }
+      .nb-spread[data-cover] .nb-page--cover { border-radius: 0 14px 14px 0; }
+      .nbf-cover--narrow { left: 0; width: 100%; margin-left: 0; transform-origin: left center; }
+      .nb-spread[data-single] { grid-template-columns: 1fr; }
       .nb-page { border-radius: var(--nb-r-left, 0 14px 14px 0) !important; height: 100%; padding: 26px 26px 28px 30px; box-shadow: inset 20px 0 20px -18px rgba(30,34,44,.5); }
       .nb-page--cover { padding: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), inset 0 0 120px rgba(0,0,0,.32); }
       /* 모바일 양장본: 왼쪽 책등 제본선 · 안쪽 그늘 */
@@ -3328,7 +3384,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.5";
+  const APP_VERSION = "3.6";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -3996,22 +4052,40 @@
   // v3.5 양장본: 스프링 코일 없음 (Calendar · Goals · Archive 모두 하드커버 제본)
   const BOOK_COIL = "";
 
-  // ---------- 날짜(없음 · 하루 · 기간) 공용 도우미 ----------
+  // ---------- 날짜(없음 · 하루 · 시작일만 · 종료일만 · 기간) 공용 도우미 ----------
+  const KO_DOW = ["일", "월", "화", "수", "목", "금", "토"];
+
+  // 달력처럼 쓰는 기본 제목: 2026.11.28.(토)
+  function diaryDateTitle(dateStr) {
+    const d = String(dateStr || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return "";
+    return `${dottedDate(d)}.(${KO_DOW[getDayOfWeek(d)]})`;
+  }
+
+  // 저장된 mode와 값을 함께 보고 지금 모양을 정한다 (예전 기록도 그대로 읽힌다)
   function dateModeOf(item) {
-    const mode = item && item.dateMode;
-    if (mode === "none" || mode === "day" || mode === "range") return mode;
-    const from = item && (item.dateFrom || item.date);
-    return from ? "day" : "none";
+    if (!item) return "none";
+    const from = String(item.dateFrom || item.date || "");
+    const to = String(item.dateTo || "");
+    if (!from && !to) return "none";
+    if (from && to && to !== from) return "range";
+    if (to && !from) return "to";
+    const mode = item.dateMode;
+    if (mode === "to") return to ? "to" : "none";
+    if (mode === "from") return "from";
+    return "day";
   }
 
   function itemDateFrom(item) {
-    if (!item || dateModeOf(item) === "none") return "";
+    const mode = dateModeOf(item);
+    if (mode === "none" || mode === "to") return "";
     return String(item.dateFrom || item.date || "");
   }
 
   function itemDateTo(item) {
-    if (!item || dateModeOf(item) !== "range") return "";
-    return String(item.dateTo || item.dateFrom || item.date || "");
+    const mode = dateModeOf(item);
+    if (mode === "range" || mode === "to") return String(item.dateTo || "");
+    return "";
   }
 
   function dottedDate(dateStr) {
@@ -4019,22 +4093,29 @@
   }
 
   function humanDateRange(from, to) {
-    if (!from) return "";
-    if (!to || to === from) return dottedDate(from);
-    if (from.slice(0, 4) === to.slice(0, 4)) return `${dottedDate(from)} – ${to.slice(5).replace("-", ".")}`;
-    return `${dottedDate(from)} – ${dottedDate(to)}`;
+    if (from && to && to !== from) {
+      if (from.slice(0, 4) === to.slice(0, 4)) return `${dottedDate(from)} – ${to.slice(5).replace("-", ".")}`;
+      return `${dottedDate(from)} – ${dottedDate(to)}`;
+    }
+    if (from) return `${dottedDate(from)} ~`;
+    if (to) return `~ ${dottedDate(to)}`;
+    return "";
   }
 
-  // 날짜 도장 (아카이브 · 목표 공용, 기간은 두 줄로)
+  // 날짜 도장 (아카이브 · 목표 공용) — 시작일만 `2026.11.28 ~`, 종료일만 `~ 2026.12.19`
   function stampHtml(from, to, opts = {}) {
-    if (!from) return "";
+    if (!from && !to) return "";
     const kind = opts.kind ? ` nb-stamp--${opts.kind}` : "";
-    const label = opts.label || "";
-    if (to && to !== from) {
+    const label = opts.label ? `<span>${escapeHtml(opts.label)}</span>` : "";
+    if (from && to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
-      return `<span class="nb-stamp nb-stamp--range${kind}"><b>${escapeHtml(dottedDate(from))}</b><span class="nb-stamp-date">${escapeHtml(second)}</span>${label ? `<span>${escapeHtml(label)}</span>` : ""}</span>`;
+      return `<span class="nb-stamp nb-stamp--range${kind}"><b>${escapeHtml(dottedDate(from))}</b><span class="nb-stamp-date">${escapeHtml(second)}</span>${label}</span>`;
     }
-    return `<span class="nb-stamp${kind}"><b>${escapeHtml(dottedDate(from))}</b>${label ? `<span>${escapeHtml(label)}</span>` : ""}</span>`;
+    if (from && to) {
+      return `<span class="nb-stamp${kind}"><b>${escapeHtml(dottedDate(from))}</b>${label}</span>`;
+    }
+    if (from) return `<span class="nb-stamp nb-stamp--open${kind}"><b>${escapeHtml(dottedDate(from))} ~</b>${label}</span>`;
+    return `<span class="nb-stamp nb-stamp--open${kind}"><b>~ ${escapeHtml(dottedDate(to))}</b>${label}</span>`;
   }
 
   function archiveStampHtml(a) {
@@ -4042,10 +4123,11 @@
     if (mode === "none") return "";
     const from = itemDateFrom(a);
     const to = itemDateTo(a);
-    const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
-    const label = to && to !== from
-      ? "PERIOD"
-      : (/^\d{4}-\d{2}-\d{2}$/.test(from) ? `${dowNames[getDayOfWeek(from)]}요일` : "DATE");
+    let label;
+    if (mode === "range") label = "PERIOD";
+    else if (mode === "from") label = "진행 중";
+    else if (mode === "to") label = "예정";
+    else label = /^\d{4}-\d{2}-\d{2}$/.test(from) ? `${KO_DOW[getDayOfWeek(from)]}요일` : "DATE";
     return stampHtml(from, to, { label });
   }
 
@@ -4116,37 +4198,47 @@
     if (!item) return "";
     let from = itemDateFrom(item);
     const to = itemDateTo(item);
-    if (!from && item.doneDate) from = String(item.doneDate);
-    if (!from) return "";
+    if (!from && !to && item.doneDate) from = String(item.doneDate);
+    if (!from && !to) return "";
     const done = Boolean(item.done);
     const label = done ? "DONE" : "PLAN";
     const title = done ? "달성한 날짜" : "예정일";
-    if (to && to !== from) {
+    const cls = done ? "gb-stamp" : "gb-stamp gb-stamp--plan";
+    if (from && to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
-      return `<span class="${done ? "gb-stamp" : "gb-stamp gb-stamp--plan"} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)} · ${label}</span></span>`;
+      return `<span class="${cls} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)} · ${label}</span></span>`;
     }
-    return `<span class="${done ? "gb-stamp" : "gb-stamp gb-stamp--plan"}" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${label}</span></span>`;
+    // 시작일만: 아직 끝나지 않은 기간
+    if (from && !to) {
+      return `<span class="${cls} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))} ~</b><span>${label}</span></span>`;
+    }
+    // 종료일만: 시작일을 모르는 기간
+    if (!from && to) {
+      return `<span class="${cls} gb-stamp--range" title="${title}"><b>~ ${escapeHtml(dottedDate(to))}</b><span>${label}</span></span>`;
+    }
+    return `<span class="${cls}" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${label}</span></span>`;
   }
 
   // ---------- 날짜 입력 UI (미니컬 스타일 한 줄: 시작일 › 종료일, 시간 없음) ----------
   const DATE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
   const DATE_CLEAR_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>`;
 
+  // v3.6: 시작일·종료일을 따로 넣는다. 아직 끝나지 않았으면 종료일을 비워 둔다 (자동으로 채우지 않음)
   function dateFieldsHtml(prefix, item) {
     const from = item ? itemDateFrom(item) : "";
     const to = item ? itemDateTo(item) : "";
-    const shownTo = to || from;
+    const empty = !from && !to;
     return `
-      <div class="date-row ${from ? "" : "is-empty"}" id="${prefix}DateRow">
+      <div class="date-row ${empty ? "is-empty" : ""}" id="${prefix}DateRow">
         <span class="date-row-icon" onclick="showDatePicker('${prefix}DateFrom')" aria-hidden="true">${DATE_ICON}</span>
         <label class="date-pill">
-          <span class="date-pill-text" id="${prefix}FromText">${from ? escapeHtml(dottedDate(from)) : "시작일"}</span>
-          <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" onchange="onDateRowChange('${prefix}')" onclick="showDatePicker('${prefix}DateFrom')" />
+          <span class="date-pill-text ${from ? "" : "is-empty"}" id="${prefix}FromText">${from ? escapeHtml(dottedDate(from)) : "시작일"}</span>
+          <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" onchange="onDateRowChange('${prefix}', 'from')" onclick="showDatePicker('${prefix}DateFrom')" />
         </label>
         <span class="date-row-sep" aria-hidden="true">&#8250;</span>
         <label class="date-pill">
-          <span class="date-pill-text" id="${prefix}ToText">${shownTo ? escapeHtml(dottedDate(shownTo)) : "종료일"}</span>
-          <input type="date" id="${prefix}DateTo" value="${escapeAttr(shownTo)}" aria-label="종료일" onchange="onDateRowChange('${prefix}')" onclick="showDatePicker('${prefix}DateTo')" />
+          <span class="date-pill-text ${to ? "" : "is-empty"}" id="${prefix}ToText">${to ? escapeHtml(dottedDate(to)) : "종료일"}</span>
+          <input type="date" id="${prefix}DateTo" value="${escapeAttr(to)}" aria-label="종료일" onchange="onDateRowChange('${prefix}', 'to')" onclick="showDatePicker('${prefix}DateTo')" />
         </label>
         <button type="button" class="date-clear" onclick="clearDateRow('${prefix}')" aria-label="날짜 지우기" title="날짜 지우기">${DATE_CLEAR_ICON}</button>
       </div>
@@ -4245,30 +4337,40 @@
     const row = document.getElementById(prefix + "DateRow");
     const from = fromEl ? fromEl.value : "";
     const to = toEl ? toEl.value : "";
-    if (fromText) fromText.textContent = from ? dottedDate(from) : "시작일";
-    if (toText) toText.textContent = to ? dottedDate(to) : "종료일";
-    if (row) row.classList.toggle("is-empty", !from);
+    if (fromText) {
+      fromText.textContent = from ? dottedDate(from) : "시작일";
+      fromText.classList.toggle("is-empty", !from);
+    }
+    if (toText) {
+      toText.textContent = to ? dottedDate(to) : "종료일";
+      toText.classList.toggle("is-empty", !to);
+    }
+    if (row) row.classList.toggle("is-empty", !from && !to);
   }
 
-  // 시작일만 고르거나 같으면 하루, 종료일이 더 뒤면 기간
-  function onDateRowChange(prefix) {
+  // 시작일·종료일은 서로를 채우지 않는다 (한쪽만 넣어도 그대로 저장)
+  function onDateRowChange(prefix, changed) {
     const fromEl = document.getElementById(prefix + "DateFrom");
     const toEl = document.getElementById(prefix + "DateTo");
     if (!fromEl || !toEl) return;
-    if (!fromEl.value) toEl.value = "";
-    else if (!toEl.value || toEl.value < fromEl.value) toEl.value = fromEl.value;
     syncDateRow(prefix);
     if (prefix === "mGoal") syncGoalQuarterFromDate();
+    if (prefix === "mArchive" || prefix === "mNewArchive") updateArchiveTitleAuto();
   }
 
   function readDateFields(prefix) {
     const fromEl = document.getElementById(prefix + "DateFrom");
     const toEl = document.getElementById(prefix + "DateTo");
-    const from = fromEl ? fromEl.value : "";
-    const to = toEl ? toEl.value : "";
-    if (!from) return { dateMode: "none", dateFrom: "", dateTo: "" };
-    if (!to || to <= from) return { dateMode: "day", dateFrom: from, dateTo: "" };
-    return { dateMode: "range", dateFrom: from, dateTo: to };
+    let from = fromEl ? fromEl.value : "";
+    let to = toEl ? toEl.value : "";
+    if (!from && !to) return { dateMode: "none", dateFrom: "", dateTo: "" };
+    if (from && to) {
+      if (from === to) return { dateMode: "day", dateFrom: from, dateTo: "" };
+      if (to < from) { const t = from; from = to; to = t; }
+      return { dateMode: "range", dateFrom: from, dateTo: to };
+    }
+    if (from) return { dateMode: "from", dateFrom: from, dateTo: "" };
+    return { dateMode: "to", dateFrom: "", dateTo: to };
   }
 
   // 인덱스 탭 라벨을 한 글자씩 세로로 세워 표시 (글꼴·브라우저에 상관없이 똑바로)
@@ -4427,7 +4529,7 @@
     mergeTopicUniverse(merged);
     merged.logs = (merged.logs && typeof merged.logs === "object" && !Array.isArray(merged.logs)) ? merged.logs : {};
     merged.goals = (Array.isArray(merged.goals) ? merged.goals : []).map(g => {
-      const rawMode = ["none", "day", "range"].includes(g.dateMode) ? g.dateMode : (g.dateFrom ? "day" : "none");
+      const rawMode = ["none", "day", "range", "from", "to"].includes(g.dateMode) ? g.dateMode : (g.dateFrom ? "day" : "none");
       const doneDate = String(g.doneDate || "").trim();
       // 예전 `달성일`만 있던 기록은 그 날짜를 `날짜` 하나로 옮긴다 (달성일·날짜 통합)
       const migrated = !g.dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(doneDate);
@@ -4454,7 +4556,7 @@
     merged.archives = (Array.isArray(merged.archives) ? merged.archives : []).map(a => ({
       ...a,
       images: normalizeImages(a),
-      dateMode: ["none", "day", "range"].includes(a.dateMode) ? a.dateMode : (a.date ? "day" : "none"),
+      dateMode: ["none", "day", "range", "from", "to"].includes(a.dateMode) ? a.dateMode : (a.date ? "day" : "none"),
       dateFrom: String(a.dateFrom || ""),
       dateTo: String(a.dateTo || "")
     }));
@@ -5154,9 +5256,12 @@
     if (!a || !dateStr) return false;
     if (dateModeOf(a) === "none") return false;
     const from = itemDateFrom(a);
-    if (!from) return false;
-    const to = itemDateTo(a) || from;
-    return dateStr >= from && dateStr <= to;
+    const to = itemDateTo(a);
+    if (from && to) return dateStr >= from && dateStr <= to;
+    // 시작일만/종료일만 있는 기록은 그 하루에만 표시한다
+    if (from) return dateStr === from;
+    if (to) return dateStr === to;
+    return false;
   }
 
   function getDayMeta(dateStr) {
@@ -5882,8 +5987,6 @@
         <div class="nb-book nb-book--indexed">
           <button class="nb-nav prev" onclick="yearPageStep(-1)" aria-label="이전 달">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="nbYearSpread" data-side="${yearMobileSide}">
-            <span class="nb-edge nb-edge--left"></span>
-            <span class="nb-edge nb-edge--right"></span>
             ${leftPage}
             ${rightPage}
             <span class="nb-spine"></span>
@@ -5976,8 +6079,12 @@
       const doneOn = Boolean(g.done && g.doneDate === dateStr);
       const mode = dateModeOf(g);
       const from = itemDateFrom(g);
-      const to = itemDateTo(g) || from;
-      const inRange = mode !== "none" && Boolean(from) && dateStr >= from && dateStr <= to;
+      const to = itemDateTo(g);
+      let inRange = false;
+      if (mode === "range") inRange = Boolean(from && to) && dateStr >= from && dateStr <= to;
+      else if (mode === "day") inRange = Boolean(from) && dateStr === from;
+      else if (mode === "from") inRange = Boolean(from) && dateStr === from;
+      else if (mode === "to") inRange = Boolean(to) && dateStr === to;
       if (doneOn || inRange) out.push({ item: g, done: Boolean(g.done), doneOn, from: inRange ? from : "", to: inRange ? to : "" });
     });
     (state.buckets || []).forEach(b => {
@@ -5994,7 +6101,7 @@
     const meta = [];
     if (topic) meta.push(`<span class="nb-day-pill">${renderPictogram(iconKey, 11)} ${escapeHtml(topic)}</span>`);
     if (entry.doneOn) meta.push(`<span class="nb-day-tag nb-day-tag--done">DONE</span>`);
-    else if (entry.from) meta.push(`<span class="nb-day-tag">${escapeHtml(humanDateRange(entry.from, entry.to))}</span>`);
+    else if (entry.from || entry.to) meta.push(`<span class="nb-day-tag">${escapeHtml(humanDateRange(entry.from, entry.to))}</span>`);
     return `
       <div class="nb-day-item">
         <button class="nb-day-check-btn ${entry.done ? "is-done" : ""}" onclick="toggleGoalItem('${it.id}')" title="${entry.done ? "달성 취소" : "달성 표시"}" aria-label="${entry.done ? "달성 취소" : "달성 표시"}" aria-pressed="${entry.done ? "true" : "false"}">${entry.done ? DAY_CHECK : ""}</button>
@@ -6019,7 +6126,7 @@
           <span class="nb-day-item-title">${escapeHtml(a.title || "")}</span>
           <span class="nb-day-item-meta">
             ${cat ? `<span class="nb-day-pill">${escapeHtml(cat)}</span>` : ""}
-            ${from ? `<span class="nb-day-tag">${escapeHtml(humanDateRange(from, to))}</span>` : ""}
+            ${(from || to) ? `<span class="nb-day-tag">${escapeHtml(humanDateRange(from, to))}</span>` : ""}
             ${hasPhotos ? `<span class="nb-day-tag">사진 ${hasPhotos}</span>` : ""}
           </span>
         </button>
@@ -6222,8 +6329,6 @@
         <div class="nb-book">
           <button class="nb-nav prev" onclick="dayNavStep(-1)" aria-label="이전 장">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="nbDaySpread" data-side="${shownSide}">
-            <span class="nb-edge nb-edge--left"></span>
-            <span class="nb-edge nb-edge--right"></span>
             ${leftHtml}
             ${rightHtml}
             <span class="nb-spine"></span>
@@ -7245,28 +7350,41 @@
     `;
   }
 
-  // 표지 넘김: 앞표지를 열거나(다음 장) 덮거나(이전 장), 뒤표지도 같은 방식
+  // v3.6 표지 넘김: 닫힌 책(1페이지 너비)이 열리거나 덮인다.
+  //  · 열 때: 펼친 책을 먼저 깔고, 닫힌 책 자리에서 표지가 책등을 축으로 젖혀지며 사라진다
+  //  · 덮을 때: 표지가 젖혀진 자리에서 되돌아와 닫힌 책 자리에 앉고, 그 위에서 표지 화면으로 바뀐다
+  //  한 번 넘기는 동안 다시 넘기지 않도록 coverTurnLock으로 잠근다 (자동으로 두 번 넘어가던 문제)
+  let coverTurnLock = 0;
   function goalCoverTurn(step, kind, mutate) {
     const spread = document.getElementById("goalSpread");
     if (!spread || prefersReducedMotion()) { mutate(); render(); return; }
     if (spread.dataset.turning === "1") return;
+    coverTurnLock = Date.now() + 820;
     const back = kind === "back";
     const opening = back ? step < 0 : step > 0;
     const cls = `nbf-cover--${opening ? "open" : "close"}-${back ? "right" : "left"}`;
     const makeCover = () => {
       const el = document.createElement("div");
-      el.className = `nbf-cover nbf-cover--goal ${cls}`;
+      el.className = `nbf-cover nbf-cover--goal nbf-cover--narrow ${back ? "nbf-cover--back" : ""} ${cls}`;
       el.style.setProperty("--spine", normalizeSpineColor(GOAL_COVER_SPINE, "#2f3e5c"));
       el.innerHTML = `<div class="nbf-cover-plate"><b>Goals</b><i></i><span>${back ? "뒤표지" : "Archive Planner"}</span></div>`;
       return el;
     };
+    // 새 표지 화면이 앉을 때 한 번만 살짝 흔들리게
+    const settleCover = () => {
+      const dest = document.getElementById("goalSpread");
+      const face = dest && dest.querySelector(".nb-page--cover");
+      if (!face) return;
+      face.classList.add("nb-cover-enter");
+      face.addEventListener("animationend", () => face.classList.remove("nb-cover-enter"), { once: true });
+    };
     if (opening) {
-      // 새 장을 먼저 깔고 그 위에서 표지가 열려 나간다
       mutate();
       render();
       const dest = document.getElementById("goalSpread");
       if (!dest) return;
       dest.dataset.turning = "1";
+      dest.classList.add("cover-opening");
       const cover = makeCover();
       dest.appendChild(cover);
       let finished = false;
@@ -7274,13 +7392,15 @@
         if (finished) return;
         finished = true;
         cover.remove();
+        dest.classList.remove("cover-opening");
         dest.dataset.turning = "";
+        coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
       };
       cover.addEventListener("animationend", finish, { once: true });
-      setTimeout(finish, 760);
+      setTimeout(finish, 820);
     } else {
-      // 지금 장 위로 표지가 덮인 뒤 표지 화면으로 바뀐다
       spread.dataset.turning = "1";
+      spread.classList.add("cover-closing");
       const cover = makeCover();
       spread.appendChild(cover);
       let finished = false;
@@ -7288,12 +7408,15 @@
         if (finished) return;
         finished = true;
         cover.remove();
+        spread.classList.remove("cover-closing");
         spread.dataset.turning = "";
         mutate();
         render();
+        settleCover();
+        coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
       };
       cover.addEventListener("animationend", finish, { once: true });
-      setTimeout(finish, 760);
+      setTimeout(finish, 820);
     }
   }
 
@@ -7390,8 +7513,6 @@
         <div class="nb-book nb-book--indexed">
           <button class="nb-nav prev" onclick="goalBookStep(-1)" ${spreadIdx <= 0 ? "disabled" : ""} aria-label="이전 페이지">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="goalSpread" data-side="${onFrontCover ? "left" : goalBookSide}" ${onFrontCover ? `data-cover="front"` : onBackCover ? `data-cover="back"` : ""}>
-            <span class="nb-edge nb-edge--left"></span>
-            <span class="nb-edge nb-edge--right"></span>
             ${onFrontCover ? goalCoverFaceHtml("front")
               : onBackCover ? goalCoverFaceHtml("back")
               : `${pageHtml(pageA, bodyIdx * 2 + 1, "left")}${pageHtml(pageB, bodyIdx * 2 + 2, "right", lastBodySpread && !rawB)}`}
@@ -7828,39 +7949,17 @@
     openLightbox(normalizeImages(a), Number(index) || 0, a.title || "");
   }
 
+  // 사진이 있는 기록의 왼면: 사진 판 + 날짜·부제목 도장
   function renderNotebookLeftPage(a, book, pageNo) {
     const imgs = normalizeImages(a);
-    const iconKey = getArchiveCatIconKey(a.category);
-    const from = itemDateFrom(a);
-    const parts = String(from || "").split("-");
-    const y = parts[0] || "";
-    const m = parts[1] || "";
-    const d = parts[2] || "";
-    const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
-    const dow = /^\d{4}-\d{2}-\d{2}$/.test(from) ? dowNames[getDayOfWeek(from)] : "";
-
-    const visual = imgs.length
-      ? `
-        ${photoBoardHtml(imgs, i => `openNotebookPhoto('${a.id}', ${i})`)}
-      `
-      : `
-        <div class="nb-visual">
-          <span class="nb-visual-icon">${renderPictogram(iconKey, 24)}</span>
-          <div class="nb-visual-date">${from ? `${Number(m) || ""}월 ${Number(d) || ""}일` : "기록"}</div>
-          <div class="nb-visual-sub">${dow ? `${dow}요일` : (y || "")}</div>
-          <span class="nb-visual-rule"></span>
-          ${(a.category && (!book || a.category !== book.title)) ? `<div class="nb-visual-cat">${escapeHtml(a.category)}</div>` : ""}
-        </div>
-      `;
-
     const detail = String(a.subtitle || "").trim();
     return `
       <section class="nb-page nb-page--left">
         <div class="nb-page-inner">
-          ${visual}
+          ${photoBoardHtml(imgs, i => `openNotebookPhoto('${a.id}', ${i})`)}
           <div class="nb-stamps" onclick="openEditArchive('${a.id}')" title="눌러서 수정">
             ${archiveStampHtml(a)}
-            ${detail ? `<span class="nb-stamp nb-stamp--detail"><span class="nb-stamp-label">세부정보</span><b>${escapeHtml(detail)}</b></span>` : ""}
+            ${detail ? `<span class="nb-stamp nb-stamp--detail"><span class="nb-stamp-label">부제목</span><b>${escapeHtml(detail)}</b></span>` : ""}
           </div>
           ${paperPageNo(pageNo)}
         </div>
@@ -7868,6 +7967,7 @@
     `;
   }
 
+  // 사진이 있는 기록의 오른면: 제목 + 감상
   function renderNotebookRightPage(a, pageNo) {
     return `
       <section class="nb-page nb-page--right">
@@ -7883,26 +7983,56 @@
     `;
   }
 
-  function renderNotebookGuidePages(book, recs, pageNo) {
-    const last = recs.length ? recs[recs.length - 1] : null;
+  // v3.6 사진이 없는 기록: 빈 사진 면 대신 한 면에 제목·부제목·도장·감상을 모은다
+  function renderNotebookNotePage(a, pageNo) {
+    const sub = String(a.subtitle || "").trim();
+    const stamp = archiveStampHtml(a);
     return `
-      <section class="nb-page nb-page--left">
-        <div class="nb-page-inner nb-guide" onclick="openNewArchiveModal('${book.id}')" style="cursor:pointer;">
-          <button class="nb-guide-plus" onclick="event.stopPropagation(); openNewArchiveModal('${book.id}')" aria-label="새 기록">${NB_ICONS.plus}</button>
+      <section class="nb-page nb-page--wide">
+        <div class="nb-page-inner nb-note-single">
+          <div class="nb-note nb-note--edit nb-note--wide" onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정">
+            <div class="nb-note-head">
+              <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
+              ${sub ? `<div class="nb-note-sub">${escapeHtml(sub)}</div>` : ""}
+              ${stamp ? `<div class="nb-stamps nb-stamps--inline">${stamp}</div>` : ""}
+            </div>
+            <div class="nb-note-rule"></div>
+            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`}</div>
+          </div>
           ${paperPageNo(pageNo)}
         </div>
       </section>
-      <section class="nb-page nb-page--right">
+    `;
+  }
+
+  // 기록마다 실제로 차지하는 종이 면 수(사진 있으면 2면, 없으면 1면)를 세어 페이지 번호를 매긴다
+  function notebookPageNumbers(recs) {
+    const nums = [];
+    let n = 1;
+    (recs || []).forEach(r => {
+      nums.push(n);
+      n += normalizeImages(r).length ? 2 : 1;
+    });
+    return { nums, next: n };
+  }
+
+  function renderNotebookGuidePages(book, recs, pageNo) {
+    const last = recs.length ? recs[recs.length - 1] : null;
+    const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
+    const lastLabel = last ? (last.title || dottedDate(itemDateFrom(last) || itemDateTo(last))) : "—";
+    return `
+      <section class="nb-page nb-page--left">
         <div class="nb-page-inner nb-guide-summary">
           <div class="nb-summary-title">${escapeHtml(book.title)}</div>
           <ul class="nb-summary-list">
             <li><span>기록</span><b>${recs.length}개</b></li>
-            <li><span>최근 기록</span><b>${last ? escapeHtml(last.date || "") : "—"}</b></li>
+            <li><span>최근 기록</span><b>${last ? escapeHtml(lastLabel) : "—"}</b></li>
             <li><span>연결</span><b>${escapeHtml(book.category || book.subject || "자유 주제")}</b></li>
           </ul>
-          ${paperPageNo(pageNo + 1)}
+          ${paperPageNo(pageNo)}
         </div>
       </section>
+      ${nbBackCoverHtml("right", spine, { title: book.title, sub: "뒤표지" })}
     `;
   }
 
@@ -7924,9 +8054,13 @@
     if (subLine) subBits.push(subLine);
     subBits.push(`${recs.length}페이지`);
 
+    const numbers = notebookPageNumbers(recs);
+    const hasPhotos = !onGuide && normalizeImages(current).length > 0;
     const spreadBody = onGuide
-      ? renderNotebookGuidePages(book, recs, idx * 2 + 1)
-      : `${renderNotebookLeftPage(current, book, idx * 2 + 1)}${renderNotebookRightPage(current, idx * 2 + 2)}`;
+      ? renderNotebookGuidePages(book, recs, numbers.next)
+      : hasPhotos
+        ? `${renderNotebookLeftPage(current, book, numbers.nums[idx])}${renderNotebookRightPage(current, numbers.nums[idx] + 1)}`
+        : renderNotebookNotePage(current, numbers.nums[idx]);
 
     return `
       <div class="nb-stage">
@@ -7939,9 +8073,7 @@
         </div>
         <div class="nb-book">
           <button class="nb-nav prev" onclick="notebookStep(-1)" aria-label="이전 페이지">${ICONS.chevLeft}</button>
-          <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}">
-            <span class="nb-edge nb-edge--left"></span>
-            <span class="nb-edge nb-edge--right"></span>
+          <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}"${(!onGuide && !hasPhotos) ? ' data-single="1"' : ""}>
             ${spreadBody}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
@@ -8006,6 +8138,8 @@
       spread.addEventListener("click", e => {
         const last = Number(spread.dataset.swipedAt || 0);
         if (last && Date.now() - last < 420) return;
+        // 표지를 여닫는 중·직후의 따라오는 클릭은 무시한다 (한 번만 넘어가도록)
+        if (Date.now() < coverTurnLock) return;
         // Goals 앞표지를 누르면 책이 열린다 (데스크톱·모바일 공통), 뒤표지는 넘길 곳이 없다
         if (isGoal && spread.dataset.cover === "front") {
           if (e.target.closest(".idx-tab, .nb-nav")) return;
@@ -8386,6 +8520,25 @@
     render();
   }
 
+  // v3.6 제목 기본값은 달력처럼 `2026.11.28.(토)` — 부제목만 적어도 제목 + 부제목으로 읽힌다
+  let archiveTitleAuto = true;
+  function archivePrimaryDate() {
+    const fromEl = document.getElementById("mArchiveDateFrom") || document.getElementById("mNewArchiveDateFrom");
+    const toEl = document.getElementById("mArchiveDateTo") || document.getElementById("mNewArchiveDateTo");
+    const from = fromEl ? fromEl.value : "";
+    const to = toEl ? toEl.value : "";
+    return from || to || "";
+  }
+  function markArchiveTitleEdited() {
+    archiveTitleAuto = false;
+  }
+  function updateArchiveTitleAuto() {
+    if (!archiveTitleAuto) return;
+    const el = document.getElementById("mNewArchiveTitle");
+    if (!el) return;
+    el.value = diaryDateTitle(archivePrimaryDate());
+  }
+
   function openNewArchiveModal(bookId, presetDate) {
     // 일기 화면에서 + 로 열 때: 지금 보던 책 → 마지막으로 보던 책 → 첫 분류 순서로 기본 책을 잡는다
     const book = bookId ? getBookById(bookId)
@@ -8396,6 +8549,7 @@
     const defBook = book ? book.id : resolveArchiveBookId("", defCat);
     // 일기 오른면의 `+`처럼 그 날짜를 미리 채워 열 때
     const seedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(presetDate || "")) ? String(presetDate) : (state.selectedDate || TODAY_STR);
+    archiveTitleAuto = true;
     openModal(book ? `‘${book.title}’에 새 기록` : "새 아카이브 기록", `
       <div class="modal-field">
         <label>책</label>
@@ -8404,14 +8558,15 @@
       <div class="modal-field">
         <label>날짜</label>
         ${dateFieldsHtml("mArchive", { date: seedDate })}
+        <p class="modal-hint">아직 끝나지 않았으면 종료일을 비워 두세요.</p>
       </div>
       <div class="modal-field">
         <label>제목</label>
-        <input type="text" id="mNewArchiveTitle" placeholder="책 제목, 여행지, 전시명, 공부 주제 등" />
+        <input type="text" id="mNewArchiveTitle" value="${escapeAttr(diaryDateTitle(seedDate))}" placeholder="2026.11.28.(토)" oninput="markArchiveTitleEdited()" />
       </div>
       <div class="modal-field">
-        <label>세부정보</label>
-        <input type="text" id="mNewArchiveSub" />
+        <label>부제목 (선택)</label>
+        <input type="text" id="mNewArchiveSub" placeholder="전시명, 여행지, 책 제목처럼 덧붙일 말" />
       </div>
       <div class="modal-field">
         <label>글 · 감상</label>
@@ -8424,23 +8579,19 @@
       </div>
     `, () => {
       const titleEl = document.getElementById("mNewArchiveTitle");
-      const title = (titleEl && titleEl.value ? titleEl.value : "").trim();
-      if (!title) {
-        alert("제목을 입력해 주세요.");
-        if (titleEl) titleEl.focus();
-        return false;
-      }
+      const dates = readDateFields("mArchive");
+      // 제목을 비우면 날짜 제목으로 돌아간다
+      const title = ((titleEl && titleEl.value ? titleEl.value : "").trim()) || diaryDateTitle(dates.dateFrom || dates.dateTo) || "새 기록";
       const bookSel = document.getElementById("mNewArchiveBook");
       const bookId = resolveArchiveBookId(bookSel ? bookSel.value : "", defCat);
       const targetBook = getBookById(bookId);
       const category = (targetBook && (targetBook.category || targetBook.title)) || defCat;
       const newId = "a_" + uid().slice(3);
-      const dates = readDateFields("mArchive");
       state.archives.unshift({
         id: newId,
         category,
         bookId,
-        date: dates.dateFrom || "",
+        date: dates.dateFrom || dates.dateTo || "",
         dateMode: dates.dateMode,
         dateFrom: dates.dateFrom,
         dateTo: dates.dateTo,
@@ -8493,11 +8644,11 @@
       </div>
       <div class="modal-field">
         <label>제목</label>
-        <input type="text" id="mArchiveTitle" value="${escapeAttr(a.title)}" />
+        <input type="text" id="mArchiveTitle" value="${escapeAttr(a.title)}" placeholder="2026.11.28.(토)" />
       </div>
       <div class="modal-field">
-        <label>세부정보</label>
-        <input type="text" id="mArchiveSub" value="${escapeAttr(a.subtitle || "")}" />
+        <label>부제목 (선택)</label>
+        <input type="text" id="mArchiveSub" value="${escapeAttr(a.subtitle || "")}" placeholder="전시명, 여행지, 책 제목처럼 덧붙일 말" />
       </div>
       <div class="modal-field">
         <label>글 · 메모</label>
@@ -8515,8 +8666,8 @@
       a.dateMode = dates.dateMode;
       a.dateFrom = dates.dateFrom;
       a.dateTo = dates.dateTo;
-      a.date = dates.dateFrom || "";
-      a.title = document.getElementById("mArchiveTitle").value.trim() || a.title;
+      a.date = dates.dateFrom || dates.dateTo || "";
+      a.title = document.getElementById("mArchiveTitle").value.trim() || diaryDateTitle(dates.dateFrom || dates.dateTo) || a.title;
       a.subtitle = document.getElementById("mArchiveSub").value.trim();
       a.note = document.getElementById("mArchiveNote").value.trim();
       a.images = [...modalArchiveImages];
@@ -9896,13 +10047,34 @@
   };
 
   // 화면을 닫거나 앱이 백그라운드로 가기 전에 남은 동기화를 밀어 보냅니다 (모바일 Safari 대비)
+  // v3.6: 다시 화면으로 돌아오면 계정 기록을 한 번 당겨 와 합칩니다 (폰에서 적은 것이 패드에 바로 보이도록)
+  let lastAdoptAt = 0;
+  function anyOverlayOpen() {
+    return ["editModal", "settingsModal", "catModal", "lightbox"].some(id => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains("open");
+    });
+  }
+  function pullCloudIfIdle(force) {
+    if (!authUser || !isFirebaseConfigured() || cloudAdopting) return;
+    if (document.visibilityState !== "visible") return;
+    if (!force && anyOverlayOpen()) return;
+    if (Date.now() - lastAdoptAt < 8000) return;
+    lastAdoptAt = Date.now();
+    adoptCloudState();
+  }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden" && cloudTimer) {
-      clearTimeout(cloudTimer);
-      cloudTimer = null;
-      pushCloudState();
+    if (document.visibilityState === "hidden") {
+      if (cloudTimer) {
+        clearTimeout(cloudTimer);
+        cloudTimer = null;
+        pushCloudState();
+      }
+      return;
     }
+    pullCloudIfIdle(false);
   });
+  window.addEventListener("focus", () => pullCloudIfIdle(false));
   window.addEventListener("pagehide", () => {
     if (cloudTimer) {
       clearTimeout(cloudTimer);
