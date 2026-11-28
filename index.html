@@ -1259,6 +1259,13 @@
     .settings-section h4 { margin: 0 0 8px; font-size: 13.5px; }
     .settings-hint { font-size: 12px; color: var(--text-sub); line-height: 1.65; margin: 8px 0 0; }
     .settings-hint code { font-size: 11px; background: var(--surface-muted); padding: 1px 5px; border-radius: 5px; }
+    /* v3.5: 설정 맨 아래 현재 버전 — 폰·아이패드에서 보이는 버전을 바로 비교 */
+    .settings-version {
+      margin: 18px 0 2px; padding-top: 12px;
+      border-top: 1px solid rgba(120,126,140,.18);
+      text-align: center; font-size: 11.5px; letter-spacing: .04em; color: var(--text-sub);
+    }
+    .settings-version b { font-weight: 700; }
     .storage-line { display: flex; align-items: baseline; gap: 6px; font-size: 13px; margin-bottom: 6px; }
     .storage-line span { font-size: 12px; color: var(--text-sub); }
     .storage-track {
@@ -9624,6 +9631,7 @@
         <p class="settings-hint">Archive Planner v${APP_VERSION} · 저장 키 <code>${STORAGE_KEY}</code></p>
         ${state.migratedFrom ? `<p class="settings-hint">이전 버전(<code>${escapeHtml(state.migratedFrom)}</code>)의 기록을 안전하게 옮겨 왔습니다.</p>` : ""}
       </div>
+      <p class="settings-version">Archive Planner <b>v${APP_VERSION}</b></p>
     `;
   }
 
