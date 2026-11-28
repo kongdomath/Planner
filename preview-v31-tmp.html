@@ -276,6 +276,9 @@
       font-size: 16px;
       padding: 0 !important;
     }
+    .search-drawer .sd-input {
+      font-size: 16px;
+    }
     .sd-input:focus { outline: none; }
     .sd-close {
       width: 30px;
@@ -6295,7 +6298,7 @@
           <span class="nb-reader-spacer" aria-hidden="true"></span>
           <div class="nb-reader-title">
             <b>Goals</b>
-            <span>${model.topics.length}개 주제 · ${escapeHtml(activeTopic.name)} · ${spreadIdx + 1}/${totalSpreads}장</span>
+            <span>${escapeHtml(activeTopic.name)} · ${spreadIdx + 1}/${totalSpreads}장</span>
           </div>
           <button class="nb-head-btn" onclick="openBookTopicManager()" title="주제 관리" aria-label="주제 관리">${ICONS.sliders}<span class="nb-head-btn-label">주제 관리</span></button>
         </div>
