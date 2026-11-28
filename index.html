@@ -1969,7 +1969,7 @@
     .nb-nav.prev { left: 2px; }
     .nb-nav.next { right: 2px; }
     .nb-spread {
-      position: relative; isolation: isolate;
+      position: relative;
       display: grid; grid-template-columns: 1fr 1fr;
       width: 100%; max-width: 1180px;
       height: var(--book-h, 660px);
@@ -2506,10 +2506,10 @@
       .gb-fab { right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); }
       .nb-head-btn { height: 28px; padding: 0 9px; font-size: 10.5px; }
       .nb-head-btn-label { display: none; }
-      .nb-coil { left: -16px; transform: none; width: 34px; top: 6px; bottom: 6px; }
-      .nb-coil-ring { width: 30px; height: 11px; }
+      .nb-coil { left: -6px; transform: none; width: 28px; top: 6px; bottom: 6px; }
+      .nb-coil-ring { width: 26px; height: 7px; }
       .nb-coil-ring::before { display: none; }
-      .nb-coil-ring::after { right: 1px; width: 11px; height: 11px; }
+      .nb-coil-ring::after { right: 0; width: 9px; height: 9px; }
       .nb-spine, .nb-edge { display: none; }
       .nb-page { border-radius: 8px !important; height: 100%; padding: 24px 30px 24px 42px; }
       .nb-page--left, .nb-page--right { transform-origin: left center; }
@@ -6093,12 +6093,10 @@
     const latest = recs.length ? recs[recs.length - 1] : null;
     const bits = [`${recs.length}페이지`];
     if (latest && latest.date) bits.push(`최근 ${latest.date}`);
-    const sub = String(book.subtitle || "").trim();
-    const fallbackSub = String(book.category || book.subject || "").trim();
     return `
       <div class="nb-book-meta">
         <h3>${escapeHtml(book.title)}</h3>
-        ${(sub || fallbackSub) ? `<div class="nb-book-sub">${escapeHtml(sub || fallbackSub)}</div>` : ""}
+        ${sub ? `<div class="nb-book-sub">${escapeHtml(sub)}</div>` : ""}
         <div class="nb-book-info">${bits.map(escapeHtml).join(" · ")}</div>
       </div>
     `;
