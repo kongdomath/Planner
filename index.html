@@ -2815,6 +2815,78 @@
       to   { transform: rotateY(0deg); opacity: 1; }
     }
 
+    /* ===== v3.7 책 닫힘: 펼친 책이 그 자리에서 덮혀 '세로로 선 닫힌 책'이 된다 =====
+       · 앞에서 닫힘: 왼쪽 장이 오른쪽으로 접혀 덮이며 앞표지(책등 왼쪽)가 위로 온다
+       · 뒤에서 닫힘: 오른쪽 장이 왼쪽으로 접혀 덮이며 뒤표지(책등 오른쪽)가 위로 온 뒤,
+                     닫힌 책이 Y축으로 180도 돌아 앞표지(책등 왼쪽)가 되어 완전히 닫힌다 */
+    .nbf-shut {
+      --shut-fold: 540ms; --shut-turn: 480ms;
+      position: absolute; inset: 0; z-index: 14;
+      perspective: 2600px; perspective-origin: 50% 46%;
+      pointer-events: none;
+    }
+    .nbf-shut-body { position: absolute; inset: 0; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
+    .nbf-shut-body--back { animation: nbfShutShiftBack var(--shut-fold) cubic-bezier(.30,.02,.62,1) both; }
+    .nbf-shut-body--front { animation: nbfShutShiftFront var(--shut-fold) cubic-bezier(.30,.02,.62,1) both; }
+    @keyframes nbfShutShiftBack { from { transform: translateX(0); } to { transform: translateX(25%); } }
+    @keyframes nbfShutShiftFront { from { transform: translateX(0); } to { transform: translateX(-25%); } }
+    .nbf-shut-still, .nbf-shut-leaf { position: absolute; top: 0; bottom: 0; width: 50%; }
+    .nbf-shut-still--left, .nbf-shut-leaf--left { left: 0; }
+    .nbf-shut-still--right, .nbf-shut-leaf--right { left: 50%; }
+    .nbf-shut-still { overflow: hidden; }
+    .nbf-shut-still > .nb-page { height: 100%; }
+    .nbf-shut-leaf { transform-style: preserve-3d; -webkit-transform-style: preserve-3d; will-change: transform; }
+    .nbf-shut-leaf--left { transform-origin: 100% center; }
+    .nbf-shut-leaf--right { transform-origin: 0px center; }
+    .nbf-shut-leaf.is-front { animation: nbfShutFoldFront var(--shut-fold) cubic-bezier(.38,.02,.60,1) both; }
+    .nbf-shut-leaf.is-back { animation: nbfShutFoldBack var(--shut-fold) cubic-bezier(.38,.02,.60,1) both; }
+    @keyframes nbfShutFoldFront { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+    @keyframes nbfShutFoldBack { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
+    .nbf-shut-face {
+      position: absolute; inset: 0; overflow: hidden;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    }
+    .nbf-shut-face--back { transform: rotateY(180deg); }
+    .nbf-shut-face > .nb-page { height: 100%; }
+    .nbf-shut-face > .nb-page, .nbf-shut-card-face > .nb-page { border-radius: inherit; }
+    /* 접힌 뒤 자리 잡은 닫힌 책 (닫힌 책 화면과 같은 너비·높이) */
+    .nbf-shut-closed {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: min(50%, 600px); max-width: 600px;
+      margin-left: calc(-1 * min(25%, 300px));
+      transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+      visibility: hidden;
+    }
+    .nbf-shut.is-folded .nbf-shut-closed { visibility: visible; }
+    .nbf-shut.is-folded .nbf-shut-body { visibility: hidden; }
+    .nbf-shut-closed.is-turning { animation: nbfShutTurn var(--shut-turn) cubic-bezier(.45,.03,.55,1) both; }
+    @keyframes nbfShutTurn { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+    .nbf-shut-card-face {
+      position: absolute; inset: 0; overflow: hidden;
+      border-radius: 10px 4px 4px 10px;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    }
+    .nbf-shut-card-face--back { transform: rotateY(180deg); }
+    /* 뒤표지(책등 오른쪽) 표지 그림 */
+    .nb-coverart--spine-right .nb-cover-inner::before {
+      left: auto; right: 0;
+      background: linear-gradient(270deg, rgba(0,0,0,.5), rgba(0,0,0,.14) 62%, rgba(255,255,255,.10));
+    }
+    .nb-coverart--spine-right { border-radius: 4px 10px 10px 4px; }
+    /* 닫히는 동안 책등 인덱스 탭은 사라진다 */
+    .nb-spread.is-closing .idx-tabs { opacity: 0; transition: opacity .18s ease; }
+    .nb-spread.is-closing > .nb-page { opacity: 0; }
+    /* 책을 완전히 닫은 뒤에 책장으로 넘어간다 (닫히는 도중에 옆으로 밀리지 않게) */
+    @keyframes nbStageLeave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.986); } }
+    @keyframes nbStageEnter { from { opacity: 0; transform: scale(1.012); } to { opacity: 1; transform: none; } }
+    .nb-stage.is-leaving { animation: nbStageLeave .19s ease-in both; pointer-events: none; }
+    .nb-stage.is-entering { animation: nbStageEnter .3s cubic-bezier(.22,.75,.28,1) both; }
+    .nb-page--filler {
+      background-image: radial-gradient(rgba(122,128,142,.17) 1px, transparent 1px);
+      background-size: 19px 19px;
+      background-position: 14px 16px;
+    }
+
     /* ===== v3.1 목표 책자: 기간별 페이지 ===== */
     .gb-page-head {
       display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
@@ -3162,6 +3234,12 @@
       .nb-spread[data-cover] { width: 100%; max-width: 100%; }
       .nb-spread[data-cover] .nb-page--cover { border-radius: 0 14px 14px 0; }
       .nbf-cover--narrow { left: 0; width: 100%; margin-left: 0; transform-origin: left center; }
+      /* v3.7 모바일 닫힘: 한 면이 책등을 축으로 넘어가 덮히고, 닫힌 책은 화면 폭 그대로 */
+      .nbf-shut-closed { left: 0; width: 100%; max-width: 100%; margin-left: 0; }
+      .nbf-shut-card-face { border-radius: 0 14px 14px 0; }
+      .nbf-shut-card-face--back { border-radius: 0 14px 14px 0; }
+      .nbf-shut-leaf--mobile { left: 0; width: 100%; transform-origin: 0px center; }
+      .nbf-shut-still { display: none; }
       .nb-spread[data-single] { grid-template-columns: 1fr; }
       .nb-page { border-radius: var(--nb-r-left, 0 14px 14px 0) !important; height: 100%; padding: 26px 26px 28px 30px; box-shadow: inset 20px 0 20px -18px rgba(30,34,44,.5); }
       .nb-page--cover { padding: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), inset 0 0 120px rgba(0,0,0,.32); }
@@ -3407,7 +3485,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.6";
+  const APP_VERSION = "3.7";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -3887,27 +3965,131 @@
     return el;
   }
 
-  // 맨 앞/맨 뒤 경계: 책을 덮으며 닫힌 책(1페이지 너비)이 드러난 뒤 책장으로 돌아간다
-  function closeBookWithCover(spread, dir, opts, done) {
-    if (!spread) { done(); return; }
+  // ===== v3.7 책 닫힘: 펼친 책이 그 자리에서 덮혀 '세로로 선 닫힌 책'이 된다 =====
+  //  · side "front" : 왼쪽 장이 오른쪽으로 접혀 덮히며 앞표지(책등 왼쪽)가 위로 온다
+  //  · side "back"  : 오른쪽 장이 왼쪽으로 접혀 덮혀 뒤표지(책등 오른쪽)가 위로 온 뒤,
+  //                  그 닫힌 책이 Y축으로 180도 돌아 앞표지(책등 왼쪽)까지 완전히 닫힌다
+  //  · keepStage: 닫힌 책이 곧 화면(Goals 앞표지)이면 그 자리에서 넘겨 주고, 아니면(책장) 다 닫힌 뒤에 넘어간다
+  let bookCloseLock = 0;
+  let pendingStageIn = false;
+
+  // 닫힌 책 표지 그림 (양장 하드커버 결 · 책등 쪽 그늘)
+  function nbClosedCoverHtml(opts) {
+    const o = opts || {};
+    const back = o.back === true;
+    const color = normalizeSpineColor(o.spine, "#2f3e5c");
+    const sub = String(o.sub || "").trim();
+    return `
+      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back" : ""} ${back ? "nb-coverart--spine-right" : ""}" style="--spine:${color}" aria-hidden="true">
+        <div class="nb-cover-inner">
+          <span class="nb-cover-frame" aria-hidden="true"></span>
+          <div class="nb-coverface-plate">
+            <b>${escapeHtml(o.title || "")}</b>
+            ${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}
+          </div>
+          ${o.foot ? `<span class="nb-cover-foot">${escapeHtml(o.foot)}</span>` : ""}
+        </div>
+      </section>
+    `;
+  }
+
+  function bookCloseMotion(opts) {
+    const conf = opts || {};
+    const done = typeof conf.after === "function" ? conf.after : function () {};
+    const spread = document.querySelector(".nb-spread");
+    if (!spread || prefersReducedMotion()) { done(); return; }
+    if (spread.dataset.closing === "1" || Date.now() < bookCloseLock) return;
+    const side = conf.side === "front" ? "front" : "back";
+    const mobile = isMobileViewport();
+    const FOLD = 540;   // 장이 접혀 덮히는 시간
+    const TURN = 480;   // 닫힌 책이 Y축으로 돌아 앞표지가 되는 시간
+    const HOLD = 150;   // 앞표지에서 한 박자
+    const LEAVE = 190;  // 책장으로 넘어가는 페이드
+    spread.dataset.closing = "1";
     spread.dataset.turning = "1";
-    spread.classList.add("cover-closing");
-    const cover = document.createElement("div");
-    cover.className = `nbf-cover nbf-cover--narrow ${dir > 0 ? "nbf-cover--close-right" : "nbf-cover--close-left"}`;
-    cover.style.setProperty("--spine", opts.spine || "#2f3e5c");
-    cover.innerHTML = `<div class="nbf-cover-plate"><b>${escapeHtml(opts.title || "")}</b>${opts.sub ? `<i></i><span>${escapeHtml(opts.sub)}</span>` : ""}</div>`;
-    spread.appendChild(cover);
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      cover.remove();
-      spread.classList.remove("cover-closing");
-      spread.dataset.turning = "";
-      done();
+    spread.classList.add("is-closing");
+    bookCloseLock = Date.now() + FOLD + TURN + HOLD + LEAVE + 500;
+    try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + TURN + HOLD + LEAVE); } catch (_) {}
+
+    const pages = Array.from(spread.querySelectorAll(".nb-page"));
+    const leftEl = pages.find(p => p.classList.contains("nb-page--left")) || null;
+    const rightEl = pages.find(p => p.classList.contains("nb-page--right")) || null;
+    const shownEl = pages.find(p => p.offsetParent !== null) || leftEl || rightEl || pages[0] || null;
+    const leafSource = mobile ? shownEl : ((side === "back" ? rightEl : leftEl) || shownEl);
+    const stillSource = mobile ? null : (side === "back" ? leftEl : rightEl);
+
+    const host = document.createElement("div");
+    host.className = "nbf-shut";
+    host.style.setProperty("--shut-fold", FOLD + "ms");
+    host.style.setProperty("--shut-turn", TURN + "ms");
+
+    const body = document.createElement("div");
+    body.className = "nbf-shut-body " + (mobile ? "" : (side === "back" ? "nbf-shut-body--back" : "nbf-shut-body--front"));
+    if (stillSource) {
+      const still = document.createElement("div");
+      still.className = "nbf-shut-still " + (side === "back" ? "nbf-shut-still--left" : "nbf-shut-still--right");
+      still.innerHTML = stillSource.outerHTML;
+      body.appendChild(still);
+    }
+    const leaf = document.createElement("div");
+    const leafSideCls = mobile ? "nbf-shut-leaf--mobile" : (side === "back" ? "nbf-shut-leaf--right" : "nbf-shut-leaf--left");
+    leaf.className = "nbf-shut-leaf " + leafSideCls + " " + (side === "front" ? "is-front" : "is-back");
+    const leafFront = document.createElement("div");
+    leafFront.className = "nbf-shut-face";
+    leafFront.innerHTML = leafSource ? leafSource.outerHTML : "";
+    const leafBack = document.createElement("div");
+    leafBack.className = "nbf-shut-face nbf-shut-face--back";
+    leafBack.innerHTML = side === "back" ? (conf.coverBack || "") : (conf.coverFront || "");
+    leaf.appendChild(leafFront);
+    leaf.appendChild(leafBack);
+    body.appendChild(leaf);
+    host.appendChild(body);
+
+    // 접힌 뒤 자리 잡은 닫힌 책: 앞면 = 뒤표지(책등 오른쪽) → 180도 돌면 뒷면 = 앞표지(책등 왼쪽)
+    const card = document.createElement("div");
+    card.className = "nbf-shut-closed";
+    const cardTop = document.createElement("div");
+    cardTop.className = "nbf-shut-card-face";
+    cardTop.innerHTML = side === "back" ? (conf.coverBack || "") : (conf.coverFront || "");
+    card.appendChild(cardTop);
+    if (side === "back") {
+      const cardUnder = document.createElement("div");
+      cardUnder.className = "nbf-shut-card-face nbf-shut-card-face--back";
+      cardUnder.innerHTML = conf.coverFront || "";
+      card.appendChild(cardUnder);
+    }
+    host.appendChild(card);
+    spread.appendChild(host);
+
+    const clearOnSpread = () => {
+      const sp = document.querySelector(".nb-spread");
+      if (!sp) return;
+      sp.dataset.closing = "";
+      sp.dataset.turning = "";
+      sp.classList.remove("is-closing");
     };
-    cover.addEventListener("animationend", finish, { once: true });
-    setTimeout(finish, 820);
+    const finishClosed = () => {
+      // 여기까지 오면 앞표지로 온전히 닫힌 닫힌 책 상태 — 이제야 다음 화면으로 넘어간다
+      if (conf.keepStage) {
+        done();
+        requestAnimationFrame(() => { host.remove(); clearOnSpread(); });
+        return;
+      }
+      const stage = document.querySelector(".nb-stage");
+      if (stage) stage.classList.add("is-leaving");
+      setTimeout(() => {
+        host.remove();
+        pendingStageIn = true;
+        done();
+      }, LEAVE);
+    };
+    const afterFold = () => {
+      host.classList.add("is-folded");
+      if (side !== "back") { setTimeout(finishClosed, HOLD); return; }
+      card.classList.add("is-turning");
+      setTimeout(finishClosed, TURN + HOLD);
+    };
+    setTimeout(afterFold, FOLD + 20);
   }
 
   function turnToPage(dir, mutate, opts = {}) {
@@ -3919,10 +4101,6 @@
       return;
     }
     if (spread.dataset.turning === "1") return;
-    if (opts.boundary) {
-      closeBookWithCover(spread, step, opts, () => { mutate(); render(); });
-      return;
-    }
 
     const mobile = isMobileViewport();
     const oldSide = spread.dataset.side === "right" ? "right" : "left";
@@ -5266,6 +5444,14 @@
     else bodyHtml = renderYearView();
 
     main.innerHTML = bodyHtml;
+    if (pendingStageIn) {
+      pendingStageIn = false;
+      const stage = main.querySelector(".nb-stage");
+      if (stage) {
+        stage.classList.add("is-entering");
+        setTimeout(() => stage.classList.remove("is-entering"), 360);
+      }
+    }
     syncCarousels();
     scrollActiveIndexTab();
     applyPendingTurnAnimation();
@@ -5871,13 +6057,15 @@
   function yearPageStep(delta) {
     const year = Number(yearBookYear);
     const next = yearPageIndex + delta;
-    // 맨 앞·맨 뒤에서는 북커버를 보여 주며 책을 덮는다
+    // 맨 앞·맨 뒤에서는 책을 그 자리에서 온전히 덮어 닫은 뒤 책장으로 돌아간다
     if (next < 0 || next > 11) {
-      turnToPage(delta, () => { closeYearBook(); }, {
-        boundary: true,
-        spine: yearSpineColor(year),
-        title: yearBookTitle(year),
-        sub: yearBookSubtitle(year)
+      const yTitle = yearBookTitle(year);
+      const ySub = yearBookSubtitle(year);
+      bookCloseMotion({
+        side: next < 0 ? "front" : "back",
+        coverFront: nbClosedCoverHtml({ title: yTitle, sub: ySub, foot: "Yearly Note", spine: yearSpineColor(year) }),
+        coverBack: nbClosedCoverHtml({ title: yTitle, sub: "뒤표지", foot: "Archive Planner", spine: yearSpineColor(year), back: true }),
+        after: () => { closeYearBook(); }
       });
       return;
     }
@@ -6229,17 +6417,12 @@
     `;
   }
 
-  // 마지막 면: 빈 속지 대신 책 뒤표지 (책등 색·질감 통일)
-  function nbBackCoverHtml(side, spine, opts = {}) {
-    const color = normalizeSpineColor(spine, BOOK_SPINE_PALETTE[0]);
+  // v3.7 마지막 면: 펼친 책 안쪽에 파란 뒤표지를 끼우지 않는다 — 양쪽 다 하얀 도트 속지
+  function nbBlankLeafHtml(side, pageNo) {
     const sideCls = side === "left" ? "nb-page--left" : "nb-page--right";
     return `
-      <section class="nb-page ${sideCls} nb-page--backcover" style="--spine:${color}">
-        <div class="nb-page-inner nb-backcover-inner">
-          ${opts.title ? `<span class="nb-backcover-label">${escapeHtml(opts.title)}</span>` : ""}
-          <span class="nb-backcover-mark" aria-hidden="true"></span>
-          <span class="nb-backcover-sub">${escapeHtml(opts.sub || "뒤표지")}</span>
-        </div>
+      <section class="nb-page ${sideCls} nb-page--filler">
+        <div class="nb-page-inner">${paperPageNo(pageNo)}</div>
       </section>
     `;
   }
@@ -6333,14 +6516,15 @@
       </div>
     `;
 
-    // 면 순서: 일기 → (사진) → Goals·Archive. 홀수로 끝나면 마지막 면은 뒤표지
+    // 면 순서: 일기 → (사진) → Goals·Archive. 홀수로 끝나면 마지막 오른면은 하얀 빈 속지
     const slotList = [{ html: diaryInner, cls: "nb-day-page" }];
     if (photos.length) slotList.push({ html: photoInner, cls: "nb-day-photo-page" });
     slotList.push({ html: goalsInner, cls: "nb-day-side" });
-    if (slotList.length % 2) slotList.push(null); // 뒤표지 자리
+    if (slotList.length % 2) slotList.push({ fillerNo: pageBase + slotList.length }); // 하얀 속지 자리
     const sections = slotList.map((slot, i) => {
       const side = i % 2 === 0 ? "left" : "right";
-      if (!slot) return nbBackCoverHtml(side, yearSpineColor(y), { title: yearBookTitle(y), sub: "뒤표지" });
+      if (!slot) return nbBlankLeafHtml(side, pageBase + i);
+      if (slot.fillerNo) return nbBlankLeafHtml(side, slot.fillerNo);
       return `<section class="nb-page nb-page--${side} ${slot.cls}">${slot.html}</section>`;
     });
 
@@ -7355,13 +7539,11 @@
     return model;
   }
 
-  // v3.5 책 구조 계산: 앞표지 1스프레드 + 내지 + (필요하면) 덮힌 뒤표지 1스프레드
+  // v3.5 책 구조: 앞표지 1스프레드 + 내지 (마지막 장 오른면은 하얀 속지, 덮힌 뒤표지는 책을 닫는 모션에서만)
   function goalBookSpreads(model) {
     const len = model.flat.length;
     const contentSpreads = Math.max(1, Math.ceil(len / 2));
-    // 마지막 장이 왼쪽 면이면 그 오른면을 뒤표지로 쓰고, 꽉 차면 뒤에 덮힌 뒤표지를 둔다
-    const backOnLast = len % 2 === 1;
-    return { contentSpreads, backOnLast, total: 1 + contentSpreads + (backOnLast ? 0 : 1) };
+    return { contentSpreads, total: 1 + contentSpreads };
   }
 
   // v3.5: Goals 책 앞표지·뒤표지 — 책장 색(파란색)과 같은 표지 질감
@@ -7370,7 +7552,7 @@
   function goalCoverFaceHtml(kind) {
     const back = kind === "back";
     return `
-      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back" : ""}" style="--spine:${normalizeSpineColor(GOAL_COVER_SPINE, "#2f3e5c")}" ${back ? `aria-hidden="true"` : `aria-label="Goals 앞표지"`}>
+      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back nb-coverart--spine-right" : ""}" style="--spine:${normalizeSpineColor(GOAL_COVER_SPINE, "#2f3e5c")}" ${back ? `aria-hidden="true"` : `aria-label="Goals 앞표지"`}>
         <div class="nb-cover-inner">
           <span class="nb-cover-frame" aria-hidden="true"></span>
           <div class="nb-coverface-plate">
@@ -7468,18 +7650,15 @@
     const model = goalBookModel();
     const spreads = goalBookSpreads(model);
     const contentSpreads = spreads.contentSpreads;
-    const backOnLast = spreads.backOnLast;
-    // v3.5 책 구조: 0 = 앞표지, 1 ~ contentSpreads = 학업·전공 첫 장 ~ 경험·성취 끝 장, 그 뒤 덮힌 뒤표지
+    // v3.5 책 구조: 0 = 앞표지, 1 ~ contentSpreads = 학업·전공 첫 장 ~ 경험·성취 끝 장 (마지막 장 오른면은 하얀 속지)
     const totalSpreads = spreads.total;
     let spreadIdx = Math.round(Number(state.goalBookPage) || 0);
     if (!Number.isFinite(spreadIdx) || spreadIdx < 0) spreadIdx = 0;
     spreadIdx = Math.min(totalSpreads - 1, spreadIdx);
     state.goalBookPage = spreadIdx;
     const onFrontCover = spreadIdx === 0;
-    const onBackCover = !onFrontCover && spreadIdx > contentSpreads;
     const bodyIdx = spreadIdx - 1;
-    const showBody = !onFrontCover && !onBackCover;
-    const lastBodySpread = showBody && backOnLast && bodyIdx === contentSpreads - 1;
+    const showBody = !onFrontCover;
     const pageA = showBody ? (model.flat[bodyIdx * 2] || { filler: true, topicIndex: 0 }) : null;
     const rawB = showBody ? model.flat[bodyIdx * 2 + 1] : null;
     const pageB = showBody ? (rawB || { filler: true, topicIndex: (pageA && pageA.topicIndex) || 0 }) : null;
@@ -7491,9 +7670,9 @@
     state.goalTopicFilter = activeTopic.name;
     state.bucketCatFilter = activeTopic.name;
 
-    const pageHtml = (page, pageNo, sideSel, asBackCover) => {
-      // 마지막 장 다음 오른면은 빈 종이가 아니라 책 뒤표지
-      if (asBackCover) return nbBackCoverHtml(sideSel, GOAL_COVER_SPINE, { title: "Goals", sub: "뒤표지" });
+    const pageHtml = (page, pageNo, sideSel, asBlankLeaf) => {
+      // 마지막 장 다음 오른면은 파란 뒤표지가 아니라 하얀 도트 속지
+      if (asBlankLeaf) return nbBlankLeafHtml(sideSel, pageNo);
       if (!page || page.filler) {
         // 주제 사이 장 나눔용 빈 면은 종이 그대로 (뒤표지는 책 맨 끝 전용)
         return `
@@ -7539,17 +7718,16 @@
           <span class="nb-reader-spacer" aria-hidden="true"></span>
           <div class="nb-reader-title">
             <b>Goals</b>
-            <span>${isMobileViewport() ? `${spreadIdx + 1}/${totalSpreads}장` : `${onFrontCover ? "앞표지" : onBackCover ? "뒤표지" : escapeHtml(activeTopic.name)} · ${spreadIdx + 1}/${totalSpreads}장`}</span>
+            <span>${isMobileViewport() ? `${spreadIdx + 1}/${totalSpreads}장` : `${onFrontCover ? "앞표지" : escapeHtml(activeTopic.name)} · ${spreadIdx + 1}/${totalSpreads}장`}</span>
           </div>
           <button class="nb-head-btn" onclick="openBookTopicManager()" title="주제 관리" aria-label="주제 관리">${ICONS.sliders}<span class="nb-head-btn-label">주제 관리</span></button>
         </div>
 
         <div class="nb-book nb-book--indexed">
           <button class="nb-nav prev" onclick="goalBookStep(-1)" ${spreadIdx <= 0 ? "disabled" : ""} aria-label="이전 페이지">${ICONS.chevLeft}</button>
-          <div class="nb-spread" id="goalSpread" data-side="${onFrontCover ? "left" : goalBookSide}" ${onFrontCover ? `data-cover="front"` : onBackCover ? `data-cover="back"` : ""}>
+          <div class="nb-spread" id="goalSpread" data-side="${onFrontCover ? "left" : goalBookSide}" ${onFrontCover ? `data-cover="front"` : ""}>
             ${onFrontCover ? goalCoverFaceHtml("front")
-              : onBackCover ? goalCoverFaceHtml("back")
-              : `${pageHtml(pageA, bodyIdx * 2 + 1, "left")}${pageHtml(pageB, bodyIdx * 2 + 2, "right", lastBodySpread && !rawB)}`}
+              : `${pageHtml(pageA, bodyIdx * 2 + 1, "left")}${pageHtml(pageB, bodyIdx * 2 + 2, "right", !rawB)}`}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
             <div class="idx-tabs idx-tabs--topic ${tabClass}" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
@@ -7582,10 +7760,8 @@
       goalBookSide = destSide;
       saveState();
     };
-    // 앞표지·뒤표지에서 인덱스를 누르면 표지가 열리며 해당 주제로 들어간다
-    const spreads = goalBookSpreads(model);
+    // 앞표지에서 인덱스를 누르면 표지가 열리며 해당 주제로 들어간다
     if (cur === 0) { goalCoverTurn(1, "front", apply); return; }
-    if (cur > spreads.contentSpreads) { goalCoverTurn(-1, "back", apply); return; }
     turnToPage(dest > cur ? 1 : -1, apply);
   }
 
@@ -7601,9 +7777,36 @@
       goalBookSide = "left";
       saveState();
     };
-    // 앞표지는 열리고 덮이며, 꽉 찬 뒤끝에만 덮힌 뒤표지 스프레드가 있다
-    if (cur === 0 || next === 0) { goalCoverTurn(delta, "front", apply); return; }
-    if (!spreads.backOnLast && (cur === total - 1 || next === total - 1)) { goalCoverTurn(delta, "back", apply); return; }
+    // 앞표지로 닫칠 때: 책이 그 자리에서 덮히며 앞표지가 된다
+    if (next === 0) {
+      bookCloseMotion({
+        side: "front",
+        coverFront: goalCoverFaceHtml("front"),
+        coverBack: goalCoverFaceHtml("back"),
+        keepStage: true,
+        after: () => { apply(); render(); }
+      });
+      return;
+    }
+    // 앞표지에서 열 때
+    if (cur === 0) { goalCoverTurn(1, "front", apply); return; }
+    // 책의 진짜 마지막 장에서 다음: 뒤에서 닫고(Y축 180도) 앞표지로 돌아선 뒤 앞표지 화면으로
+    if (cur === total - 1) {
+      bookCloseMotion({
+        side: "back",
+        coverFront: goalCoverFaceHtml("front"),
+        coverBack: goalCoverFaceHtml("back"),
+        keepStage: true,
+        after: () => {
+          state.goalBookPage = 0;
+          state.goalBookTopic = (model.topics[0] || {}).name || state.goalBookTopic;
+          goalBookSide = "left";
+          saveState();
+          render();
+        }
+      });
+      return;
+    }
     turnToPage(delta, apply);
   }
 
@@ -7955,11 +8158,14 @@
     const total = notebookTotalPages(book);
     const next = notebookPageIndex + delta;
     if (next < 0 || next >= total) {
-      turnToPage(delta, () => { closeNotebookBook(); }, {
-        boundary: true,
-        spine: normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]),
-        title: book.title || "",
-        sub: String(book.subtitle || "").trim()
+      // 맨 앞·맨 뒤: 책을 그 자리에서 온전히 덮어 닫은 뒤 책장으로 돌아간다
+      const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
+      const sub = String(book.subtitle || "").trim() || (book.category && book.category !== book.title ? book.category : "");
+      bookCloseMotion({
+        side: next < 0 ? "front" : "back",
+        coverFront: nbClosedCoverHtml({ title: book.title || "", sub: sub || "Archive", foot: "Archive Planner", spine }),
+        coverBack: nbClosedCoverHtml({ title: book.title || "", sub: "뒤표지", foot: "Archive Planner", spine, back: true }),
+        after: () => { closeNotebookBook(); }
       });
       return;
     }
@@ -8019,7 +8225,7 @@
     `;
   }
 
-  // v3.6 사진이 없는 기록: 빈 사진 면 대신 한 면에 제목·부제목·도장·감상을 모은다
+  // v3.6 사진이 없는 기록(모바일): 빈 사진 면 대신 한 면에 제목·부제목·도장·감상을 모은다
   function renderNotebookNotePage(a, pageNo) {
     const sub = String(a.subtitle || "").trim();
     const stamp = archiveStampHtml(a);
@@ -8041,6 +8247,47 @@
     `;
   }
 
+  // v3.7 사진이 없는 기록(데스크톱·아이패드): 한 면짜리 낱장이 아니라 양면 책으로
+  //  왼면 = 제목·부제목·날짜/세부정보 도장·감상문, 오른면 = 깔끔한 도트 속지 (본문이 길면 이어짐)
+  function splitNoteForSpread(text) {
+    const s = String(text || "");
+    const BUDGET = 520;
+    if (s.length <= BUDGET) return { first: s, rest: "" };
+    let cut = s.lastIndexOf("\n", BUDGET);
+    if (cut < BUDGET * 0.55) cut = s.lastIndexOf(" ", BUDGET);
+    if (cut < BUDGET * 0.45) cut = BUDGET;
+    return { first: s.slice(0, cut).replace(/\s+$/, ""), rest: s.slice(cut).replace(/^\s+/, "") };
+  }
+
+  function renderNotebookNoteSpread(a, pageNo) {
+    const sub = String(a.subtitle || "").trim();
+    const stamp = archiveStampHtml(a);
+    const parts = splitNoteForSpread(a.note);
+    const editor = `onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정"`;
+    const empty = `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`;
+    return `
+      <section class="nb-page nb-page--left">
+        <div class="nb-page-inner nb-note-single">
+          <div class="nb-note nb-note--edit" ${editor}>
+            <div class="nb-note-head">
+              <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
+              ${sub ? `<div class="nb-note-sub">${escapeHtml(sub)}</div>` : ""}
+              ${stamp ? `<div class="nb-stamps nb-stamps--inline">${stamp}</div>` : ""}
+            </div>
+            <div class="nb-note-rule"></div>
+            <div class="nb-note-body">${(parts.first || parts.rest) ? escapeHtml(parts.first) : empty}</div>
+          </div>
+          ${paperPageNo(pageNo)}
+        </div>
+      </section>
+      <section class="nb-page nb-page--right">
+        <div class="nb-page-inner nb-note-single">
+          ${parts.rest ? `<div class="nb-note nb-note--edit" ${editor}><div class="nb-note-body">${escapeHtml(parts.rest)}</div></div>` : ""}
+        </div>
+      </section>
+    `;
+  }
+
   // 기록마다 실제로 차지하는 종이 면 수(사진 있으면 2면, 없으면 1면)를 세어 페이지 번호를 매긴다
   function notebookPageNumbers(recs) {
     const nums = [];
@@ -8054,7 +8301,6 @@
 
   function renderNotebookGuidePages(book, recs, pageNo) {
     const last = recs.length ? recs[recs.length - 1] : null;
-    const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
     const lastLabel = last ? (last.title || dottedDate(itemDateFrom(last) || itemDateTo(last))) : "—";
     return `
       <section class="nb-page nb-page--left">
@@ -8068,7 +8314,7 @@
           ${paperPageNo(pageNo)}
         </div>
       </section>
-      ${nbBackCoverHtml("right", spine, { title: book.title, sub: "뒤표지" })}
+      ${nbBlankLeafHtml("right", pageNo + 1)}
     `;
   }
 
@@ -8092,11 +8338,15 @@
 
     const numbers = notebookPageNumbers(recs);
     const hasPhotos = !onGuide && normalizeImages(current).length > 0;
+    // v3.7 사진 없는 기록도 데스크톱·아이패드에서는 양면 책(가운데 제본 그늘 유지), 모바일은 한 면
+    const singleNote = !onGuide && !hasPhotos && isMobileViewport();
     const spreadBody = onGuide
       ? renderNotebookGuidePages(book, recs, numbers.next)
       : hasPhotos
         ? `${renderNotebookLeftPage(current, book, numbers.nums[idx])}${renderNotebookRightPage(current, numbers.nums[idx] + 1)}`
-        : renderNotebookNotePage(current, numbers.nums[idx]);
+        : singleNote
+          ? renderNotebookNotePage(current, numbers.nums[idx])
+          : renderNotebookNoteSpread(current, numbers.nums[idx]);
 
     return `
       <div class="nb-stage">
@@ -8110,7 +8360,7 @@
         </div>
         <div class="nb-book">
           <button class="nb-nav prev" onclick="notebookStep(-1)" aria-label="이전 페이지">${ICONS.chevLeft}</button>
-          <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}"${(!onGuide && !hasPhotos) ? ' data-single="1"' : ""}>
+          <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}"${singleNote ? ' data-single="1"' : ""}>
             ${spreadBody}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
