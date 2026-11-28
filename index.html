@@ -1978,6 +1978,8 @@
       box-shadow: 0 26px 46px -18px rgba(6,9,18,.62), 0 4px 10px rgba(6,9,18,.3);
     }
     .nb-spread[data-turning="1"] { pointer-events: none; }
+    .nb-spread[data-turning="1"] .idx-tabs,
+    .nb-spread[data-turning="1"] .nb-edge { opacity: .18; transition: opacity .2s ease; }
     .nb-edge {
       position: absolute; top: 10px; bottom: 10px; width: 13px; z-index: 0;
       background-image: repeating-linear-gradient(to right, #f7f5ee 0 1px, #d7d3c6 1px 2px);
@@ -2019,6 +2021,9 @@
       background: linear-gradient(90deg, rgba(44,36,24,.62), rgba(44,36,24,.2) 46%, rgba(255,255,255,0) 82%);
     }
     .nb-page--right::after {
+      background: linear-gradient(90deg, rgba(44,36,24,.62), rgba(44,36,24,.2) 46%, rgba(255,255,255,0) 82%);
+    }
+    .nb-page--left::after {
       background: linear-gradient(270deg, rgba(44,36,24,.62), rgba(44,36,24,.2) 46%, rgba(255,255,255,0) 82%);
     }
     .nb-page.leaf-out-next::after { animation: leafShadeIn .24s ease-in both; }
@@ -2485,7 +2490,7 @@
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-shelf-track { grid-template-columns: repeat(3, 190px); padding: 18px 0 16px; gap: 10px; }
+      .nb-carousel { height: 290px; }
       .nb-cover-btn { transform: translateY(4px) scale(.94); }
       .nb-cover { width: 190px; height: 264px; }
       .nb-cover-label { left: 30px; right: 16px; top: 30px; padding: 13px 11px 14px; }
