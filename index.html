@@ -2114,7 +2114,7 @@
     .nb-action.primary:hover .nb-action-icon { background: #ffffff; }
 
     /* ===== v3.1 3탭 공통: 읽기 상단바·하단 컨트롤 고정 높이 (책 위치 통일) ===== */
-    .nb-reader-head { height: 38px; margin-bottom: 10px; overflow: hidden; }
+    .nb-reader-head { min-height: 44px; margin-bottom: 4px; overflow: visible; }
     .nb-bottom-bar {
       display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
       gap: 10px; height: 64px; margin-top: 12px;
@@ -2898,7 +2898,7 @@
       .nb-actions { gap: 14px; margin-top: 14px; }
       .nb-bottom-bar { height: 62px; margin-top: 10px; gap: 8px; }
       .nb-add-btn { width: 44px; height: 44px; }
-      .nb-reader-head { height: 38px; }
+      .nb-reader-head { min-height: 44px; }
       .nb-action { font-size: 10px; }
       .nb-action-icon { width: 40px; height: 40px; }
       .nb-reader-head { grid-template-columns: 1fr auto 1fr; gap: 6px; }
@@ -2989,7 +2989,7 @@
       .nb-nav { width: 32px; height: 32px; }
     }
     @media (max-height: 860px) and (min-width: 861px) {
-      .nb-reader-head { margin-bottom: 6px; }
+      .nb-reader-head { margin-bottom: 0; }
       .nb-actions { margin-top: 10px; gap: 16px; }
       .nb-action-icon { width: 38px; height: 38px; }
       .nb-legend { margin-top: 9px; padding-top: 8px; }
@@ -5681,7 +5681,6 @@
           ` : `
             <div class="nb-month-empty">
               <p>이 달에는 아직 기록이 없습니다.</p>
-              <button class="btn btn-sm" onclick="openYearDay('${year}-${pad2(month)}-01')">이 달 기록 시작하기</button>
             </div>
           `}
           ${paperPageNo(monthIdx * 2 + 2)}
@@ -6746,7 +6745,6 @@
       <div class="gb-head">
         <span class="gb-icon">${renderPictogram(topic.icon, 22)}</span>
         <div class="gb-head-text">
-          <div class="gb-kicker">CHECKLIST</div>
           <h2 class="gb-title">${escapeHtml(topic.name)}</h2>
           <div class="gb-sub">항목 ${all.length}개 · 이룸 ${doneCnt}개</div>
         </div>
@@ -6897,8 +6895,6 @@
         <div class="nb-stage nb-stage--shelf">
           <div class="nb-shelf-empty">
             <h3>아직 주제가 없습니다</h3>
-            <p>주제를 하나 추가하면 그 주제의 페이지가 만들어집니다.</p>
-            <button class="btn btn-primary" onclick="openBookTopicManager()">+ 주제 추가</button>
           </div>
         </div>
       `;
@@ -6927,9 +6923,7 @@
       const head = page.isFirst ? goalTopicHeadHtml(pageTopic) : "";
       const listHtml = page.items.length
         ? `<div class="gb-list">${page.items.map(renderGoalBookRow).join("")}</div>`
-        : `<div class="gb-empty">${page.empty || pageTopic.entries.length
-            ? "아직 이 주제의 항목이 없습니다.<br />오른쪽 아래 + 버튼으로 첫 항목을 적어 보세요."
-            : "아직 이 주제의 항목이 없습니다."}</div>`;
+        : `<div class="gb-empty">아직 항목이 없습니다.</div>`;
       return `
         <section class="nb-page nb-page--${sideSel}">
           <div class="nb-page-inner">
@@ -7292,7 +7286,6 @@
         <div class="nb-stage nb-stage--shelf">
           <div class="nb-shelf-empty">
             <h3>아직 책장이 비어 있습니다</h3>
-            <p>주제별로 책을 만들고 기록을 페이지처럼 모아 보세요.<br />독서 기록, 여행 노트, 공부 노트 무엇이든 좋습니다.</p>
             <button class="btn btn-primary" onclick="openBookModal()">+ 첫 책 만들기</button>
           </div>
         </div>
@@ -7453,13 +7446,10 @@
 
   function renderNotebookGuidePages(book, recs, pageNo) {
     const last = recs.length ? recs[recs.length - 1] : null;
-    const firstLabel = recs.length ? "눌러서 새 기록 남기기" : "눌러서 첫 기록 남기기";
     return `
       <section class="nb-page nb-page--left">
         <div class="nb-page-inner nb-guide" onclick="openNewArchiveModal('${book.id}')" style="cursor:pointer;">
-          <button class="nb-guide-plus" onclick="event.stopPropagation(); openNewArchiveModal('${book.id}')" aria-label="${firstLabel}">${NB_ICONS.plus}</button>
-          <div class="nb-guide-title">${firstLabel}</div>
-          <p class="nb-guide-sub">${recs.length ? "이 책의 마지막 페이지입니다. 오늘의 기록으로 책을 이어가 보세요." : "아직 페이지가 없습니다. 첫 기록을 남겨 이 책을 시작해 보세요."}</p>
+          <button class="nb-guide-plus" onclick="event.stopPropagation(); openNewArchiveModal('${book.id}')" aria-label="새 기록">${NB_ICONS.plus}</button>
           ${paperPageNo(pageNo)}
         </div>
       </section>
