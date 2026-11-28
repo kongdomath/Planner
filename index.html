@@ -219,12 +219,20 @@
       border-color: var(--text);
       color: #fff;
     }
-    .ah-status-wrap { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 28px; }
+    .ah-btn--gear { position: relative; }
     .ah-status {
       width: 8px; height: 8px; border-radius: 50%;
       background: #c2c6cd; box-shadow: 0 0 0 3px rgba(111,119,132,.10);
       transition: background .2s ease, box-shadow .2s ease;
     }
+    /* v3.1: 돋보기와 톱니바퀴 사이에 떠 있던 점을 톱니바퀴 안쪽 우측 상단 배지로 통합 */
+    .ah-btn--gear .ah-status {
+      position: absolute; top: 4px; right: 4px; width: 7px; height: 7px;
+      box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px rgba(111,119,132,.12);
+    }
+    .ah-btn--gear .ah-status.is-on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px rgba(63,156,106,.24); }
+    .ah-btn--gear .ah-status.is-syncing { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px rgba(201,162,39,.24); }
+    .ah-btn--gear .ah-status.is-error { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px rgba(200,75,75,.24); }
     .ah-status.is-on { background: #3f9c6a; box-shadow: 0 0 0 3px rgba(63,156,106,.16); }
     .ah-status.is-syncing { background: #c9a227; box-shadow: 0 0 0 3px rgba(201,162,39,.16); }
     .ah-status.is-error { background: #c84b4b; box-shadow: 0 0 0 3px rgba(200,75,75,.16); }
@@ -264,9 +272,14 @@
       border: 0 !important;
       background: transparent !important;
       height: 40px;
-      font-size: 14px;
+      /* iOS Safari: 16px 이상이어야 포커스 시 화면이 자동 확대되지 않음 */
+      font-size: 16px;
       padding: 0 !important;
     }
+    .search-drawer .sd-input {
+      font-size: 16px;
+    }
+    .sd-input:focus { outline: none; }
     .sd-close {
       width: 30px;
       height: 30px;
@@ -1934,6 +1947,34 @@
     .nb-action.primary .nb-action-icon { background: #f6f7fb; border-color: #f6f7fb; color: #2b3145; }
     .nb-action.primary:hover .nb-action-icon { background: #ffffff; }
 
+    /* ===== v3.1 3탭 공통: 읽기 상단바·하단 컨트롤 고정 높이 (책 위치 통일) ===== */
+    .nb-reader-head { height: 38px; margin-bottom: 10px; overflow: hidden; }
+    .nb-bottom-bar {
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      gap: 10px; height: 64px; margin-top: 12px;
+    }
+    .nb-bar-left { justify-self: start; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .nb-bar-right { justify-self: end; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .nb-add-btn {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid #f6f7fb; background: #f6f7fb; color: #2b3145;
+      box-shadow: 0 10px 22px -10px rgba(6,9,18,.7);
+      cursor: pointer; padding: 0; font-family: inherit;
+      transition: transform .16s ease, background .16s ease;
+    }
+    .nb-add-btn svg { width: 20px; height: 20px; }
+    .nb-add-btn:hover { background: #fff; transform: translateY(-1px); }
+    .nb-bar-btn {
+      height: 30px; padding: 0 12px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.08);
+      color: #e8ebf4; font-size: 11.5px; font-weight: 600; font-family: inherit;
+      cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .nb-bar-btn:hover { background: rgba(255,255,255,.17); }
+    .nb-legend-slot { height: 30px; display: flex; align-items: center; justify-content: center; }
+    .nb-legend-slot .nb-legend { margin-top: 0; padding-top: 0; border-top: 0; }
+
     /* 펼친 노트 */
     .nb-reader-head {
       display: grid; grid-template-columns: 1fr auto 1fr;
@@ -2133,8 +2174,9 @@
     }
     .nb-stamp b { font-size: 12.5px; letter-spacing: .05em; font-weight: 700; white-space: nowrap; }
     .nb-stamp span { font-size: 8.5px; letter-spacing: .14em; white-space: nowrap; }
-    .nb-stamp--range b { font-size: 11px; }
-    .nb-stamp--range span { font-size: 10px; letter-spacing: .08em; }
+    .nb-stamp--range b { font-size: 10.5px; letter-spacing: .05em; }
+    /* 기간 도장: 두 줄(시작일·종료일)의 크기·굵기·자간을 완전히 동일하게 */
+    .nb-stamp--range .nb-stamp-date { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; }
     .nb-stamp--done { border-color: rgba(45,106,79,.55); color: #2d6a4f; background: rgba(45,106,79,.05); box-shadow: inset 0 0 0 2px rgba(252,251,246,.92), inset 0 0 0 3px rgba(45,106,79,.2); }
     .nb-stamp--plan { border-color: rgba(120,126,140,.45); color: #6b707a; background: rgba(120,126,140,.05); box-shadow: inset 0 0 0 2px rgba(252,251,246,.92), inset 0 0 0 3px rgba(120,126,140,.14); }
     /* 세부정보 블록: 파선 대신 종이 노트에 어울리는 틴트 카드 */
@@ -2200,7 +2242,19 @@
       position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
       display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
       z-index: 7; max-height: calc(100% - 20px);
+      /* v3.1: 주제·분기가 많아져도 책 높이를 뚫지 않도록 탭 영역 안에서만 스크롤 */
+      overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+      padding: 2px 0 2px 6px; scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
+    .idx-tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .idx-tab { flex: 0 0 auto; }
+    .idx-tabs--dense { gap: 3px; }
+    .idx-tabs--dense .idx-tab { min-height: 40px; font-size: 9.5px; padding: 4px 0; }
+    .idx-tabs--dense .idx-tab.is-active { min-height: 44px; }
+    .idx-tabs--denser { gap: 2px; }
+    .idx-tabs--denser .idx-tab { min-height: 30px; font-size: 9px; padding: 2px 0; }
+    .idx-tabs--denser .idx-tab.is-active { min-height: 34px; }
     .idx-tab {
       --tab-color: #5b7fb4;
       display: flex; align-items: center; justify-content: center;
@@ -2267,6 +2321,88 @@
     .shelf-in-next { animation: shelfInNext .34s cubic-bezier(.22,.75,.28,1) both; }
     .shelf-in-prev { animation: shelfInPrev .34s cubic-bezier(.22,.75,.28,1) both; }
 
+    /* ===== v3.1 실제 책 넘김: 아래에 다음 페이지(underlay) + 앞/뒷면이 있는 종이(leaf) ===== */
+    .nb-flip {
+      position: absolute; top: 0; bottom: 0; z-index: 9;
+      perspective: 2400px; perspective-origin: 50% 50%;
+      pointer-events: none;
+    }
+    .nb-flip--right { left: 50%; width: 50%; }
+    .nb-flip--left { left: 0; width: 50%; }
+    .nb-flip--full { left: 0; width: 100%; }
+    .nb-flip-leaf {
+      position: absolute; inset: 0;
+      transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .nb-flip--right .nb-flip-leaf { transform-origin: left center; }
+    .nb-flip--left .nb-flip-leaf { transform-origin: right center; }
+    .nb-flip--full .nb-flip-leaf { transform-origin: left center; }
+    .nb-flip-face {
+      position: absolute; inset: 0; height: 100%;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+      transform-origin: 50% 50%;
+      overflow: hidden;
+    }
+    .nb-flip-front { transform: rotateY(0deg) translateZ(.4px); }
+    .nb-flip-back { transform: rotateY(180deg) translateZ(.4px); }
+    /* 종이 뒷면 결: 앞장이 넘어갈 때 책등 쪽에 지는 그늘 */
+    .nb-flip-back::before {
+      content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+      background: linear-gradient(90deg, rgba(26,22,14,.22), rgba(26,22,14,.05) 26%, rgba(26,22,14,0) 58%);
+    }
+    .nb-flip-face.nb-flip-blank { background: #f7f4ea; }
+    .nb-flip-face.nb-flip-blank::after {
+      content: ""; position: absolute; inset: 0;
+      background-image: linear-gradient(90deg, rgba(120,110,86,.10), rgba(120,110,86,0) 26%);
+    }
+    @keyframes nbfFlipNext { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
+    @keyframes nbfFlipPrev { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+    .nb-flip-leaf.is-next { animation: nbfFlipNext .66s cubic-bezier(.45,.05,.25,1) both; }
+    .nb-flip-leaf.is-prev { animation: nbfFlipPrev .66s cubic-bezier(.45,.05,.25,1) both; }
+    /* 경계(맨 앞·맨 뒤)에서 책을 닫을 때 드러나는 북커버 */
+    .nbf-cover {
+      position: absolute; inset: 0; z-index: 9; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.22)),
+        var(--spine, #2f3e5c);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), inset 0 0 70px rgba(0,0,0,.30), 0 22px 44px -18px rgba(6,9,18,.62);
+      color: rgba(255,255,255,.94);
+      transform-origin: left center;
+      animation: nbfCoverClose .5s cubic-bezier(.5,.04,.7,1) both;
+    }
+    .nbf-cover::before {
+      content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 22px;
+      background: linear-gradient(90deg, rgba(0,0,0,.5), rgba(0,0,0,.12) 70%, rgba(255,255,255,.10));
+      border-radius: 8px 0 0 8px;
+    }
+    .nbf-cover::after {
+      content: ""; position: absolute; inset: 14px;
+      border: 1px solid rgba(255,255,255,.18); border-radius: 3px; pointer-events: none;
+    }
+    .nbf-cover-plate { position: relative; z-index: 2; text-align: center; padding: 26px 34px; max-width: 78%; }
+    .nbf-cover-plate b { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 32px; letter-spacing: .02em; line-height: 1.2; }
+    .nbf-cover-plate i { display: block; width: 46px; height: 1px; margin: 12px auto; background: rgba(255,255,255,.4); }
+    .nbf-cover-plate span { display: block; font-size: 10.5px; letter-spacing: .24em; text-transform: uppercase; opacity: .72; }
+    @keyframes nbfCoverClose {
+      from { transform: rotateY(-152deg); opacity: .96; }
+      60%  { opacity: 1; }
+      to   { transform: rotateY(0deg); opacity: 1; }
+    }
+
+    /* ===== v3.1 목표 책자: 기간별 페이지 ===== */
+    .gb-page-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+      padding-bottom: 7px; border-bottom: 1px solid rgba(120,126,140,.3);
+    }
+    .gb-page-period {
+      font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #5b6478;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .gb-page-count { font-size: 10px; font-weight: 600; color: #a0a5ae; letter-spacing: .04em; white-space: nowrap; }
+    .gb-filler { display: flex; align-items: center; justify-content: center; flex: 1; color: #c3c7ce; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; }
+
     /* ===== 목표 · 버킷 책자 ===== */
     .gb-head { display: flex; align-items: flex-start; gap: 10px; }
     .gb-icon {
@@ -2325,7 +2461,10 @@
       flex-shrink: 0;
     }
     .gb-stamp b { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; line-height: 1.25; }
-    .gb-stamp span { font-size: 7.5px; letter-spacing: .16em; line-height: 1.2; }
+    .gb-stamp span { font-size: 8.5px; font-weight: 600; letter-spacing: .14em; line-height: 1.2; }
+    /* 기간 도장: 시작일·종료일 두 줄을 같은 글씨 크기·굵기·자간으로 */
+    .gb-stamp--range b,
+    .gb-stamp--range span { font-size: 10.5px; font-weight: 700; letter-spacing: .045em; line-height: 1.3; }
     .gb-stamp--plan {
       border-color: rgba(120,126,140,.45); color: #6b707a; background: rgba(120,126,140,.05);
       transform: rotate(1.2deg);
@@ -2505,6 +2644,9 @@
       .nb-cover-label b { font-size: 16px; }
       .nb-book-meta h3 { font-size: 20px; }
       .nb-actions { gap: 14px; margin-top: 14px; }
+      .nb-bottom-bar { height: 62px; margin-top: 10px; gap: 8px; }
+      .nb-add-btn { width: 44px; height: 44px; }
+      .nb-reader-head { height: 38px; }
       .nb-action { font-size: 10px; }
       .nb-action-icon { width: 40px; height: 40px; }
       .nb-reader-head { grid-template-columns: 1fr auto 1fr; gap: 6px; }
@@ -2513,6 +2655,8 @@
       .nb-book--indexed { padding: 8px 26px 0 10px; }
       .nb-spread { grid-template-columns: 1fr; max-width: 100%; height: var(--book-h); perspective: none; }
       .idx-tabs { right: -22px; gap: 4px; max-height: calc(100% - 16px); }
+      .idx-tabs--dense .idx-tab { min-height: 34px; }
+      .idx-tabs--denser .idx-tab { min-height: 26px; font-size: 8.5px; }
       .idx-tab { width: 24px; min-height: 46px; padding: 5px 0; font-size: 9.5px; border-radius: 0 6px 6px 0; }
       .idx-tab.is-active { width: 28px; transform: translateX(-3px); }
       .gb-title { font-size: 21px; }
@@ -2749,7 +2893,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.0";
+  const APP_VERSION = "3.1";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -2769,6 +2913,24 @@
   window.addEventListener("unhandledrejection", event => {
     try { window.__errors.push(String(event.reason)); } catch (_) {}
   });
+
+  const GOAL_TOPIC_ALIASES = {
+    "학업": "학업 · 전공", "전공": "학업 · 전공", "학업·전공": "학업 · 전공", "학업 · 전공": "학업 · 전공",
+    "운동": "운동 · 건강", "건강": "운동 · 건강", "운동·건강": "운동 · 건강", "운동 · 건강": "운동 · 건강",
+    "독서": "독서 · 문화", "문화": "독서 · 문화", "독서·문화": "독서 · 문화", "독서 · 문화": "독서 · 문화",
+    "자산": "자산 · 경제", "경제": "자산 · 경제", "자산·경제": "자산 · 경제", "자산 · 경제": "자산 · 경제",
+    "생활": "생활 · 루틴", "루틴": "생활 · 루틴", "생활·루틴": "생활 · 루틴", "생활 · 루틴": "생활 · 루틴",
+    "경험": "경험 · 성취", "성취": "경험 · 성취", "경험·성취": "경험 · 성취", "경험 · 성취": "경험 · 성취"
+  };
+  const TOPIC_TAB_COLORS = ["#4f74a8", "#8b94a6", "#b4787f", "#6f9270", "#b98a4d", "#8074ad", "#4d8b91", "#a86f5d"];
+
+  function canonicalTopicName(name) {
+    const raw = String(name || "").trim();
+    if (!raw) return "";
+    if (GOAL_TOPIC_ALIASES[raw]) return GOAL_TOPIC_ALIASES[raw];
+    const compact = raw.replace(/\s+/g, "");
+    return GOAL_TOPIC_ALIASES[compact] || raw;
+  }
 
   function getSystemTodayStr() {
     const now = new Date();
@@ -3033,6 +3195,7 @@
     bucketCatFilter: "all",
     bucketSort: "newest",
     goalBookTopic: "",
+    goalBookPage: 0,
     archiveCatFilter: "all",
     archiveSort: "newest",
     shelfSelectedBookId: "",
@@ -3184,7 +3347,54 @@
 
   // 책장·페이지가 뚝 끊기지 않고 이어져 보이도록: 나가는 장 → 새 내용 → 들어오는 장
   // v3.0: 밀어내는 슬라이드가 아니라 책등을 축으로 종이가 3D로 회전하는 책장 넘김
-  function turnToPage(dir, mutate) {
+  // 책 넘김 (v3.1): 목적지 페이지를 먼저 그려 아래에 깔고, 그 위에서 종이 한 장이 앞면·뒷면을 그대로 보이며 3D로 넘어간다.
+  //  · 아래 레이어 = 다음/이전 페이지 (넘어가는 동안 드러나 보임)
+  //  · 넘어가는 종이 = 앞면(지금 페이지) + 뒷면(다음 스프레드의 반대편 페이지)
+  function nbPageHtml(spread, sel) {
+    const el = spread ? spread.querySelector(sel) : null;
+    return el ? el.innerHTML : "";
+  }
+
+  function nbSetPageHtml(spread, sel, html) {
+    const el = spread ? spread.querySelector(sel) : null;
+    if (el) el.innerHTML = html;
+  }
+
+  function nbFlipFace(html, cls) {
+    const el = document.createElement("div");
+    el.className = `nb-flip-face ${cls}`;
+    el.innerHTML = html;
+    return el;
+  }
+
+  function nbBlankFace(cls) {
+    const el = document.createElement("div");
+    el.className = `nb-flip-face nb-flip-blank ${cls}`;
+    return el;
+  }
+
+  // 맨 앞/맨 뒤 경계: 책을 덮으며 북커버가 드러난 뒤 책장으로 돌아간다
+  function closeBookWithCover(spread, dir, opts, done) {
+    if (!spread) { done(); return; }
+    spread.dataset.turning = "1";
+    const cover = document.createElement("div");
+    cover.className = "nbf-cover";
+    cover.style.setProperty("--spine", opts.spine || "#2f3e5c");
+    cover.innerHTML = `<div class="nbf-cover-plate"><b>${escapeHtml(opts.title || "")}</b>${opts.sub ? `<i></i><span>${escapeHtml(opts.sub)}</span>` : ""}</div>`;
+    spread.appendChild(cover);
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      cover.remove();
+      spread.dataset.turning = "";
+      done();
+    };
+    cover.addEventListener("animationend", finish, { once: true });
+    setTimeout(finish, 700);
+  }
+
+  function turnToPage(dir, mutate, opts = {}) {
     const step = dir > 0 ? 1 : -1;
     const spread = document.querySelector(".nb-spread");
     if (!spread || prefersReducedMotion()) {
@@ -3193,26 +3403,78 @@
       return;
     }
     if (spread.dataset.turning === "1") return;
-    spread.dataset.turning = "1";
-    let outSel;
-    let inSel;
-    if (isMobileViewport()) {
-      const side = spread.dataset.side === "right" ? "right" : "left";
-      outSel = side === "right" ? ".nb-page--right" : ".nb-page--left";
-      inSel = side === "right" ? ".nb-page--left" : ".nb-page--right";
-    } else {
-      outSel = step > 0 ? ".nb-page--right" : ".nb-page--left";
-      inSel = step > 0 ? ".nb-page--left" : ".nb-page--right";
+    if (opts.boundary) {
+      closeBookWithCover(spread, step, opts, () => { mutate(); render(); });
+      return;
     }
-    const outEl = spread.querySelector(outSel);
-    if (outEl) outEl.classList.add(step > 0 ? "leaf-out-next" : "leaf-out-prev");
-    clearTimeout(turnTimer);
-    turnTimer = setTimeout(() => {
-      mutate();
-      pendingTurnDir = step;
-      pendingTurnInSel = inSel;
-      render();
-    }, 235);
+
+    const mobile = isMobileViewport();
+    const oldSide = spread.dataset.side === "right" ? "right" : "left";
+    const oldLeft = nbPageHtml(spread, ".nb-page--left");
+    const oldRight = nbPageHtml(spread, ".nb-page--right");
+    const oldShown = oldSide === "right" ? oldRight : oldLeft;
+
+    mutate();
+    render();
+
+    const destSpread = document.querySelector(".nb-spread");
+    if (!destSpread) return;
+    const destSide = destSpread.dataset.side === "right" ? "right" : "left";
+    const destLeft = nbPageHtml(destSpread, ".nb-page--left");
+    const destRight = nbPageHtml(destSpread, ".nb-page--right");
+    const destShown = destSide === "right" ? destRight : destLeft;
+    const sideCls = s => (s === "right" ? "nb-page--right" : "nb-page--left");
+
+    const host = document.createElement("div");
+    const leaf = document.createElement("div");
+    leaf.className = "nb-flip-leaf";
+
+    if (mobile) {
+      host.className = "nb-flip nb-flip--full";
+      if (step > 0) {
+        // 지금 페이지가 책등(왼쪽) 축으로 넘어가고, 아래에 다음 페이지가 드러난다
+        leaf.appendChild(nbFlipFace(oldShown, `nb-flip-front nb-page ${sideCls(oldSide)}`));
+        leaf.appendChild(nbBlankFace("nb-flip-back"));
+        leaf.classList.add("is-next");
+      } else {
+        // 지금 페이지를 아래에 깔고, 앞 장이 앞면을 보이며 되돌아 들어온다
+        nbSetPageHtml(destSpread, sideCls(destSide), oldShown);
+        leaf.appendChild(nbFlipFace(destShown, `nb-flip-front nb-page ${sideCls(destSide)}`));
+        leaf.appendChild(nbBlankFace("nb-flip-back"));
+        leaf.classList.add("is-in");
+      }
+    } else {
+      host.className = step > 0 ? "nb-flip nb-flip--right" : "nb-flip nb-flip--left";
+      if (step > 0) {
+        // 왼쪽엔 지금 왼쪽 장이 남아 있고, 오른쪽 장이 넘어가면서 뒷면(다음 왼쪽 장)이 내려앉는다
+        nbSetPageHtml(destSpread, ".nb-page--left", oldLeft);
+        leaf.appendChild(nbFlipFace(oldRight, "nb-flip-front nb-page nb-page--right"));
+        leaf.appendChild(nbFlipFace(destLeft, "nb-flip-back nb-page nb-page--left"));
+        leaf.classList.add("is-next");
+      } else {
+        // 오른쪽엔 지금 오른쪽 장이 남아 있고, 왼쪽 장이 오른쪽으로 넘어간다
+        nbSetPageHtml(destSpread, ".nb-page--right", oldRight);
+        leaf.appendChild(nbFlipFace(oldLeft, "nb-flip-front nb-page nb-page--left"));
+        leaf.appendChild(nbFlipFace(destRight, "nb-flip-back nb-page nb-page--right"));
+        leaf.classList.add("is-prev");
+      }
+    }
+
+    host.appendChild(leaf);
+    destSpread.dataset.turning = "1";
+    destSpread.appendChild(host);
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      nbSetPageHtml(destSpread, ".nb-page--left", destLeft);
+      nbSetPageHtml(destSpread, ".nb-page--right", destRight);
+      host.remove();
+      destSpread.dataset.turning = "";
+    };
+    leaf.addEventListener("animationend", finish, { once: true });
+    setTimeout(finish, 900);
   }
 
   function applyPendingTurnAnimation() {
@@ -3334,7 +3596,7 @@
     const label = opts.label || "";
     if (to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
-      return `<span class="nb-stamp nb-stamp--range${kind}"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)}</span>${label ? `<span>${escapeHtml(label)}</span>` : ""}</span>`;
+      return `<span class="nb-stamp nb-stamp--range${kind}"><b>${escapeHtml(dottedDate(from))}</b><span class="nb-stamp-date">${escapeHtml(second)}</span>${label ? `<span>${escapeHtml(label)}</span>` : ""}</span>`;
     }
     return `<span class="nb-stamp${kind}"><b>${escapeHtml(dottedDate(from))}</b>${label ? `<span>${escapeHtml(label)}</span>` : ""}</span>`;
   }
@@ -3391,7 +3653,7 @@
   function goalDoneStampHtml(id, doneDate) {
     const d = dottedDate(doneDate || "");
     return `<label class="gb-stamp" title="달성일 바꾸기" aria-label="달성일 ${escapeAttr(d)}">
-      <b>${escapeHtml(d)}</b><span>달성</span>
+      <b>${escapeHtml(d)}</b><span>DONE</span>
       <input type="date" class="gb-stamp-input" value="${escapeAttr(doneDate || "")}" onchange="updateGoalDoneDate('${id}', this.value)" />
     </label>`;
   }
@@ -3403,7 +3665,7 @@
     if (!from) return "";
     if (to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
-      return `<span class="gb-stamp gb-stamp--plan" title="예정 기간"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)}</span></span>`;
+      return `<span class="gb-stamp gb-stamp--plan gb-stamp--range" title="예정 기간"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)}</span></span>`;
     }
     return `<span class="gb-stamp gb-stamp--plan" title="예정일"><b>${escapeHtml(dottedDate(from))}</b><span>PLAN</span></span>`;
   }
@@ -3588,6 +3850,32 @@
     if (s.shelfSelectedBookId && !s.books.some(b => b.id === s.shelfSelectedBookId)) s.shelfSelectedBookId = "";
   }
 
+  // v3.1: 목표 주제와 버킷 분류를 하나의 주제 목록으로 통합한다.
+  // 주제 관리에 등록된 이 목록만 인덱스 탭과 페이지가 된다. 목록에 없는 기존 항목은 첫 주제로 모아 둔다.
+  function mergeTopicUniverse(s) {
+    const topics = [];
+    const push = (rawName, iconHint, fallbackIcon) => {
+      const name = canonicalTopicName(rawName);
+      if (!name || topics.some(t => t.name === name)) return;
+      topics.push({ name, icon: resolveIconKey(iconHint, fallbackIcon) });
+    };
+    (Array.isArray(s.topics) ? s.topics : []).forEach(t => push(t && t.name, t && t.icon, "target"));
+    (Array.isArray(s.bucketCategories) ? s.bucketCategories : []).forEach(c => push(c && c.name, c && c.icon, "star"));
+    if (!topics.length) topics.push({ name: "기타", icon: "target" });
+    const names = topics.map(t => t.name);
+    const settle = raw => {
+      const c = canonicalTopicName(raw);
+      return names.includes(c) ? c : names[0];
+    };
+    s.topics = topics;
+    (s.goals || []).forEach(g => { g.topic = settle(g.topic); });
+    (s.buckets || []).forEach(b => { b.category = settle(b.category); });
+    s.bucketCategories = topics.map(t => ({ name: t.name, icon: t.icon }));
+    s.goalBookTopic = canonicalTopicName(s.goalBookTopic) || "";
+    if (!names.includes(s.goalBookTopic)) s.goalBookTopic = "";
+    s.goalBookPage = Math.max(0, Number(s.goalBookPage) || 0);
+  }
+
   function normalizeState(parsed) {
     const merged = { ...clone(defaultState), ...parsed };
     merged.activeTab = normalizeTab(merged.activeTab);
@@ -3596,6 +3884,7 @@
     merged.topics = normalizeCategoryList(merged.topics, "target");
     merged.archiveCategories = normalizeCategoryList(merged.archiveCategories, "folder");
     merged.bucketCategories = normalizeCategoryList(merged.bucketCategories, "star");
+    mergeTopicUniverse(merged);
     merged.logs = (merged.logs && typeof merged.logs === "object" && !Array.isArray(merged.logs)) ? merged.logs : {};
     merged.goals = (Array.isArray(merged.goals) ? merged.goals : []).map(g => ({
       note: "",
@@ -4068,10 +4357,9 @@
   function openSearch() {
     searchOpen = true;
     render();
-    try { if (typeof window.scrollTo === "function") window.scrollTo({ top: 0, behavior: "smooth" }); } catch (_) {}
     const inp = document.getElementById("globalSearchInput");
     if (inp) {
-      inp.focus();
+      inp.focus({ preventScroll: true });
       const len = inp.value.length;
       try { inp.setSelectionRange(len, len); } catch (_) {}
     }
@@ -4115,12 +4403,7 @@
           type: "목표",
           title: String(g.title || ""),
           sub: `${g.topic || ""} · ${normalizeYear(g.year)}년 ${normalizePeriod(g.period)}`,
-          action: () => {
-            state.goalTopicFilter = "all";
-            state.goalYearFilter = "all";
-            state.goalPeriodFilter = "all";
-            setTab("goals");
-          }
+          action: () => focusGoalItem(g.id)
         });
       }
     });
@@ -4131,10 +4414,7 @@
           type: "버킷리스트",
           title: String(b.title || ""),
           sub: `${b.category || ""}${b.note ? ` · ${b.note}` : ""}`,
-          action: () => {
-            state.bucketCatFilter = "all";
-            setTab("bucket");
-          }
+          action: () => focusGoalItem(b.id)
         });
       }
     });
@@ -4181,7 +4461,7 @@
   function renderSearchResults() {
     const term = searchQuery.trim();
     if (!term) {
-      return `<p class="search-empty">기록 · 일기 · 목표 · 버킷 · 아카이브를 한번에 찾습니다. 검색어를 입력해 주세요.</p>`;
+      return "";
     }
     const list = findSearchResults(term);
     currentSearchList = list;
@@ -4210,7 +4490,7 @@
       <div class="search-drawer" role="search">
         <div class="search-drawer-bar">
           <span class="sd-icon">${ICONS.search}</span>
-          <input type="text" id="globalSearchInput" class="sd-input" placeholder="기록 · 일기 · 목표 · 버킷 · 아카이브 검색" value="${escapeAttr(searchQuery)}" oninput="updateSearchQuery(this.value)" aria-label="전체 검색" />
+          <input type="text" id="globalSearchInput" class="sd-input" placeholder="검색" value="${escapeAttr(searchQuery)}" oninput="updateSearchQuery(this.value)" aria-label="전체 검색" />
           <button class="sd-close" onclick="closeSearch()" title="검색 닫기" aria-label="검색 닫기">${ICONS.close}</button>
         </div>
         <div id="searchResultsHost">${renderSearchResults()}</div>
@@ -4265,10 +4545,7 @@
         </div>
         <div class="ah-right">
           <button class="ah-btn ${searchOpen ? "on" : ""}" onclick="openSearch()" title="전체 검색" aria-label="전체 검색">${ICONS.search}</button>
-          <span class="ah-status-wrap" title="${escapeAttr(status.label)}">
-            <span class="ah-status ${status.cls}" id="ahSyncDot" role="img" aria-label="${escapeAttr(status.label)}" title="${escapeAttr(status.label)}"></span>
-          </span>
-          <button class="ah-btn" onclick="openSettings()" title="설정 · 데이터 관리" aria-label="설정">${ICONS.settings}</button>
+          <button class="ah-btn ah-btn--gear" onclick="openSettings()" title="설정 · 데이터 관리" aria-label="설정">${ICONS.settings}<span class="ah-status ${status.cls}" id="ahSyncDot" role="img" aria-label="${escapeAttr(status.label)}" title="${escapeAttr(status.label)}"></span></button>
         </div>
       </div>
     `;
@@ -4299,9 +4576,22 @@
 
     main.innerHTML = bodyHtml;
     syncCarousels();
+    scrollActiveIndexTab();
     applyPendingTurnAnimation();
     bindNotebookGestures();
     bindShelfCarousels();
+  }
+
+  // 주제가 많아 인덱스 탭이 책 높이를 넘으면 탭 영역만 스크롤되고, 지금 주제 탭이 보 이게 맞춘다
+  function scrollActiveIndexTab() {
+    const tabs = document.querySelector(".idx-tabs");
+    if (!tabs || tabs.scrollHeight <= tabs.clientHeight + 1) return;
+    const active = tabs.querySelector(".idx-tab.is-active");
+    if (!active) return;
+    const tr = tabs.getBoundingClientRect();
+    const ar = active.getBoundingClientRect();
+    if (ar.top < tr.top) tabs.scrollTop += ar.top - tr.top - 4;
+    else if (ar.bottom > tr.bottom) tabs.scrollTop += ar.bottom - tr.bottom + 4;
   }
 
   function archiveOnDay(a, dateStr) {
@@ -4696,8 +4986,6 @@
   function renderYearShelfActions(year) {
     const y = Number(year);
     return `
-      <button class="nb-action primary" onclick="openYearBook(${y})"><span class="nb-action-icon">${NB_ICONS.book}</span>이 책 펼치기</button>
-      <button class="nb-action" onclick="jumpToToday()"><span class="nb-action-icon">${NB_ICONS.pen}</span>Today</button>
       <button class="nb-action" onclick="openYearBookModal()"><span class="nb-action-icon">${NB_ICONS.plus}</span>책 추가</button>
       <button class="nb-action" onclick="openYearBookModal(${y})"><span class="nb-action-icon">${NB_ICONS.edit}</span>편집</button>
     `;
@@ -4799,7 +5087,18 @@
   }
 
   function yearPageStep(delta) {
-    const next = Math.min(11, Math.max(0, yearPageIndex + delta));
+    const year = Number(yearBookYear);
+    const next = yearPageIndex + delta;
+    // 맨 앞·맨 뒤에서는 북커버를 보여 주며 책을 덮는다
+    if (next < 0 || next > 11) {
+      turnToPage(delta, () => { closeYearBook(); }, {
+        boundary: true,
+        spine: yearSpineColor(year),
+        title: yearBookTitle(year),
+        sub: yearBookSubtitle(year)
+      });
+      return;
+    }
     if (next === yearPageIndex) return;
     turnToPage(delta, () => {
       yearPageIndex = next;
@@ -4939,10 +5238,10 @@
             <b>${escapeHtml(yTitle)}</b>
             <span>${ySub ? `${escapeHtml(ySub)} · ` : ""}${month}월 · 기록 ${monthRecords.length}일${stats.total ? ` · 달성 ${stats.done}/${stats.total}` : ""}</span>
           </div>
-          <button class="nb-head-btn ${isThisYear && monthIdx === Number(TODAY_STR.slice(5, 7)) - 1 ? "is-now" : ""}" onclick="jumpToToday()" title="오늘로 바로 가기" aria-label="오늘로 바로 가기">${ICONS.year}<span class="nb-head-btn-label">Today</span></button>
+          <button class="nb-head-btn" onclick="openYearBookModal(${year})" title="책 편집" aria-label="책 편집">${NB_ICONS.edit}<span class="nb-head-btn-label">책 편집</span></button>
         </div>
         <div class="nb-book nb-book--indexed">
-          <button class="nb-nav prev" onclick="yearPageStep(-1)" ${yearPageIndex <= 0 ? "disabled" : ""} aria-label="이전 달">${ICONS.chevLeft}</button>
+          <button class="nb-nav prev" onclick="yearPageStep(-1)" aria-label="이전 달">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="nbYearSpread" data-side="${yearMobileSide}">
             <span class="nb-edge nb-edge--left"></span>
             <span class="nb-edge nb-edge--right"></span>
@@ -4958,12 +5257,14 @@
               `).join("")}
             </div>
           </div>
-          <button class="nb-nav next" onclick="yearPageStep(1)" ${yearPageIndex >= 11 ? "disabled" : ""} aria-label="다음 달">${ICONS.chevRight}</button>
+          <button class="nb-nav next" onclick="yearPageStep(1)" aria-label="다음 달">${ICONS.chevRight}</button>
         </div>
-        <div class="nb-actions">
-          <button class="nb-action primary" onclick="openYearDay('${TODAY_STR}')"><span class="nb-action-icon">${NB_ICONS.pen}</span>오늘 기록</button>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left"></span>
+          <button class="nb-add-btn" onclick="openYearDay('${TODAY_STR}')" title="오늘 기록 추가" aria-label="오늘 기록 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
         </div>
-        ${renderYearLegend()}
+        <div class="nb-legend-slot">${renderYearLegend()}</div>
       </div>
     `;
   }
@@ -5147,7 +5448,7 @@
     const cfg = CAT_KINDS[kind];
     const list = categoryListOf(kind);
     const items = collectionOf(kind);
-    document.getElementById("catModalTitle").textContent = `${cfg.label} 카테고리 관리`;
+    document.getElementById("catModalTitle").textContent = kind === "goals" ? "주제 관리" : `${cfg.label} 카테고리 관리`;
     document.getElementById("catModalBody").innerHTML = `
       <p class="settings-hint" style="margin:0 0 10px;">이름이나 아이콘을 바꾸면 기존 항목에도 함께 반영됩니다.</p>
       <div class="cat-manage-list">
@@ -5206,6 +5507,13 @@
       collectionOf(kind).forEach(item => {
         if (item[cfg.itemKey] === oldName) item[cfg.itemKey] = newName;
       });
+      // v3.1: 주제는 목표·버킷을 함께 쓰는 하나의 목록
+      if (kind === "goals") {
+        (state.buckets || []).forEach(b => { if (canonicalTopicName(b.category) === canonicalTopicName(oldName)) b.category = newName; });
+        (state.goals || []).forEach(g => { if (canonicalTopicName(g.topic) === canonicalTopicName(oldName)) g.topic = newName; });
+        state.bucketCategories = state.topics.map(t => ({ name: t.name, icon: t.icon }));
+        if (state.goalBookTopic === oldName) state.goalBookTopic = newName;
+      }
       if (kind === "archive") {
         state.books.forEach(b => { if (b.category === oldName) b.category = newName; });
       }
@@ -5218,19 +5526,29 @@
     const list = categoryListOf(kind);
     const target = list[idx];
     if (!target) return;
-    const count = collectionOf(kind).filter(it => it[cfg.itemKey] === target.name).length;
+    const count = kind === "goals"
+      ? state.goals.filter(g => canonicalTopicName(g.topic) === canonicalTopicName(target.name)).length
+        + state.buckets.filter(b => canonicalTopicName(b.category) === canonicalTopicName(target.name)).length
+      : collectionOf(kind).filter(it => it[cfg.itemKey] === target.name).length;
     const msg = count > 0
       ? `‘${target.name}’ 카테고리를 삭제할까요? 이 카테고리에 속한 항목 ${count}개도 함께 삭제됩니다.`
       : `‘${target.name}’ 카테고리를 삭제할까요?`;
     if (!confirm(msg)) return;
     list.splice(idx, 1);
     if (state[cfg.filterKey] === target.name) state[cfg.filterKey] = "all";
-    if (kind === "goals") state.goals = state.goals.filter(g => g.topic !== target.name);
+    if (kind === "goals") state.goals = state.goals.filter(g => canonicalTopicName(g.topic) !== canonicalTopicName(target.name));
     else if (kind === "bucket") state.buckets = state.buckets.filter(b => b.category !== target.name);
     else state.archives = state.archives.filter(a => a.category !== target.name);
+    // v3.1: 주제를 지우면 같은 주제의 버킷 항목도 함께 정리
+    if (kind === "goals") {
+      state.buckets = state.buckets.filter(b => canonicalTopicName(b.category) !== canonicalTopicName(target.name));
+      state.bucketCategories = state.topics.map(t => ({ name: t.name, icon: t.icon }));
+      if (state.goalBookTopic === target.name) state.goalBookTopic = (state.topics[0] || {}).name || "";
+    }
     if (kind === "archive") {
       state.books.forEach(b => { if (b.category === target.name) b.category = ""; });
     }
+    goalLayoutCache = { sig: "", model: null };
     saveState();
     render();
     refreshCategoryManager();
@@ -5254,6 +5572,8 @@
       return;
     }
     list.push({ name, icon });
+    if (kind === "goals") state.bucketCategories = state.topics.map(t => ({ name: t.name, icon: t.icon }));
+    goalLayoutCache = { sig: "", model: null };
     saveState();
     render();
     renderCategoryManager();
@@ -5680,49 +6000,16 @@
 
   // ---------- 목표 · 버킷 책자 (v2.9 통합 노트) ----------
   // 기존 목표 주제와 버킷 분류를 같은 이름 기준으로 한 페이지에 묶습니다.
-  const GOAL_TOPIC_ALIASES = {
-    "학업": "학업 · 전공", "전공": "학업 · 전공", "학업·전공": "학업 · 전공", "학업 · 전공": "학업 · 전공",
-    "운동": "운동 · 건강", "건강": "운동 · 건강", "운동·건강": "운동 · 건강", "운동 · 건강": "운동 · 건강",
-    "독서": "독서 · 문화", "문화": "독서 · 문화", "독서·문화": "독서 · 문화", "독서 · 문화": "독서 · 문화",
-    "자산": "자산 · 경제", "경제": "자산 · 경제", "자산·경제": "자산 · 경제", "자산 · 경제": "자산 · 경제",
-    "생활": "생활 · 루틴", "루틴": "생활 · 루틴", "생활·루틴": "생활 · 루틴", "생활 · 루틴": "생활 · 루틴",
-    "경험": "경험 · 성취", "성취": "경험 · 성취", "경험·성취": "경험 · 성취", "경험 · 성취": "경험 · 성취"
-  };
 
-  const TOPIC_TAB_COLORS = ["#4f74a8", "#8b94a6", "#b4787f", "#6f9270", "#b98a4d", "#8074ad", "#4d8b91", "#a86f5d"];
-
-  function canonicalTopicName(name) {
-    const raw = String(name || "").trim();
-    if (!raw) return "";
-    if (GOAL_TOPIC_ALIASES[raw]) return GOAL_TOPIC_ALIASES[raw];
-    const compact = raw.replace(/\s+/g, "");
-    return GOAL_TOPIC_ALIASES[compact] || raw;
-  }
-
-  // 주제 목록: 목표 주제 + 버킷 분류를 합치고, 항목에만 남아 있는 주제도 포함
+  // v3.1: 주제 관리는 하나의 목록(state.topics)만 쓴다. 인덱스 탭과 페이지도 이 목록에만 생긴다.
   function goalBookTopics() {
     const out = [];
-    const index = new Map();
-    const add = (rawName, iconHint) => {
-      const name = canonicalTopicName(rawName);
-      if (!name || index.has(name)) return index.get(name) || null;
-      const entry = { name, icon: resolveIconKey(iconHint, "target"), bucketCats: [] };
-      index.set(name, entry);
-      out.push(entry);
-      return entry;
-    };
-    (state.topics || []).forEach(t => add(t.name, t.icon));
-    (state.bucketCategories || []).forEach(c => add(c.name, c.icon));
-    (state.goals || []).forEach(g => add(g.topic, getTopicIconKey(g.topic)));
-    (state.buckets || []).forEach(b => add(b.category, getBucketCatIconKey(b.category)));
-    out.forEach(entry => {
-      entry.bucketCats = [...new Set(state.buckets
-        .filter(b => canonicalTopicName(b.category) === entry.name)
-        .map(b => b.category))];
-      if (entry.bucketCats.length === 0) {
-        const own = (state.bucketCategories || []).find(c => canonicalTopicName(c.name) === entry.name);
-        if (own) entry.bucketCats.push(own.name);
-      }
+    const seen = new Set();
+    (state.topics || []).forEach(t => {
+      const name = canonicalTopicName(t && t.name);
+      if (!name || seen.has(name)) return;
+      seen.add(name);
+      out.push({ name, icon: resolveIconKey(t && t.icon, "target") });
     });
     return out;
   }
@@ -5753,21 +6040,205 @@
   function renderGoalBookRow(entry) {
     const it = entry.item || {};
     const done = Boolean(it.done);
-    const legacyTag = (entry.src === "goals" && it.period && normalizePeriod(it.period) !== "연간")
-      ? `<span class="gb-tag">${normalizeYear(it.year)} · ${escapeHtml(normalizePeriod(it.period))}</span>`
-      : "";
     const stamps = `${goalPlanStampHtml(it)}${done && it.doneDate ? goalDoneStampHtml(it.id, it.doneDate) : ""}`;
     return `
       <div class="gb-row ${done ? "done" : ""}">
         <input type="checkbox" class="chk" ${done ? "checked" : ""} onchange="toggleGoalItem('${it.id}')" aria-label="달성 체크" />
         <div class="gb-row-main" onclick="openEditGoalItem('${it.id}')" title="눌러서 수정">
           <div class="gb-row-title">${escapeHtml(it.title || "")}</div>
-          ${(stamps || legacyTag) ? `<div class="gb-row-meta" onclick="event.stopPropagation()">${stamps}${legacyTag}</div>` : ""}
+          ${stamps ? `<div class="gb-row-meta" onclick="event.stopPropagation()">${stamps}</div>` : ""}
           ${it.note ? `<div class="gb-row-note">${escapeHtml(it.note)}</div>` : ""}
         </div>
         <button class="icon-btn danger" onclick="deleteItem('${entry.src}', '${it.id}')" title="삭제" aria-label="항목 삭제">${ICONS.trash}</button>
       </div>
     `;
+  }
+
+  // ---------- v3.1: 기간별 페이지 모델 ----------
+  // 항목의 기간을 "연/분기"로 읽는다. 날짜가 없으면 옛 연간·반기·분기 값을 이어받는다.
+  function goalPeriodOf(entry) {
+    const it = (entry && entry.item) || {};
+    const from = itemDateFrom(it);
+    if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) {
+      const year = Number(from.slice(0, 4));
+      const quarter = Math.floor((Number(from.slice(5, 7)) - 1) / 3) + 1;
+      if (year > 1900 && quarter >= 1 && quarter <= 4) return { year, quarter };
+      return null;
+    }
+    if (entry && entry.src === "goals") {
+      const period = normalizePeriod(it.period);
+      const year = Number(normalizeYear(it.year));
+      if (!year) return null;
+      if (period === "상반기") return { year, quarter: 1 };
+      if (period === "하반기") return { year, quarter: 3 };
+      if (["1분기", "2분기", "3분기", "4분기"].includes(period)) return { year, quarter: Number(period.slice(0, 1)) };
+    }
+    return null;
+  }
+
+  function goalPeriodLabel(period) {
+    return period ? `${period.year} · ${period.quarter}분기` : "기간 미지정";
+  }
+
+  function goalTopicGroups(entries) {
+    const map = new Map();
+    entries.forEach(entry => {
+      const period = goalPeriodOf(entry);
+      const key = period ? `q${period.year}-${period.quarter}` : "none";
+      if (!map.has(key)) map.set(key, { key, period, items: [] });
+      map.get(key).items.push(entry);
+    });
+    return [...map.values()].sort((a, b) => {
+      if (!a.period) return -1;
+      if (!b.period) return 1;
+      return (a.period.year - b.period.year) || (a.period.quarter - b.period.quarter);
+    });
+  }
+
+  function goalTopicHeadHtml(topic) {
+    const all = unifiedGoalItems().filter(e => goalEntryTopic(e) === topic.name);
+    const doneCnt = all.filter(e => Boolean(e.item.done)).length;
+    return `
+      <div class="gb-head">
+        <span class="gb-icon">${renderPictogram(topic.icon, 22)}</span>
+        <div class="gb-head-text">
+          <div class="gb-kicker">CHECKLIST</div>
+          <h2 class="gb-title">${escapeHtml(topic.name)}</h2>
+          <div class="gb-sub">항목 ${all.length}개 · 이룸 ${doneCnt}개</div>
+        </div>
+      </div>`;
+  }
+
+  function goalPageHeadHtml(label, from, to, total) {
+    const count = total ? `${from}–${to} / ${total}` : "";
+    return `<div class="gb-page-head"><span class="gb-page-period">${escapeHtml(label)}</span><span class="gb-page-count">${escapeHtml(count)}</span></div>`;
+  }
+
+  // 실제 책 높이·글자 폭에서 한 페이지에 들어가는 만큼만 담기 위해, 보이지 않는 같은 크기의 책에서 높이를 잰다.
+  function measureGoalPages(topic, entries) {
+    const host = document.getElementById("mainView");
+    if (!host) return null;
+    const cs = getComputedStyle(host);
+    const width = Math.max(240, Math.round(host.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)));
+    const probe = document.createElement("div");
+    probe.className = "nb-stage nb-stage--goalbook";
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText = `position:absolute;left:-20000px;top:0;width:${width}px;visibility:hidden;pointer-events:none;z-index:-1;`;
+    probe.innerHTML = `
+      <div class="nb-book nb-book--indexed">
+        <div class="nb-spread">
+          <section class="nb-page nb-page--left"><div class="nb-page-inner">
+            ${goalTopicHeadHtml(topic)}
+            ${goalPageHeadHtml("0000 · 0분기", 1, 9, 9)}
+            <div class="gb-list">${entries.map(renderGoalBookRow).join("")}</div>
+            ${paperPageNo(1)}
+          </div></section>
+        </div>
+      </div>`;
+    document.body.appendChild(probe);
+    const page = probe.querySelector(".nb-page");
+    const inner = probe.querySelector(".nb-page-inner");
+    const head = probe.querySelector(".gb-head");
+    const pageHead = probe.querySelector(".gb-page-head");
+    const pageNo = probe.querySelector(".nb-page-no");
+    const list = probe.querySelector(".gb-list");
+    const pcs = page ? getComputedStyle(page) : null;
+    const ics = inner ? getComputedStyle(inner) : null;
+    const height = el => (el ? el.getBoundingClientRect().height : 0);
+    const out = page ? {
+      width,
+      avail: Math.max(120, page.clientHeight - (parseFloat(pcs.paddingTop) || 0) - (parseFloat(pcs.paddingBottom) || 0)),
+      headH: height(head),
+      contH: height(pageHead),
+      pageNoH: height(pageNo),
+      gap: parseFloat((ics && (ics.rowGap || ics.gap)) || 0) || 14 * 0.5,
+      ids: entries.map(e => (e.item && e.item.id) || ""),
+      rowHeights: list ? [...list.children].map(height) : []
+    } : null;
+    probe.remove();
+    if (out) out.gap = Math.max(8, out.gap);
+    return out;
+  }
+
+  function paginateTopicPages(topic, entries, metrics) {
+    if (!entries.length) {
+      return [{ period: null, label: "기간 미지정", items: [], isFirst: true, groupFrom: 0, groupTo: 0, groupTotal: 0, empty: true }];
+    }
+    const groups = goalTopicGroups(entries);
+    const heightById = new Map();
+    if (metrics && metrics.ids) {
+      metrics.ids.forEach((id, i) => { if (id) heightById.set(id, metrics.rowHeights[i] || 0); });
+    }
+    const rowH = entry => heightById.get((entry.item && entry.item.id) || "") || 62;
+    const gap = metrics ? metrics.gap : 14;
+    const avail = metrics ? metrics.avail : 520;
+    const headH = metrics ? metrics.headH : 90;
+    const contH = metrics ? metrics.contH : 30;
+    const pageNoH = metrics ? metrics.pageNoH : 26;
+    const capFirst = Math.max(96, avail - headH - contH - pageNoH - gap * 2 - 8);
+    const capCont = Math.max(96, avail - contH - pageNoH - gap * 2 - 8);
+    const pages = [];
+    groups.forEach(group => {
+      let i = 0;
+      let shown = 0;
+      while (i < group.items.length) {
+        const isFirst = pages.length === 0;
+        const cap = isFirst ? capFirst : capCont;
+        const chunk = [];
+        let used = 0;
+        while (i < group.items.length) {
+          const h = rowH(group.items[i]);
+          if (chunk.length && used + h > cap) break;
+          chunk.push(group.items[i]);
+          used += h;
+          i += 1;
+        }
+        if (!chunk.length) { chunk.push(group.items[i]); i += 1; }
+        pages.push({
+          period: group.period,
+          label: goalPeriodLabel(group.period),
+          items: chunk,
+          isFirst,
+          groupFrom: shown + 1,
+          groupTo: shown + chunk.length,
+          groupTotal: group.items.length
+        });
+        shown += chunk.length;
+      }
+    });
+    return pages;
+  }
+
+  let goalLayoutCache = { sig: "", model: null };
+
+  // 주제 목록·항목이 그대로면 다시 재지 않고 계산 결과를 쓴다.
+  function goalBookModel() {
+    const topics = goalBookTopics();
+    const entriesByTopic = topics.map(t => goalBookOrderEntries(unifiedGoalItems().filter(e => goalEntryTopic(e) === t.name)));
+    const host = document.getElementById("mainView");
+    const cs = host ? getComputedStyle(host) : null;
+    const width = host && cs ? Math.round(host.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)) : 0;
+    const sig = [width, window.innerWidth, window.innerHeight].join("|") + "§" + topics.map((t, i) => `${t.name}:${t.icon}:` + entriesByTopic[i].map(e => {
+      const it = e.item || {};
+      return [it.id, it.title, it.note, it.done ? 1 : 0, it.dateMode, it.dateFrom, it.dateTo, it.period, it.year].join("~");
+    }).join(",")).join("§");
+    if (goalLayoutCache.model && goalLayoutCache.sig === sig) return goalLayoutCache.model;
+    const model = { topics: [], flat: [] };
+    topics.forEach((topic, ti) => {
+      const entries = entriesByTopic[ti];
+      const metrics = entries.length ? measureGoalPages(topic, entries) : null;
+      model.topics.push({ name: topic.name, icon: topic.icon, entries, pages: paginateTopicPages(topic, entries, metrics), pageStart: 0 });
+    });
+    // 주제마다 왼쪽 면에서 시작하도록 페이지 수가 홀수면 면 하나를 채운다
+    model.topics.forEach((t, ti) => {
+      t.pageStart = model.flat.length;
+      t.pages.forEach(p => model.flat.push({ ...p, topicIndex: ti }));
+      if (model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: ti });
+    });
+    if (!model.flat.length) model.flat.push({ filler: true, topicIndex: 0 }, { filler: true, topicIndex: 0 });
+    if (model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: Math.max(0, model.topics.length - 1) });
+    goalLayoutCache = { sig, model };
+    return model;
   }
 
   function renderGoalBookView() {
@@ -5777,71 +6248,58 @@
         <div class="nb-stage nb-stage--shelf">
           <div class="nb-shelf-empty">
             <h3>아직 주제가 없습니다</h3>
-            <p>첫 항목을 추가하면 그 주제의 페이지가 만들어집니다.</p>
-            <button class="btn btn-primary" onclick="openGoalModal()">+ 첫 항목 추가</button>
+            <p>주제를 하나 추가하면 그 주제의 페이지가 만들어집니다.</p>
+            <button class="btn btn-primary" onclick="openBookTopicManager()">+ 주제 추가</button>
           </div>
         </div>
       `;
     }
-    const idx = goalBookTopicIndex(topics);
-    const topic = topics[idx];
-    const all = unifiedGoalItems().filter(e => goalEntryTopic(e) === topic.name);
-    const ordered = goalBookOrderEntries(all);
-    const doneCnt = all.filter(e => Boolean(e.item.done)).length;
-    const half = ordered.length > 10 ? Math.ceil(ordered.length / 2) : ordered.length;
-    const leftItems = ordered.slice(0, half);
-    const rightItems = ordered.slice(half);
+    const model = goalBookModel();
+    const totalSpreads = Math.max(1, Math.ceil(model.flat.length / 2));
+    let spreadIdx = Math.round(Number(state.goalBookPage) || 0);
+    if (!Number.isFinite(spreadIdx) || spreadIdx < 0) spreadIdx = 0;
+    spreadIdx = Math.min(totalSpreads - 1, spreadIdx);
+    state.goalBookPage = spreadIdx;
+    const pageA = model.flat[spreadIdx * 2] || { filler: true, topicIndex: 0 };
+    const pageB = model.flat[spreadIdx * 2 + 1] || { filler: true, topicIndex: pageA.topicIndex || 0 };
+    const activeTopicIndex = Math.max(0, Math.min(model.topics.length - 1,
+      pageA.filler ? (pageB.topicIndex || 0) : pageA.topicIndex));
+    const activeTopic = model.topics[activeTopicIndex] || model.topics[0];
     // FAB·모달이 지금 페이지의 주제를 기본값으로 쓰도록 맞춰 둠
-    state.goalTopicFilter = topic.name;
-    state.bucketCatFilter = topic.bucketCats[0] || topic.name;
+    state.goalBookTopic = activeTopic.name;
+    state.goalTopicFilter = activeTopic.name;
+    state.bucketCatFilter = activeTopic.name;
 
-    const listHtml = list => `<div class="gb-list">${list.map(renderGoalBookRow).join("")}</div>`;
-
-    const leftPage = `
-      <section class="nb-page nb-page--left">
-        <div class="nb-page-inner">
-          <div class="gb-head">
-            <span class="gb-icon">${renderPictogram(topic.icon, 22)}</span>
-            <div class="gb-head-text">
-              <div class="gb-kicker">CHECKLIST</div>
-              <h2 class="gb-title">${escapeHtml(topic.name)}</h2>
-              <div class="gb-sub">항목 ${all.length}개 · 이룸 ${doneCnt}개</div>
-            </div>
+    const pageHtml = (page, pageNo, sideSel) => {
+      if (!page || page.filler) {
+        return `<section class="nb-page nb-page--${sideSel}"><div class="nb-page-inner"><div class="gb-filler">·</div>${paperPageNo(pageNo)}</div></section>`;
+      }
+      const pageTopic = model.topics[page.topicIndex] || activeTopic;
+      const head = page.isFirst ? goalTopicHeadHtml(pageTopic) : "";
+      const listHtml = page.items.length
+        ? `<div class="gb-list">${page.items.map(renderGoalBookRow).join("")}</div>`
+        : `<div class="gb-empty">${page.empty || pageTopic.entries.length
+            ? "아직 이 주제의 항목이 없습니다.<br />오른쪽 아래 + 버튼으로 첫 항목을 적어 보세요."
+            : "아직 이 주제의 항목이 없습니다."}</div>`;
+      return `
+        <section class="nb-page nb-page--${sideSel}">
+          <div class="nb-page-inner">
+            ${head}
+            ${goalPageHeadHtml(page.label, page.groupFrom, page.groupTo, page.groupTotal)}
+            ${listHtml}
+            ${paperPageNo(pageNo)}
           </div>
-          <div class="gb-section-head">
-            <b>이 주제의 기록</b>
-            <span class="gb-count">${leftItems.length} / ${ordered.length}</span>
-          </div>
-          ${leftItems.length
-            ? listHtml(leftItems)
-            : `<div class="gb-empty">아직 이 주제의 항목이 없습니다.<br />오른쪽 아래 + 버튼으로 첫 항목을 적어 보세요.</div>`}
-          ${paperPageNo(idx * 2 + 1)}
-        </div>
-      </section>
-    `;
+        </section>
+      `;
+    };
 
-    const rightPage = `
-      <section class="nb-page nb-page--right">
-        <div class="nb-page-inner">
-          <div class="gb-section-head">
-            <b>이어서</b>
-            <span class="gb-count">${rightItems.length ? `${half + 1} – ${ordered.length}` : ""}</span>
-          </div>
-          ${rightItems.length
-            ? listHtml(rightItems)
-            : `<div class="gb-empty">${ordered.length
-                ? "이 주제의 항목이 왼쪽 면에 모두 들어갔습니다.<br />+ 버튼으로 이어서 적어 보세요."
-                : "적어 둔 항목이 오른쪽 면에 이어집니다."}</div>`}
-          ${paperPageNo(idx * 2 + 2)}
-        </div>
-      </section>
-    `;
-
-    const tabButtons = topics.map((t, i) => {
+    const tabClass = model.topics.length > 11 ? "idx-tabs--denser" : (model.topics.length > 7 ? "idx-tabs--dense" : "");
+    const tabButtons = model.topics.map((t, i) => {
       const short = String(t.name).split(/[·,\s]/).filter(Boolean)[0] || t.name;
       const color = TOPIC_TAB_COLORS[i % TOPIC_TAB_COLORS.length];
+      const active = i === activeTopicIndex;
       return `
-        <button class="idx-tab idx-tab--topic ${i === idx ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-label="${escapeAttr(t.name)} 주제" aria-selected="${i === idx ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
+        <button class="idx-tab idx-tab--topic ${active ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-label="${escapeAttr(t.name)} 주제" aria-selected="${active ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
           <span>${stackedLabel(short)}</span>
         </button>
       `;
@@ -5853,48 +6311,58 @@
           <span class="nb-reader-spacer" aria-hidden="true"></span>
           <div class="nb-reader-title">
             <b>Goals</b>
-            <span>${topics.length}개 주제 · ${escapeHtml(topic.name)}</span>
+            <span>${isMobileViewport() ? `${spreadIdx + 1}/${totalSpreads}장` : `${escapeHtml(activeTopic.name)} · ${spreadIdx + 1}/${totalSpreads}장`}</span>
           </div>
           <button class="nb-head-btn" onclick="openBookTopicManager()" title="주제 관리" aria-label="주제 관리">${ICONS.sliders}<span class="nb-head-btn-label">주제 관리</span></button>
         </div>
 
         <div class="nb-book nb-book--indexed">
-          <button class="nb-nav prev" onclick="goalBookStep(-1)" ${idx <= 0 ? "disabled" : ""} aria-label="이전 주제">${ICONS.chevLeft}</button>
+          <button class="nb-nav prev" onclick="goalBookStep(-1)" ${spreadIdx <= 0 ? "disabled" : ""} aria-label="이전 페이지">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="goalSpread" data-side="${goalBookSide}">
             <span class="nb-edge nb-edge--left"></span>
             <span class="nb-edge nb-edge--right"></span>
-            ${leftPage}
-            ${rightPage}
+            ${pageHtml(pageA, spreadIdx * 2 + 1, "left")}
+            ${pageHtml(pageB, spreadIdx * 2 + 2, "right")}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
-            <div class="idx-tabs idx-tabs--topic" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
+            <div class="idx-tabs idx-tabs--topic ${tabClass}" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
           </div>
-          <button class="nb-nav next" onclick="goalBookStep(1)" ${idx >= topics.length - 1 ? "disabled" : ""} aria-label="다음 주제">${ICONS.chevRight}</button>
+          <button class="nb-nav next" onclick="goalBookStep(1)" ${spreadIdx >= totalSpreads - 1 ? "disabled" : ""} aria-label="다음 페이지">${ICONS.chevRight}</button>
         </div>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left"></span>
+          <button class="nb-add-btn" onclick="openGoalModal(${jsArg(activeTopic.name)})" title="이 주제에 항목 추가" aria-label="항목 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
+        </div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
-      <button class="fab" onclick="openGoalModal(${jsArg(topic.name)})" title="이 주제에 항목 추가" aria-label="항목 추가">${NB_ICONS.plus}</button>
     `;
   }
 
   function jumpGoalTopic(target) {
-    const topics = goalBookTopics();
-    const idx = goalBookTopicIndex(topics);
-    const next = Math.max(0, Math.min(topics.length - 1, Number(target) || 0));
-    if (next === idx) return;
-    turnToPage(next > idx ? 1 : -1, () => {
-      state.goalBookTopic = topics[next].name;
+    const model = goalBookModel();
+    if (!model.topics.length) return;
+    const next = Math.max(0, Math.min(model.topics.length - 1, Number(target) || 0));
+    const topic = model.topics[next];
+    const dest = Math.floor((topic.pageStart || 0) / 2);
+    const cur = Math.round(Number(state.goalBookPage) || 0);
+    if (dest === cur && goalBookSide === "left" && state.goalBookTopic === topic.name) return;
+    turnToPage(dest > cur ? 1 : -1, () => {
+      state.goalBookPage = dest;
+      state.goalBookTopic = topic.name;
       goalBookSide = "left";
       saveState();
     });
   }
 
   function goalBookStep(delta) {
-    const topics = goalBookTopics();
-    const idx = goalBookTopicIndex(topics);
-    const next = Math.max(0, Math.min(topics.length - 1, idx + delta));
-    if (next === idx) return;
+    const model = goalBookModel();
+    const total = Math.max(1, Math.ceil(model.flat.length / 2));
+    const cur = Math.max(0, Math.min(total - 1, Math.round(Number(state.goalBookPage) || 0)));
+    const next = cur + delta;
+    if (next < 0 || next >= total) return;
     turnToPage(delta, () => {
-      state.goalBookTopic = topics[next].name;
+      state.goalBookPage = next;
       goalBookSide = "left";
       saveState();
     });
@@ -5905,6 +6373,26 @@
     const spread = document.getElementById("goalSpread");
     if (spread) spread.dataset.side = goalBookSide;
   }
+
+  // 검색 결과에서 목표 항목으로 바로 건너뛰기
+  function focusGoalItem(id) {
+    setTab("goals");
+    const model = goalBookModel();
+    for (let i = 0; i < model.flat.length; i += 1) {
+      const page = model.flat[i];
+      if (!page || page.filler || !page.items) continue;
+      if (page.items.some(e => e.item.id === id)) {
+        state.goalBookPage = Math.floor(i / 2);
+        state.goalBookTopic = (model.topics[page.topicIndex] || {}).name || state.goalBookTopic;
+        goalBookSide = "left";
+        saveState();
+        render();
+        return;
+      }
+    }
+  }
+
+  /* v3.1 페이지 모델은 위에서 렌더 · 네비게이션 함수로 이어짐 */
 
   function goalTopicOptions(selected) {
     const names = [];
@@ -6008,16 +6496,10 @@
     });
   }
 
+  // v3.1: 주제 관리는 목표·버킷을 나누지 않은 하나의 목록
   function openBookTopicManager() {
-    openModal("주제 관리", `
-      <p class="gb-manage-note">목표와 버킷리스트는 이제 구분 없이 한 목록으로 관리합니다. 주제를 고치면 그 주제의 항목이 모두 같은 페이지로 모입니다. 비슷한 이름(예: 문화 ↔ 독서 · 문화)은 한 페이지로 묶여 보입니다.</p>
-      <div class="gb-manage-list">
-        <div class="gb-manage-row">
-          <div><b>주제</b><span>${goalBookTopics().map(t => escapeHtml(t.name)).join(" · ") || "없음"}</span></div>
-          <button class="btn btn-sm" onclick="closeModal(); openCategoryManager('goals')">편집</button>
-        </div>
-      </div>
-    `, () => true);
+    closeModal();
+    openCategoryManager("goals");
   }
 
   // ---------- 아카이브 (주제별 책장 + 스프링 노트북 단일 뷰) ----------
@@ -6118,7 +6600,6 @@
 
   function renderShelfActions(book) {
     return `
-      <button class="nb-action primary" onclick="openNotebook('${book.id}')"><span class="nb-action-icon">${NB_ICONS.book}</span>이 책 펼치기</button>
       <button class="nb-action" onclick="openBookModal()"><span class="nb-action-icon">${NB_ICONS.plus}</span>책 추가</button>
       <button class="nb-action" onclick="openBookModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.edit}</span>편집</button>
     `;
@@ -6201,7 +6682,16 @@
     const book = getBookById(notebookBookId);
     if (!book) return;
     const total = notebookTotalPages(book);
-    const next = Math.min(total - 1, Math.max(0, notebookPageIndex + delta));
+    const next = notebookPageIndex + delta;
+    if (next < 0 || next >= total) {
+      turnToPage(delta, () => { closeNotebookBook(); }, {
+        boundary: true,
+        spine: normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]),
+        title: book.title || "",
+        sub: String(book.subtitle || "").trim()
+      });
+      return;
+    }
     if (next === notebookPageIndex) return;
     turnToPage(delta, () => {
       notebookPageIndex = next;
@@ -6348,10 +6838,10 @@
             <b>${escapeHtml(book.title)}</b>
             <span>${subBits.map(escapeHtml).join(" · ")}</span>
           </div>
-          <span class="nb-reader-spacer" aria-hidden="true"></span>
+          <button class="nb-head-btn" onclick="openBookModal('${book.id}')" title="책 설정" aria-label="책 설정">${NB_ICONS.dots}<span class="nb-head-btn-label">책 설정</span></button>
         </div>
         <div class="nb-book">
-          <button class="nb-nav prev" onclick="notebookStep(-1)" ${idx <= 0 ? "disabled" : ""} aria-label="이전 페이지">${ICONS.chevLeft}</button>
+          <button class="nb-nav prev" onclick="notebookStep(-1)" aria-label="이전 페이지">${ICONS.chevLeft}</button>
           <div class="nb-spread" id="nbSpread" data-side="${notebookMobileSide}">
             <span class="nb-edge nb-edge--left"></span>
             <span class="nb-edge nb-edge--right"></span>
@@ -6359,14 +6849,15 @@
             <span class="nb-spine"></span>
             ${BOOK_COIL}
           </div>
-          <button class="nb-nav next" onclick="notebookStep(1)" ${idx >= total - 1 ? "disabled" : ""} aria-label="다음 페이지">${ICONS.chevRight}</button>
+          <button class="nb-nav next" onclick="notebookStep(1)" aria-label="다음 페이지">${ICONS.chevRight}</button>
         </div>
-        <div class="nb-actions">
-          ${onGuide ? "" : `<button class="nb-action" onclick="openEditArchive('${current.id}')"><span class="nb-action-icon">${NB_ICONS.edit}</span>이 페이지 수정</button>`}
-          <button class="nb-action" onclick="openBookModal('${book.id}')"><span class="nb-action-icon">${NB_ICONS.dots}</span>책 설정</button>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left">${onGuide ? "" : `<button class="nb-bar-btn" onclick="openEditArchive('${current.id}')">이 페이지 수정</button>`}</span>
+          <button class="nb-add-btn" onclick="openNewArchiveModal('${book.id}')" title="새 기록 추가" aria-label="새 기록 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
         </div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
-      ${onGuide ? "" : `<button class="fab" onclick="openNewArchiveModal('${book.id}')" title="새 기록 추가" aria-label="새 기록 추가">${NB_ICONS.plus}</button>`}
     `;
   }
 
