@@ -1,0 +1,110 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>v4.0 책 크기 검증</title>
+<style>
+  html,body{margin:0;background:#12141a;color:#dfe3ea;font:12px/1.5 ui-monospace,Menlo,monospace}
+  #out{padding:10px 14px;white-space:pre-wrap}
+  iframe{border:1px solid #333;display:block;margin:6px 14px;background:#fff}
+</style>
+</head><body>
+<pre id="out">running…</pre>
+<iframe id="f"></iframe>
+<script>
+var q = new URLSearchParams(location.search);
+var w = Number(q.get("w") || 390), h = Number(q.get("h") || 844);
+var src = q.get("src") || "index.html";
+var f = document.getElementById("f");
+f.width = String(w); f.height = String(h); f.src = src;
+var out = document.getElementById("out");
+var log = function (t) { out.innerHTML = String(t); };
+
+function r(el) {
+  if (!el) return null;
+  var b = el.getBoundingClientRect();
+  return { x: Math.round(b.left * 10) / 10, y: Math.round(b.top * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 };
+}
+function q1(d, sel) { return d.querySelector(sel); }
+
+f.onload = function () { setTimeout(run, 900); };
+
+function run() {
+  var W = f.contentWindow, D = f.contentDocument;
+  var res = { viewport: w + "x" + h, src: src };
+  try {
+    var P = W.__planner;
+    if (!P) { log("no __planner"); return; }
+    res.version = P.version;
+    var st = P.getState();
+    if (!st.books || !st.books.length) {
+      st.books = [
+        { id: "tb1", title: "차", subtitle: "차를 기록하다", category: "독서 · 문화", spine: "#3f6f6a", cover: "" },
+        { id: "tb2", title: "여행", subtitle: "여행 노트", category: "생활 · 루틴", spine: "#5b4a72", cover: "" },
+        { id: "tb3", title: "전시", subtitle: "전시 기록", category: "독서 · 문화", spine: "#8a5a3c", cover: "" },
+        { id: "tb4", title: "운동", subtitle: "운동 일지", category: "운동 · 건강", spine: "#3a5f8a", cover: "" }
+      ];
+      st.shelfSelectedBookId = "tb1";
+    }
+
+    var shot = function (name, extra) {
+      var o = {};
+      var stage = q1(D, ".nb-stage");
+      o.stage = r(stage);
+      o.bodyScrollH = D.documentElement.scrollHeight;
+      o.innerH = W.innerHeight;
+      if (extra) extra(o);
+      res[name] = o;
+    };
+
+    // 1) Archive 책장
+    P.setTab("archive"); P.render();
+    shot("archiveShelf", function (o) {
+      var btn = q1(D, ".nb-cover-btn.is-active");
+      var cover = btn && btn.querySelector(".nb-cover");
+      o.book = r(btn); o.cover = r(cover);
+      o.carousel = r(q1(D, ".nb-carousel"));
+      o.bookArea = r(q1(D, ".nb-book--shelf"));
+      o.actions = r(q1(D, ".nb-actions"));
+      o.meta = r(q1(D, ".nb-book-meta"));
+      var nb = [].slice.call(D.querySelectorAll(".nb-cover-btn:not(.is-active)"));
+      o.neighbors = nb.map(function (b) { return r(b); });
+      o.overlapActions = (o.carousel && o.actions) ? Math.round((o.carousel.y + o.carousel.h - o.actions.y) * 10) / 10 : null;
+      o.actionsPastStage = (o.stage && o.actions) ? Math.round((o.actions.y + o.actions.h - (o.stage.y + o.stage.h)) * 10) / 10 : null;
+    });
+
+    // 2) Calendar 책장
+    P.setTab("year"); P.render();
+    shot("yearShelf", function (o) {
+      var btn = q1(D, ".nb-cover-btn.is-active");
+      var cover = btn && btn.querySelector(".nb-cover");
+      o.book = r(btn); o.cover = r(cover);
+      o.carousel = r(q1(D, ".nb-carousel"));
+      o.actions = r(q1(D, ".nb-actions"));
+      o.overlapActions = (o.carousel && o.actions) ? Math.round((o.carousel.y + o.carousel.h - o.actions.y) * 10) / 10 : null;
+    });
+
+    // 3) Goals 앞표지
+    P.setTab("goals"); P.render();
+    shot("goalsCover", function (o) {
+      o.spread = r(q1(D, "#goalSpread"));
+      o.face = r(q1(D, "#goalSpread .nb-page--cover"));
+      o.bookArea = r(q1(D, ".nb-book"));
+    });
+
+    // 4) 컨텐츠 페이지 펼친 모습 (참고)
+    try {
+      P.goalBookStep(1);
+      setTimeout(function () {
+        shot("goalsPage1", function (o) { o.spread = r(q1(D, "#goalSpread")); });
+        res.errors = (P.errors && P.errors()) || [];
+        res.ok = true;
+        log(JSON.stringify(res, null, 1));
+      }, 700);
+    } catch (e) {
+      res.errors = ["step:" + e];
+      log(JSON.stringify(res, null, 1));
+    }
+  } catch (e) {
+    log("ERR " + e + "\n" + (e && e.stack));
+  }
+}
+</script>
+</body></html>
