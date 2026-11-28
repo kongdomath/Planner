@@ -100,6 +100,32 @@ function run() {
     shot("goalsPage1", function (o) { o.spread = r(q1(D, "#goalSpread")); });
   }, 600);
 
+  // 빠른 연속 스와이프: 넘기는 중에 또 스와이프하면 씹히지 않고 다음 장으로 넘어가야 한다
+  function swipe(el, dx) {
+    if (!el) return;
+    var b = el.getBoundingClientRect();
+    var x = b.left + b.width / 2, y = b.top + b.height / 2;
+    var mk = function (px) { return new W.Touch({ identifier: 7, target: el, clientX: px, clientY: y, pageX: px, pageY: y, screenX: px, screenY: y }); };
+    var send = function (type, px, active) {
+      el.dispatchEvent(new W.TouchEvent(type, { touches: active ? [mk(px)] : [], targetTouches: active ? [mk(px)] : [], changedTouches: [mk(px)], bubbles: true, cancelable: true }));
+    };
+    send("touchstart", x, true);
+    send("touchmove", x + dx * 0.5, true);
+    send("touchend", x + dx, false);
+  }
+
+  next(function () {
+    P.setTab("goals"); P.render();
+    P.getState().goalBookPage = 2; P.render();
+    res.swipeBefore = P.getState().goalBookPage;
+    swipe(q1(D, "#goalSpread"), -70);
+    setTimeout(function () { swipe(q1(D, "#goalSpread"), -70); }, 130);
+  }, 900);
+
+  next(function () {
+    res.swipeAfter = P.getState().goalBookPage;
+  }, 200);
+
   next(function () {
     P.setTab("archive"); P.render();
     P.openNotebook(openId);
