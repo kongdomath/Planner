@@ -7119,6 +7119,12 @@
     if (!entry) return;
     const it = entry.item || {};
     const curTopic = goalEntryTopic(entry) || (goalBookTopics()[0] ? goalBookTopics()[0].name : "");
+    // 예전 데이터(년·반기·분기만 있거나 날짜만 있음)도 모달에 그대로 보이게 맞춰 둔다
+    const eff = goalPeriodOf(entry);
+    const quarterSeed = {
+      qYear: it.qYear || (eff ? String(eff.year) : ""),
+      qQuarter: Number(it.qQuarter) || (eff ? eff.quarter : 0)
+    };
     const deleteMsg = entry.src === "buckets" ? "이 버킷리스트를 삭제할까요?" : "이 목표를 삭제할까요?";
     openModal("항목 수정", `
       <div class="modal-field">
@@ -7131,7 +7137,7 @@
       </div>
       <div class="modal-field">
         <label>분기</label>
-        ${goalQuarterHtml(it)}
+        ${goalQuarterHtml(quarterSeed)}
       </div>
       <div class="modal-field">
         <label>날짜</label>
