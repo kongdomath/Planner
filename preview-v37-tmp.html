@@ -4569,6 +4569,8 @@
     if (prefix === "mArchive" || prefix === "mNewArchive") updateArchiveTitleAuto();
   }
 
+  // 적힌 날짜를 읽는다. v3.7: 시작일만 있으면 '그날 하루'(day) 기록으로 본다
+  //  — 작성일이 기본으로 들어가 있어도 도장은 하루자 도장이 찍히고, 종료일을 넣으면 기간이 된다
   function readDateFields(prefix) {
     const fromEl = document.getElementById(prefix + "DateFrom");
     const toEl = document.getElementById(prefix + "DateTo");
@@ -4580,7 +4582,7 @@
       if (to < from) { const t = from; from = to; to = t; }
       return { dateMode: "range", dateFrom: from, dateTo: to };
     }
-    if (from) return { dateMode: "from", dateFrom: from, dateTo: "" };
+    if (from) return { dateMode: "day", dateFrom: from, dateTo: "" };
     return { dateMode: "to", dateFrom: "", dateTo: to };
   }
 
@@ -7849,10 +7851,9 @@
     const preset = canonicalTopicName(topicOverride || state.goalBookTopic || "");
     const all = goalBookTopics();
     const defaultTopic = preset || (all[0] ? all[0].name : "");
-    const seedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(presetDate || "")) ? String(presetDate) : "";
-    const quarterSeed = seedDate
-      ? { qYear: seedDate.slice(0, 4), qQuarter: quarterOfDate(seedDate) }
-      : { qYear: TODAY_STR.slice(0, 4), qQuarter: 0 };
+    // v3.7: 날짜를 따로 고르지 않아도 작성일(오늘 / 일기에서 열면 그 날짜) 기준으로 도장이 찍힌다
+    const seedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(presetDate || "")) ? String(presetDate) : TODAY_STR;
+    const quarterSeed = { qYear: seedDate.slice(0, 4), qQuarter: 0 };
     openModal("새 항목", `
       <div class="modal-field">
         <label>주제</label>
@@ -7868,7 +7869,7 @@
       </div>
       <div class="modal-field">
         <label>날짜</label>
-        ${dateFieldsHtml("mGoal", seedDate ? { dateMode: "day", dateFrom: seedDate } : { dateMode: "none" })}
+        ${dateFieldsHtml("mGoal", { dateMode: "day", dateFrom: seedDate })}
       </div>
       <div class="modal-field">
         <label>메모</label>
@@ -8192,16 +8193,26 @@
   }
 
   // 사진이 있는 기록의 왼면: 사진 판 + 날짜·부제목 도장
+  // 부제목(세부정보) 도장: 날짜 도장 바로 옆에 테라코타 색으로 나란히 찍는다 (사진 0·1+장 공통)
+  function archiveDetailStampHtml(a) {
+    const detail = String((a && a.subtitle) || "").trim();
+    if (!detail) return "";
+    return `<span class="nb-stamp nb-stamp--detail"><span class="nb-stamp-label">부제목</span><b>${escapeHtml(detail)}</b></span>`;
+  }
+
+  // 날짜 도장 + 부제목 도장을 한 묶음으로
+  function archiveStampsHtml(a) {
+    return archiveStampHtml(a) + archiveDetailStampHtml(a);
+  }
+
   function renderNotebookLeftPage(a, book, pageNo) {
     const imgs = normalizeImages(a);
-    const detail = String(a.subtitle || "").trim();
     return `
       <section class="nb-page nb-page--left">
         <div class="nb-page-inner">
           ${photoBoardHtml(imgs, i => `openNotebookPhoto('${a.id}', ${i})`)}
           <div class="nb-stamps" onclick="openEditArchive('${a.id}')" title="눌러서 수정">
-            ${archiveStampHtml(a)}
-            ${detail ? `<span class="nb-stamp nb-stamp--detail"><span class="nb-stamp-label">부제목</span><b>${escapeHtml(detail)}</b></span>` : ""}
+            ${archiveStampsHtml(a)}
           </div>
           ${paperPageNo(pageNo)}
         </div>
@@ -8225,18 +8236,16 @@
     `;
   }
 
-  // v3.6 사진이 없는 기록(모바일): 빈 사진 면 대신 한 면에 제목·부제목·도장·감상을 모은다
+  // v3.6 사진이 없는 기록(모바일): 빈 사진 면 대신 한 면에 제목·도장·감상을 모은다
   function renderNotebookNotePage(a, pageNo) {
-    const sub = String(a.subtitle || "").trim();
-    const stamp = archiveStampHtml(a);
+    const stamps = archiveStampsHtml(a);
     return `
       <section class="nb-page nb-page--wide">
         <div class="nb-page-inner nb-note-single">
           <div class="nb-note nb-note--edit nb-note--wide" onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정">
             <div class="nb-note-head">
               <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
-              ${sub ? `<div class="nb-note-sub">${escapeHtml(sub)}</div>` : ""}
-              ${stamp ? `<div class="nb-stamps nb-stamps--inline">${stamp}</div>` : ""}
+              ${stamps ? `<div class="nb-stamps nb-stamps--inline" title="눌러서 수정">${stamps}</div>` : ""}
             </div>
             <div class="nb-note-rule"></div>
             <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`}</div>
@@ -8260,8 +8269,7 @@
   }
 
   function renderNotebookNoteSpread(a, pageNo) {
-    const sub = String(a.subtitle || "").trim();
-    const stamp = archiveStampHtml(a);
+    const stamps = archiveStampsHtml(a);
     const parts = splitNoteForSpread(a.note);
     const editor = `onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정"`;
     const empty = `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`;
@@ -8271,8 +8279,7 @@
           <div class="nb-note nb-note--edit" ${editor}>
             <div class="nb-note-head">
               <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
-              ${sub ? `<div class="nb-note-sub">${escapeHtml(sub)}</div>` : ""}
-              ${stamp ? `<div class="nb-stamps nb-stamps--inline">${stamp}</div>` : ""}
+              ${stamps ? `<div class="nb-stamps nb-stamps--inline">${stamps}</div>` : ""}
             </div>
             <div class="nb-note-rule"></div>
             <div class="nb-note-body">${(parts.first || parts.rest) ? escapeHtml(parts.first) : empty}</div>
@@ -8845,7 +8852,7 @@
       <div class="modal-field">
         <label>날짜</label>
         ${dateFieldsHtml("mArchive", { date: seedDate })}
-        <p class="modal-hint">아직 끝나지 않았으면 종료일을 비워 두세요.</p>
+        <p class="modal-hint">기본은 작성일(오늘)이에요. 시작일만 있으면 그날 기록, 종료일까지 넣으면 기간이 됩니다.</p>
       </div>
       <div class="modal-field">
         <label>제목</label>
