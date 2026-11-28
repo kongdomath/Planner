@@ -1851,6 +1851,8 @@
       touch-action: pan-y;
       cursor: grab;
       user-select: none; -webkit-user-select: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
     }
     .nb-carousel.dragging { cursor: grabbing; }
     .nb-cover-btn {
@@ -2421,14 +2423,14 @@
       flex-shrink: 0; font-size: 10.5px; font-weight: 600; color: #5b6478;
       background: rgba(120,126,140,.12); border-radius: 999px; padding: 4px 9px;
     }
-    .nb-cal { margin-top: 14px; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+    .nb-cal { margin-top: 14px; display: flex; flex-direction: column; flex: 0 0 auto; min-height: 0; }
     .nb-cal-head, .nb-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
-    .nb-cal-grid { flex: 1 1 auto; grid-auto-rows: minmax(38px, 1fr); align-content: stretch; }
+    .nb-cal-grid { grid-auto-rows: minmax(36px, 56px); }
     .nb-cal-head span { text-align: center; font-size: 9px; font-weight: 700; color: #a0a5ae; letter-spacing: .06em; padding-bottom: 5px; }
     .nb-cal-head .sun { color: #c05a60; }
     .nb-cal-head .sat { color: #4e6f9a; }
     .nb-day {
-      position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
       min-height: 44px; padding: 6px 0 5px; border-radius: 6px;
       border: 1px solid transparent; background: transparent; cursor: pointer;
       font-family: inherit; color: inherit;
@@ -2539,6 +2541,23 @@
       .nb-day-num { font-size: 12px; }
       .nb-legend { gap: 6px 10px; font-size: 10px; margin-top: 14px; }
       .nb-legend-hint { display: none; }
+    }
+
+    /* 화면이 높은 기기(아이패드 세로)에서는 책장 커버도 크게 */
+    @media (min-height: 900px) {
+      .nb-carousel { height: 372px; }
+      .nb-cover { width: 214px; height: 300px; }
+      .nb-cover-label { left: 32px; right: 18px; top: 34px; padding: 13px 12px 14px; }
+      .nb-cover-label b { font-size: 16.5px; }
+      .nb-cover-chip { font-size: 10.5px; }
+      .nb-book-meta h3 { font-size: 26px; }
+      .nb-cover--year .nb-year-plate b { font-size: 38px; }
+    }
+    @media (min-width: 700px) and (max-width: 860px) {
+      .idx-tab { width: 30px; min-height: 60px; font-size: 10.5px; }
+      .idx-tab.is-active { width: 34px; }
+      .nb-month-name { font-size: 34px; }
+      .nb-day-num { font-size: 13.5px; }
     }
 
     @media (max-width: 1100px) and (min-width: 861px) {
