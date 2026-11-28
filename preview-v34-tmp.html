@@ -1933,20 +1933,6 @@
     .nb-dayphotos--n5 .nb-pola { padding: 5px 5px 15px; }
     .nb-dayphotos .nb-pola-del { opacity: .9; }
 
-    /* ===== v3.4 아카이브 세부정보 도장 (파란 날짜 도장 옆, 따뜻한 테라코타) ===== */
-    .nb-stamp--detail {
-      border-color: rgba(168,86,53,.55); color: #8f4526;
-      background: rgba(168,86,53,.055);
-      transform: rotate(1.6deg);
-      box-shadow: inset 0 0 0 2px rgba(252,251,246,.94), inset 0 0 0 3px rgba(168,86,53,.18);
-      max-width: 78%; align-items: flex-start; text-align: left; gap: 1px;
-      padding: 5px 9px 5px;
-    }
-    .nb-stamp--detail .nb-stamp-label { font-size: 8px; letter-spacing: .16em; font-weight: 700; opacity: .8; }
-    .nb-stamp--detail b {
-      font-size: 11.5px; font-weight: 700; letter-spacing: 0; line-height: 1.4;
-      white-space: normal; word-break: keep-all;
-    }
     .nb-stage .save-status { color: #9aa0a9; }
     .paper .item-list { gap: 0; }
     .paper .list-item {
@@ -2414,6 +2400,20 @@
     .nb-stamp--range .nb-stamp-date { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; }
     .nb-stamp--done { border-color: rgba(45,106,79,.55); color: #2d6a4f; background: rgba(45,106,79,.05); box-shadow: inset 0 0 0 2px rgba(252,251,246,.92), inset 0 0 0 3px rgba(45,106,79,.2); }
     .nb-stamp--plan { border-color: rgba(120,126,140,.45); color: #6b707a; background: rgba(120,126,140,.05); box-shadow: inset 0 0 0 2px rgba(252,251,246,.92), inset 0 0 0 3px rgba(120,126,140,.14); }
+    /* ===== v3.4 아카이브 세부정보 도장 (파란 날짜 도장 옆, 따뜻한 테라코타) ===== */
+    .nb-stamp--detail {
+      border-color: rgba(168,86,53,.55); color: #8f4526;
+      background: rgba(168,86,53,.055);
+      transform: rotate(1.6deg);
+      box-shadow: inset 0 0 0 2px rgba(252,251,246,.94), inset 0 0 0 3px rgba(168,86,53,.18);
+      max-width: 78%; align-items: flex-start; text-align: left; gap: 1px;
+      padding: 5px 9px 5px;
+    }
+    .nb-stamp--detail .nb-stamp-label { font-size: 8px; letter-spacing: .16em; font-weight: 700; opacity: .8; }
+    .nb-stamp--detail b {
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0; line-height: 1.4;
+      white-space: normal; word-break: keep-all;
+    }
     /* 세부정보 블록: 파선 대신 종이 노트에 어울리는 틴트 카드 */
     .nb-meta {
       position: relative; margin: 0 0 4px;
@@ -2568,7 +2568,7 @@
     /* ===== v3.1 실제 책 넘김: 아래에 다음 페이지(underlay) + 앞/뒷면이 있는 종이(leaf) ===== */
     .nb-flip {
       position: absolute; top: 0; bottom: 0; z-index: 9;
-      perspective: 2400px; perspective-origin: 50% 50%;
+      perspective: 3200px; perspective-origin: 50% 50%;
       pointer-events: none;
     }
     .nb-flip--right { left: 50%; width: 50%; }
@@ -2616,6 +2616,16 @@
     .nb-flip-leaf.is-next { animation: nbfFlipNext .66s cubic-bezier(.45,.05,.25,1) both; }
     .nb-flip-leaf.is-prev { animation: nbfFlipPrev .66s cubic-bezier(.45,.05,.25,1) both; }
     .nb-flip-leaf.is-back { animation: nbfFlipBack .6s cubic-bezier(.4,.06,.3,1) both; }
+    /* v3.4: 종이가 90°를 지나는 순간 앞·뒷면을 확실히 바꿔
+       반대면 내용이 종이를 비쳐 보이지 않게 한다 (backface-visibility 대체) */
+    @keyframes nbfFaceOut { 0%, 37.9% { visibility: visible; } 38%, 100% { visibility: hidden; } }
+    @keyframes nbfFaceIn { 0%, 37.9% { visibility: hidden; } 38%, 100% { visibility: visible; } }
+    @keyframes nbfFaceOutBack { 0%, 37.9% { visibility: hidden; } 38%, 100% { visibility: visible; } }
+    @keyframes nbfFaceInBack { 0%, 37.9% { visibility: visible; } 38%, 100% { visibility: hidden; } }
+    .nb-flip-leaf.is-next .nb-flip-front, .nb-flip-leaf.is-prev .nb-flip-front { animation: nbfFaceOut .66s linear both; }
+    .nb-flip-leaf.is-next .nb-flip-back, .nb-flip-leaf.is-prev .nb-flip-back { animation: nbfFaceIn .66s linear both; }
+    .nb-flip-leaf.is-back .nb-flip-front { animation: nbfFaceOutBack .6s linear both; }
+    .nb-flip-leaf.is-back .nb-flip-back { animation: nbfFaceInBack .6s linear both; }
     /* 모바일 단면: 책 밖(왼쪽)으로 넘어가며 얇게 남는 부분이 어색하지 않도록 살짝 사라진다 */
     @keyframes nbfLeafFadeOut { 0%, 52% { opacity: 1; } 100% { opacity: 0; } }
     @keyframes nbfLeafFadeIn { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: 1; } }
