@@ -3567,7 +3567,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.8";
+  const APP_VERSION = "3.9";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -6596,7 +6596,7 @@
           <div class="nb-pola" style="--rot:${rots[i % rots.length]}deg">
             <span class="nb-pola-tape" aria-hidden="true"></span>
             <button class="nb-pola-btn" onclick="${handlerFor(i)}" aria-label="사진 ${i + 1} 크게 보기" title="사진 크게 보기">
-              <img src="${src}" alt="" />
+              <img src="${src}" alt="" decoding="async" />
             </button>
             ${removable ? `<button class="nb-pola-del" onclick="${removable}(${i})" aria-label="사진 ${i + 1} 떼기" title="사진 떼기">${ICONS.close}</button>` : ""}
           </div>
@@ -6719,7 +6719,7 @@
           <div class="nb-pola" style="--rot:${rots[i % rots.length]}deg">
             <span class="nb-pola-tape" aria-hidden="true"></span>
             <button class="nb-pola-btn" onclick="openDayPhoto(${i})" aria-label="사진 ${i + 1} 크게 보기" title="사진 크게 보기">
-              <img src="${src}" alt="" />
+              <img src="${src}" alt="" decoding="async" />
             </button>
             <button class="nb-pola-del" onclick="removeDayPhoto(${i})" aria-label="사진 ${i + 1} 떼기" title="사진 떼기">${ICONS.close}</button>
           </div>
