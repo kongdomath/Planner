@@ -1246,6 +1246,10 @@
     .modal-field { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
     .modal-field label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .btn-danger {
+      margin-right: auto; color: var(--sun); border-color: #f0c9c9; background: #fff;
+    }
+    .btn-danger:hover { background: #fef2f2; }
 
     /* 설정 모달 */
     #settingsModal { z-index: 58; }
@@ -1720,6 +1724,11 @@
 
     /* ===== v3.2 하루 페이지(일기): 책자 왼면 = 날짜·기분·한 줄·일기·사진 / 오른면 = Goals·Archive ===== */
     .nb-day-inner { height: 100%; gap: 13px; }
+    /* 사진을 붙인 날: 일기 칸은 넉넉한 높이를 지키고 사진은 그 아래 별도 영역 → 글을 절대 가리지 않음 */
+    .nb-day-inner.has-photos { height: auto; min-height: 100%; }
+    .nb-day-inner.has-photos .nb-day-field--grow { flex: 0 0 auto; }
+    .nb-day-inner.has-photos textarea.nb-day-diary { flex: 0 0 auto; min-height: clamp(190px, 30vh, 330px); }
+    .nb-day-inner.has-photos .nb-photos { margin-top: 6px; margin-bottom: 2px; }
     .nb-day-head { display: flex; align-items: center; justify-content: flex-start; gap: 6px 16px; flex-wrap: wrap; }
     .nb-day-date { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
     .nb-day-date b {
@@ -1834,6 +1843,29 @@
     .nb-day-check.is-done { background: #4a5162; border-color: #4a5162; }
     .nb-day-check.is-archive { border-color: transparent; color: #8d929b; }
     .nb-day-item-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    /* 일기 오른면의 항목: 동그라미로 달성 토글, 본문을 누르면 수정, 오른쪽 작은 휴지통으로 삭제 */
+    button.nb-day-item-main {
+      flex: 1 1 auto; min-width: 0; padding: 0; border: 0; background: none;
+      text-align: left; font-family: inherit; cursor: pointer;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    button.nb-day-item-main:hover .nb-day-item-title { color: #1f232b; }
+    .nb-day-check-btn {
+      flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.4px solid rgba(120,126,140,.4); background: none; color: #fcfbf6;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .nb-day-check-btn.is-done { background: #4a5162; border-color: #4a5162; }
+    .nb-day-check-btn.is-archive { border-color: transparent; color: #8d929b; }
+    .nb-day-check-btn svg { width: 11px; height: 11px; }
+    .nb-day-item-del {
+      flex-shrink: 0; width: 26px; height: 26px; margin-top: -3px; padding: 0; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; background: none; color: #b3b7bf; cursor: pointer;
+      opacity: .55; transition: opacity .14s ease, color .14s ease, background .14s ease;
+    }
+    .nb-day-item-del:hover { opacity: 1; color: var(--sun); background: rgba(200,75,75,.08); }
     .nb-day-item-title { font-size: 12.8px; font-weight: 600; color: #2f343d; line-height: 1.45; word-break: keep-all; }
     .nb-day-item-title.is-done { color: #9aa0a9; }
     .nb-day-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
@@ -2148,6 +2180,9 @@
       display: grid; grid-template-columns: 1fr 1fr;
       width: 100%; max-width: 1180px;
       height: var(--book-h, 660px);
+      /* 속지·넘김 종이가 같은 모서리를 쓰도록 한 곳에서 정의 (책등 쪽은 직각, 바깥쪽만 둥글게) */
+      --nb-r-left: 14px 0 0 14px;
+      --nb-r-right: 0 14px 14px 0;
       border-radius: 6px;
       transform-style: preserve-3d;
       box-shadow: 0 26px 46px -18px rgba(6,9,18,.62), 0 4px 10px rgba(6,9,18,.3);
@@ -2173,14 +2208,14 @@
     }
     .nb-page--left {
       padding-right: 56px;
-      border-radius: 6px 2px 2px 8px;
+      border-radius: var(--nb-r-left, 14px 0 0 14px);
       background-image: linear-gradient(90deg, rgba(120,110,86,.10), rgba(120,110,86,0) 26%);
       box-shadow: inset -24px 0 28px -28px rgba(30,34,44,.55);
       transform-origin: right center;
     }
     .nb-page--right {
       padding-left: 56px;
-      border-radius: 2px 6px 8px 2px;
+      border-radius: var(--nb-r-right, 0 14px 14px 0);
       background-image: radial-gradient(rgba(122,128,142,.17) 1px, transparent 1px);
       background-size: 19px 19px;
       background-position: 12px 14px;
@@ -2193,6 +2228,7 @@
     .nb-page::after {
       content: ""; position: absolute; inset: 0; z-index: 4;
       pointer-events: none; opacity: 0;
+      border-radius: inherit;
       background: linear-gradient(90deg, rgba(44,36,24,.62), rgba(44,36,24,.2) 46%, rgba(255,255,255,0) 82%);
     }
     .nb-page--right::after {
@@ -2343,6 +2379,10 @@
     .nb-note-sub { font-size: 12px; color: #82868f; letter-spacing: .01em; }
     .nb-note-rule { height: 1px; margin: 14px 0 16px; background: linear-gradient(90deg, rgba(120,126,140,.42), rgba(120,126,140,0)); }
     .nb-note-body { font-size: 14.5px; line-height: 2.05; color: #3b404a; white-space: pre-wrap; word-break: break-word; letter-spacing: -0.004em; }
+    /* 글 면: 별도 수정 버튼 없이 내용을 누르면 바로 수정 (빈 곳 탭은 면 뒤집기 그대로) */
+    .nb-note--edit { cursor: pointer; border-radius: 6px; margin: -6px; padding: 6px; transition: background .14s ease; }
+    .nb-note--edit:hover { background: rgba(120,126,140,.05); }
+    .nb-note--edit:hover .nb-note-title { color: #14181f; }
     .nb-note-empty { color: #a0a4ad; font-size: 12.5px; }
     .nb-guide { align-items: center; justify-content: center; text-align: center; gap: 12px; }
     .nb-guide-plus {
@@ -2403,6 +2443,11 @@
     }
     .idx-tab span { display: flex; flex-direction: column; align-items: center; gap: 1px; }
     .idx-tab i { font-style: normal; line-height: 1.02; }
+    /* 주제 이름이 4~6자여도 인덱스 탭 안에 다 들어가게 (내지 제목과 같은 글자) */
+    .idx-tab--long { font-size: 9px; width: 32px; }
+    .idx-tabs--dense .idx-tab--long { font-size: 8.5px; }
+    .idx-tabs--denser .idx-tab--long { font-size: 8px; }
+    .idx-tab--long i { line-height: 1.12; }
     .idx-tab:hover { transform: translateX(-2px); filter: brightness(1.08); }
     .idx-tab.is-active {
       width: 35px; transform: translateX(-5px);
@@ -2478,16 +2523,20 @@
       transform-origin: 50% 50%;
       overflow: hidden;
     }
+    /* 넘어가는 종이 앞·뒷면도 속지와 똑같은 둥근 모서리 (책등 쪽 직각 · 바깥쪽 둥글게) */
+    .nb-flip-face.nb-page--left { border-radius: var(--nb-r-left, 14px 0 0 14px); }
+    .nb-flip-face.nb-page--right { border-radius: var(--nb-r-right, 0 14px 14px 0); }
     .nb-flip-front { transform: rotateY(0deg) translateZ(.4px); }
     .nb-flip-back { transform: rotateY(180deg) translateZ(.4px); }
     /* 종이 뒷면 결: 앞장이 넘어갈 때 책등 쪽에 지는 그늘 */
     .nb-flip-back::before {
       content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+      border-radius: inherit;
       background: linear-gradient(90deg, rgba(26,22,14,.22), rgba(26,22,14,.05) 26%, rgba(26,22,14,0) 58%);
     }
     .nb-flip-face.nb-flip-blank { background: #f7f4ea; }
     .nb-flip-face.nb-flip-blank::after {
-      content: ""; position: absolute; inset: 0;
+      content: ""; position: absolute; inset: 0; border-radius: inherit;
       background-image: linear-gradient(90deg, rgba(120,110,86,.10), rgba(120,110,86,0) 26%);
     }
     @keyframes nbfFlipNext { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
@@ -2653,6 +2702,33 @@
       width: 0; height: 0; margin: 0; padding: 0;
     }
     .date-row-sep { color: #b3b8c1; font-size: 16px; flex-shrink: 0; line-height: 1; }
+    /* 날짜가 들어 있을 때만 보이는 작은 지우기 */
+    .date-clear {
+      flex-shrink: 0; width: 20px; height: 20px; margin-left: 2px; padding: 0; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; background: rgba(120,126,140,.13); color: #8d929b; cursor: pointer;
+    }
+    .date-clear:hover { background: rgba(200,75,75,.14); color: var(--sun); }
+    .date-clear svg { width: 10px; height: 10px; }
+    .date-row.is-empty .date-clear { display: none; }
+    /* 분기 선택: 연도 + 미지정/1~4분기 */
+    .qs-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .qs-row select {
+      height: 36px; padding: 0 8px; border: 1px solid var(--border); border-radius: 9px;
+      background: #fff; color: var(--text); font: inherit; font-size: 13px; font-weight: 600;
+    }
+    .qs-seg {
+      display: flex; flex: 1 1 210px; min-width: 0;
+      border: 1px solid var(--border); border-radius: 9px; background: #fff; overflow: hidden;
+    }
+    .qs-btn {
+      flex: 1 1 0; min-width: 0; height: 36px; padding: 0 2px;
+      border: 0; border-left: 1px solid var(--border); background: transparent;
+      color: var(--text-sub); font: inherit; font-size: 11.5px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+    }
+    .qs-btn:first-child { border-left: 0; }
+    .qs-btn.is-on { background: var(--text); color: #fff; }
     .date-mode-seg { width: 100%; }
     .date-mode-seg button { flex: 1; }
     .date-inputs {
@@ -2843,8 +2919,10 @@
       .nb-coil-ring::before { display: none; }
       .nb-coil-ring::after { right: 0; width: 9px; height: 9px; }
       .nb-spine, .nb-edge { display: none; }
-      .nb-page { border-radius: 8px !important; height: 100%; padding: 24px 30px 24px 42px; }
+      .nb-page { border-radius: var(--nb-r-left, 0 14px 14px 0) !important; height: 100%; padding: 24px 30px 24px 42px; }
       .nb-page--left, .nb-page--right { transform-origin: left center; }
+      /* 모바일 단면: 스프링(책등) 쪽은 직각, 바깥쪽만 둥글게 — 넘김 종이도 동일 */
+      .nb-spread { --nb-r-left: 0 14px 14px 0; --nb-r-right: 0 14px 14px 0; }
       .nb-page--left::after, .nb-page--right::after { background: linear-gradient(90deg, rgba(44,36,24,.55), rgba(44,36,24,.16) 52%, rgba(255,255,255,0) 88%); }
       .nb-page-no { font-size: 9.5px; padding-top: 10px; }
       .nb-spread[data-side="left"] .nb-page--right { display: none; }
@@ -3078,7 +3156,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.2";
+  const APP_VERSION = "3.3";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -3816,48 +3894,71 @@
     return unifiedGoalItems().find(e => e.item.id === id) || null;
   }
 
+  // 일기 면에서 목표·버킷 바로 삭제
+  function deleteGoalItem(id) {
+    const entry = findGoalEntry(id);
+    if (!entry) return;
+    deleteItem(entry.src, id);
+  }
+
   function toggleGoalItem(id) {
     const entry = findGoalEntry(id);
     if (!entry) return;
     const it = entry.item;
     it.done = !it.done;
-    it.doneDate = it.done ? (it.doneDate || state.selectedDate || TODAY_STR) : "";
+    if (it.done) {
+      // 완료 체크: 날짜가 비어 있으면 오늘로 채우고, 있으면 그 날짜/기간을 DONE 도장으로 쓴다
+      if (!itemDateFrom(it)) {
+        const d = /^\d{4}-\d{2}-\d{2}$/.test(String(state.selectedDate || "")) ? state.selectedDate : TODAY_STR;
+        it.dateMode = "day";
+        it.dateFrom = d;
+        it.dateTo = "";
+      }
+      it.doneDate = itemDateTo(it) || itemDateFrom(it) || TODAY_STR;
+    } else {
+      it.doneDate = "";
+    }
     saveState();
     render();
   }
 
-  function updateGoalDoneDate(id, date) {
-    const entry = findGoalEntry(id);
-    if (!entry) return;
-    const it = entry.item;
-    it.doneDate = String(date || "");
-    it.done = Boolean(date);
-    saveState();
-    render();
+  // 예전 `달성일` 값을 `날짜` 하나로 합칩니다 (완료 + 날짜 없음 → 오늘)
+  function syncGoalDoneDate(it) {
+    if (!it) return;
+    if (!it.done) { it.doneDate = ""; return; }
+    if (!itemDateFrom(it) && it.doneDate) {
+      it.dateMode = "day";
+      it.dateFrom = String(it.doneDate);
+      it.dateTo = "";
+    }
+    if (!itemDateFrom(it)) {
+      it.dateMode = "day";
+      it.dateFrom = TODAY_STR;
+      it.dateTo = "";
+    }
+    it.doneDate = itemDateTo(it) || itemDateFrom(it) || TODAY_STR;
   }
 
-  function goalDoneStampHtml(id, doneDate) {
-    const d = dottedDate(doneDate || "");
-    return `<label class="gb-stamp" title="달성일 바꾸기" aria-label="달성일 ${escapeAttr(d)}">
-      <b>${escapeHtml(d)}</b><span>DONE</span>
-      <input type="date" class="gb-stamp-input" value="${escapeAttr(doneDate || "")}" onchange="updateGoalDoneDate('${id}', this.value)" />
-    </label>`;
-  }
-
-  function goalPlanStampHtml(item) {
-    if (dateModeOf(item) === "none") return "";
-    const from = itemDateFrom(item);
+  // 날짜 도장 하나로 PLAN / DONE 을 그립니다 (같은 날짜, 완료 여부만 다름)
+  function goalDateStampHtml(item) {
+    if (!item) return "";
+    let from = itemDateFrom(item);
     const to = itemDateTo(item);
+    if (!from && item.doneDate) from = String(item.doneDate);
     if (!from) return "";
+    const done = Boolean(item.done);
+    const label = done ? "DONE" : "PLAN";
+    const title = done ? "달성한 날짜" : "예정일";
     if (to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
-      return `<span class="gb-stamp gb-stamp--plan gb-stamp--range" title="예정 기간"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)}</span></span>`;
+      return `<span class="${done ? "gb-stamp" : "gb-stamp gb-stamp--plan"} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)} · ${label}</span></span>`;
     }
-    return `<span class="gb-stamp gb-stamp--plan" title="예정일"><b>${escapeHtml(dottedDate(from))}</b><span>PLAN</span></span>`;
+    return `<span class="${done ? "gb-stamp" : "gb-stamp gb-stamp--plan"}" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${label}</span></span>`;
   }
 
   // ---------- 날짜 입력 UI (미니컬 스타일 한 줄: 시작일 › 종료일, 시간 없음) ----------
   const DATE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+  const DATE_CLEAR_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>`;
 
   function dateFieldsHtml(prefix, item) {
     const from = item ? itemDateFrom(item) : "";
@@ -3875,8 +3976,86 @@
           <span class="date-pill-text" id="${prefix}ToText">${shownTo ? escapeHtml(dottedDate(shownTo)) : "종료일"}</span>
           <input type="date" id="${prefix}DateTo" value="${escapeAttr(shownTo)}" aria-label="종료일" onchange="onDateRowChange('${prefix}')" onclick="showDatePicker('${prefix}DateTo')" />
         </label>
+        <button type="button" class="date-clear" onclick="clearDateRow('${prefix}')" aria-label="날짜 지우기" title="날짜 지우기">${DATE_CLEAR_ICON}</button>
       </div>
     `;
+  }
+
+  // 설정된 날짜를 한 번에 지운다 (비어 있으면 버튼 자체가 보이지 않음)
+  function clearDateRow(prefix) {
+    const fromEl = document.getElementById(prefix + "DateFrom");
+    const toEl = document.getElementById(prefix + "DateTo");
+    if (fromEl) fromEl.value = "";
+    if (toEl) toEl.value = "";
+    syncDateRow(prefix);
+  }
+
+  // ---------- 목표 분기 선택 (연도 + 미지정/1~4분기) ----------
+  const QUARTER_LABELS = ["미지정", "1분기", "2분기", "3분기", "4분기"];
+
+  function quarterOfDate(dateStr) {
+    const m = Number(String(dateStr || "").slice(5, 7));
+    return m >= 1 && m <= 12 ? Math.floor((m - 1) / 3) + 1 : 0;
+  }
+
+  function goalQuarterHtml(item) {
+    const qy = String((item && item.qYear) || "").slice(0, 4);
+    const year = /^\d{4}$/.test(qy) ? qy : TODAY_STR.slice(0, 4);
+    const quarter = Math.max(0, Math.min(4, Number(item && item.qQuarter) || 0));
+    const years = (typeof getYearOptions === "function" ? getYearOptions() : YEARS).map(Number).filter(n => n > 1900);
+    if (!years.includes(Number(year))) years.push(Number(year));
+    years.sort((a, b) => a - b);
+    return `
+      <div class="qs-row" id="mGoalQuarterRow">
+        <select id="mGoalQuarterYear" aria-label="목표 연도">
+          ${years.map(y => `<option value="${y}" ${String(y) === year ? "selected" : ""}>${y}년</option>`).join("")}
+        </select>
+        <div class="qs-seg" role="group" aria-label="분기 선택">
+          ${QUARTER_LABELS.map((label, i) => `<button type="button" class="qs-btn ${i === quarter ? "is-on" : ""}" data-q="${i}" onclick="pickGoalQuarter(${i})" aria-pressed="${i === quarter ? "true" : "false"}">${label}</button>`).join("")}
+        </div>
+      </div>
+      <input type="hidden" id="mGoalQuarter" value="${quarter}" />
+    `;
+  }
+
+  function pickGoalQuarter(q) {
+    const n = Math.max(0, Math.min(4, Number(q) || 0));
+    const hidden = document.getElementById("mGoalQuarter");
+    if (hidden) hidden.value = String(n);
+    document.querySelectorAll("#mGoalQuarterRow .qs-btn").forEach(btn => {
+      const on = Number(btn.dataset.q) === n;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  // 시작일을 고르면 해당 연도·분기를 자동으로 맞춘다
+  function syncGoalQuarterFromDate() {
+    if (!document.getElementById("mGoalQuarterRow")) return;
+    const fromEl = document.getElementById("mGoalDateFrom");
+    const dateStr = fromEl ? String(fromEl.value || "") : "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+    const y = dateStr.slice(0, 4);
+    const sel = document.getElementById("mGoalQuarterYear");
+    if (sel) {
+      if (![...sel.options].some(o => o.value === y)) {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = `${y}년`;
+        sel.appendChild(opt);
+      }
+      sel.value = y;
+    }
+    const q = quarterOfDate(dateStr);
+    if (q) pickGoalQuarter(q);
+  }
+
+  function readGoalQuarter() {
+    const yEl = document.getElementById("mGoalQuarterYear");
+    const qEl = document.getElementById("mGoalQuarter");
+    const year = yEl ? normalizeYear(yEl.value) : TODAY_STR.slice(0, 4);
+    const q = qEl ? Math.max(0, Math.min(4, Number(qEl.value) || 0)) : 0;
+    return { year, quarter: q >= 1 && q <= 4 ? q : 0 };
   }
 
   // 달력 아이콘을 눌러도 날짜 선택기가 열리게 (기본 달력 아이콘은 숨김)
@@ -3907,6 +4086,7 @@
     if (!fromEl.value) toEl.value = "";
     else if (!toEl.value || toEl.value < fromEl.value) toEl.value = fromEl.value;
     syncDateRow(prefix);
+    if (prefix === "mGoal") syncGoalQuarterFromDate();
   }
 
   function readDateFields(prefix) {
@@ -4074,20 +4254,30 @@
     merged.bucketCategories = normalizeCategoryList(merged.bucketCategories, "star");
     mergeTopicUniverse(merged);
     merged.logs = (merged.logs && typeof merged.logs === "object" && !Array.isArray(merged.logs)) ? merged.logs : {};
-    merged.goals = (Array.isArray(merged.goals) ? merged.goals : []).map(g => ({
-      note: "",
-      ...g,
-      images: normalizeImages(g),
-      year: normalizeYear(g.year),
-      period: normalizePeriod(g.period),
-      dateMode: ["none", "day", "range"].includes(g.dateMode) ? g.dateMode : (g.dateFrom ? "day" : "none"),
-      dateFrom: String(g.dateFrom || ""),
-      dateTo: String(g.dateTo || "")
-    }));
+    merged.goals = (Array.isArray(merged.goals) ? merged.goals : []).map(g => {
+      const rawMode = ["none", "day", "range"].includes(g.dateMode) ? g.dateMode : (g.dateFrom ? "day" : "none");
+      const doneDate = String(g.doneDate || "").trim();
+      // 예전 `달성일`만 있던 기록은 그 날짜를 `날짜` 하나로 옮긴다 (달성일·날짜 통합)
+      const migrated = !g.dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(doneDate);
+      return {
+        note: "",
+        ...g,
+        images: normalizeImages(g),
+        year: normalizeYear(g.year),
+        period: normalizePeriod(g.period),
+        qYear: String(g.qYear || "").slice(0, 4),
+        qQuarter: [1, 2, 3, 4].includes(Number(g.qQuarter)) ? Number(g.qQuarter) : 0,
+        dateMode: migrated ? "day" : rawMode,
+        dateFrom: migrated ? doneDate : String(g.dateFrom || ""),
+        dateTo: String(g.dateTo || "")
+      };
+    });
     merged.buckets = (Array.isArray(merged.buckets) ? merged.buckets : []).map(b => ({
       note: "",
       doneDate: "",
-      ...b
+      ...b,
+      qYear: String(b.qYear || "").slice(0, 4),
+      qQuarter: [1, 2, 3, 4].includes(Number(b.qQuarter)) ? Number(b.qQuarter) : 0
     }));
     merged.archives = (Array.isArray(merged.archives) ? merged.archives : []).map(a => ({
       ...a,
@@ -5553,19 +5743,20 @@
 
   // 연력 · 일기: 스프링 노트 안의 하루 페이지
   //  · 왼쪽 면 = 날짜 · 기분 · 오늘의 한 줄 · 긴 일기 · 사진 / 오른쪽 면 = Goals · Archive
+  // 왼쪽(매우 안 좋음) → 오른쪽(매우 좋음) 순서. 다섯 표정은 한눈에 구분되게.
   const DAY_MOODS = [
-    { key: "great", label: "아주 좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M7.8 13.4a4.9 4.9 0 0 0 8.4 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
-    { key: "good", label: "좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.6 14a4 4 0 0 0 6.8 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
-    { key: "soso", label: "보통", face: `<circle cx="12" cy="12" r="9"/><path d="M8.8 14.6h6.4"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
-    { key: "down", label: "가라앉음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.6 15.2a4 4 0 0 1 6.8 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
-    { key: "tired", label: "지침", face: `<circle cx="12" cy="12" r="9"/><path d="M7.6 10.2h3.1"/><path d="M13.3 10.2h3.1"/><path d="M9 15h6"/>` }
+    { key: "tired", label: "매우 안 좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.4 8.6l2.4 2.4M10.8 8.6L8.4 11"/><path d="M15.6 8.6l2.4 2.4M18 8.6l-2.4 2.4"/><path d="M8.2 16.6a4.6 4.6 0 0 1 7.6 0"/><path d="M17.1 13.1c.7 1 .7 1.8 0 2.2-.7.4-1.5-.2-1.5-1.1 0-.7.7-1.2 1.5-2.1z"/>` },
+    { key: "down", label: "안 좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.2 10.4h2.8"/><path d="M13 10.4h2.8"/><path d="M8.8 16.1a4 4 0 0 1 6.4 0"/>` },
+    { key: "soso", label: "보통", face: `<circle cx="12" cy="12" r="9"/><circle cx="9.2" cy="9.8" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.8" r=".95" fill="currentColor" stroke="none"/><path d="M8.8 15h6.4"/>` },
+    { key: "good", label: "좋음", face: `<circle cx="12" cy="12" r="9"/><circle cx="9.2" cy="9.8" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.8" r=".95" fill="currentColor" stroke="none"/><path d="M8.6 14.2a4 4 0 0 0 6.8 0"/>` },
+    { key: "great", label: "매우 좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M7.6 9.6l1.7-1.8 1.7 1.8"/><path d="M13 9.6l1.7-1.8 1.7 1.8"/><path d="M7.4 13.2a5.2 5.2 0 0 0 9.2 0"/>` }
   ];
 
   const DAY_CAMERA = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
   const DAY_CHECK = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
   function moodFaceSvg(key) {
-    const md = DAY_MOODS.find(x => x.key === key) || DAY_MOODS[1];
+    const md = DAY_MOODS.find(x => x.key === key) || DAY_MOODS[2];
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${md.face}</svg>`;
   }
 
@@ -5631,13 +5822,14 @@
     if (entry.doneOn) meta.push(`<span class="nb-day-tag nb-day-tag--done">DONE</span>`);
     else if (entry.from) meta.push(`<span class="nb-day-tag">${escapeHtml(humanDateRange(entry.from, entry.to))}</span>`);
     return `
-      <button class="nb-day-item" onclick="openEditGoalItem('${it.id}')" title="눌러서 수정">
-        <span class="nb-day-check ${entry.done ? "is-done" : ""}">${entry.done ? DAY_CHECK : ""}</span>
-        <span class="nb-day-item-main">
+      <div class="nb-day-item">
+        <button class="nb-day-check-btn ${entry.done ? "is-done" : ""}" onclick="toggleGoalItem('${it.id}')" title="${entry.done ? "달성 취소" : "달성 표시"}" aria-label="${entry.done ? "달성 취소" : "달성 표시"}" aria-pressed="${entry.done ? "true" : "false"}">${entry.done ? DAY_CHECK : ""}</button>
+        <button class="nb-day-item-main" onclick="openEditGoalItem('${it.id}')" title="눌러서 수정">
           <span class="nb-day-item-title ${entry.done ? "is-done" : ""}">${escapeHtml(it.title || "")}</span>
           ${meta.length ? `<span class="nb-day-item-meta">${meta.join("")}</span>` : ""}
-        </span>
-      </button>
+        </button>
+        <button class="nb-day-item-del" onclick="deleteGoalItem('${it.id}')" title="삭제" aria-label="항목 삭제">${ICONS.trash}</button>
+      </div>
     `;
   }
 
@@ -5647,17 +5839,18 @@
     const cat = a.category || "";
     const hasPhotos = normalizeImages(a).length;
     return `
-      <button class="nb-day-item" onclick="openEditArchive('${a.id}')" title="눌러서 수정">
-        <span class="nb-day-check is-archive">${renderPictogram(getArchiveCatIconKey(cat), 11)}</span>
-        <span class="nb-day-item-main">
+      <div class="nb-day-item">
+        <button class="nb-day-check-btn is-archive" onclick="openEditArchive('${a.id}')" title="눌러서 수정" aria-label="${escapeAttr(a.title || "")} 수정">${renderPictogram(getArchiveCatIconKey(cat), 11)}</button>
+        <button class="nb-day-item-main" onclick="openEditArchive('${a.id}')" title="눌러서 수정">
           <span class="nb-day-item-title">${escapeHtml(a.title || "")}</span>
           <span class="nb-day-item-meta">
             ${cat ? `<span class="nb-day-pill">${escapeHtml(cat)}</span>` : ""}
             ${from ? `<span class="nb-day-tag">${escapeHtml(humanDateRange(from, to))}</span>` : ""}
             ${hasPhotos ? `<span class="nb-day-tag">사진 ${hasPhotos}</span>` : ""}
           </span>
-        </span>
-      </button>
+        </button>
+        <button class="nb-day-item-del" onclick="deleteItem('archives', '${a.id}')" title="삭제" aria-label="기록 삭제">${ICONS.trash}</button>
+      </div>
     `;
   }
 
@@ -5678,7 +5871,7 @@
 
     const leftPage = `
       <section class="nb-page nb-page--left nb-day-page">
-        <div class="nb-page-inner nb-day-inner">
+        <div class="nb-page-inner nb-day-inner ${photos.length ? "has-photos" : ""}">
           <header class="nb-day-head">
             <div class="nb-day-date">
               <b>${dottedDate(d)}</b><em>(${dowNames[dow]})</em>
@@ -6489,13 +6682,13 @@
   function renderGoalBookRow(entry) {
     const it = entry.item || {};
     const done = Boolean(it.done);
-    const stamps = `${goalPlanStampHtml(it)}${done && it.doneDate ? goalDoneStampHtml(it.id, it.doneDate) : ""}`;
+    const stamps = goalDateStampHtml(it);
     return `
       <div class="gb-row ${done ? "done" : ""}">
         <input type="checkbox" class="chk" ${done ? "checked" : ""} onchange="toggleGoalItem('${it.id}')" aria-label="달성 체크" />
         <div class="gb-row-main" onclick="openEditGoalItem('${it.id}')" title="눌러서 수정">
           <div class="gb-row-title">${escapeHtml(it.title || "")}</div>
-          ${stamps ? `<div class="gb-row-meta" onclick="event.stopPropagation()">${stamps}</div>` : ""}
+          ${stamps ? `<div class="gb-row-meta">${stamps}</div>` : ""}
           ${it.note ? `<div class="gb-row-note">${escapeHtml(it.note)}</div>` : ""}
         </div>
         <button class="icon-btn danger" onclick="deleteItem('${entry.src}', '${it.id}')" title="삭제" aria-label="항목 삭제">${ICONS.trash}</button>
@@ -6507,6 +6700,10 @@
   // 항목의 기간을 "연/분기"로 읽는다. 날짜가 없으면 옛 연간·반기·분기 값을 이어받는다.
   function goalPeriodOf(entry) {
     const it = (entry && entry.item) || {};
+    // 모달에서 고른 분기가 있으면 그 분기가 우선 (날짜 없이도 배치 가능)
+    const qYear = Number(String(it.qYear || "").slice(0, 4));
+    const qQuarter = Number(it.qQuarter) || 0;
+    if (qYear > 1900 && qQuarter >= 1 && qQuarter <= 4) return { year: qYear, quarter: qQuarter };
     const from = itemDateFrom(it);
     if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) {
       const year = Number(from.slice(0, 4));
@@ -6558,8 +6755,10 @@
       </div>`;
   }
 
-  function goalPageHeadHtml(label, from, to, total) {
-    const count = total ? `${from}–${to} / ${total}` : "";
+  function goalPageHeadHtml(label, from, to, total, pageInGroup, groupPages) {
+    // 한 장에 다 들어가면 `2개`, 여러 장으로 나뉜 기간만 `1/2쪽`
+    let count = "";
+    if (total) count = (!groupPages || groupPages <= 1) ? `${total}개` : `${pageInGroup || 1}/${groupPages}쪽`;
     return `<div class="gb-page-head"><span class="gb-page-period">${escapeHtml(label)}</span><span class="gb-page-count">${escapeHtml(count)}</span></div>`;
   }
 
@@ -6578,7 +6777,7 @@
         <div class="nb-spread">
           <section class="nb-page nb-page--left"><div class="nb-page-inner">
             ${goalTopicHeadHtml(topic)}
-            ${goalPageHeadHtml("0000 · 0분기", 1, 9, 9)}
+            ${goalPageHeadHtml("0000 · 0분기", 1, 9, 9, 1, 1)}
             <div class="gb-list">${entries.map(renderGoalBookRow).join("")}</div>
             ${paperPageNo(1)}
           </div></section>
@@ -6628,6 +6827,7 @@
     const capCont = Math.max(96, avail - contH - pageNoH - gap * 2 - 8);
     const pages = [];
     groups.forEach(group => {
+      const groupStart = pages.length;
       let i = 0;
       let shown = 0;
       while (i < group.items.length) {
@@ -6654,6 +6854,8 @@
         });
         shown += chunk.length;
       }
+      const groupPages = pages.length - groupStart;
+      pages.slice(groupStart).forEach((p, k) => { p.pageInGroup = k + 1; p.groupPages = groupPages; });
     });
     return pages;
   }
@@ -6669,7 +6871,7 @@
     const width = host && cs ? Math.round(host.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)) : 0;
     const sig = [width, window.innerWidth, window.innerHeight].join("|") + "§" + topics.map((t, i) => `${t.name}:${t.icon}:` + entriesByTopic[i].map(e => {
       const it = e.item || {};
-      return [it.id, it.title, it.note, it.done ? 1 : 0, it.dateMode, it.dateFrom, it.dateTo, it.period, it.year].join("~");
+      return [it.id, it.title, it.note, it.done ? 1 : 0, it.dateMode, it.dateFrom, it.dateTo, it.period, it.year, it.qYear, it.qQuarter].join("~");
     }).join(",")).join("§");
     if (goalLayoutCache.model && goalLayoutCache.sig === sig) return goalLayoutCache.model;
     const model = { topics: [], flat: [] };
@@ -6734,7 +6936,7 @@
         <section class="nb-page nb-page--${sideSel}">
           <div class="nb-page-inner">
             ${head}
-            ${goalPageHeadHtml(page.label, page.groupFrom, page.groupTo, page.groupTotal)}
+            ${goalPageHeadHtml(page.label, page.groupFrom, page.groupTo, page.groupTotal, page.pageInGroup, page.groupPages)}
             ${listHtml}
             ${paperPageNo(pageNo)}
           </div>
@@ -6744,12 +6946,14 @@
 
     const tabClass = model.topics.length > 11 ? "idx-tabs--denser" : (model.topics.length > 7 ? "idx-tabs--dense" : "");
     const tabButtons = model.topics.map((t, i) => {
-      const short = String(t.name).split(/[·,\s]/).filter(Boolean)[0] || t.name;
+      // 인덱스 탭 글씨는 내지 제목과 완전히 같은 이름 (약어로 줄이지 않음)
+      const label = String(t.name || "").trim();
+      const longCls = [...label].length >= 4 ? "idx-tab--long" : "";
       const color = TOPIC_TAB_COLORS[i % TOPIC_TAB_COLORS.length];
       const active = i === activeTopicIndex;
       return `
-        <button class="idx-tab idx-tab--topic ${active ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-label="${escapeAttr(t.name)} 주제" aria-selected="${active ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
-          <span>${stackedLabel(short)}</span>
+        <button class="idx-tab idx-tab--topic ${longCls} ${active ? "is-active" : ""}" style="--tab-color:${color}" role="tab" aria-label="${escapeAttr(t.name)} 주제" aria-selected="${active ? "true" : "false"}" onclick="jumpGoalTopic(${i})" title="${escapeAttr(t.name)}">
+          <span>${stackedLabel(label)}</span>
         </button>
       `;
     }).join("");
@@ -6865,6 +7069,10 @@
         <input type="text" id="mGoalTitle" placeholder="이루고 싶은 일, 해보고 싶은 것" />
       </div>
       <div class="modal-field">
+        <label>분기</label>
+        ${goalQuarterHtml({ qYear: TODAY_STR.slice(0, 4), qQuarter: 0 })}
+      </div>
+      <div class="modal-field">
         <label>날짜</label>
         ${dateFieldsHtml("mGoal", { dateMode: "none" })}
       </div>
@@ -6883,11 +7091,14 @@
       const selEl = document.getElementById("mGoalTopicSel");
       const topic = ensureTopicExists((selEl && selEl.value) || defaultTopic);
       const dates = readDateFields("mGoal");
+      const q = readGoalQuarter();
       state.goals.unshift({
         id: "g_" + uid().slice(3),
         topic,
-        year: normalizeYear(TODAY_STR.slice(0, 4)),
-        period: "연간",
+        year: q.year,
+        period: q.quarter ? `${q.quarter}분기` : "연간",
+        qYear: q.year,
+        qQuarter: q.quarter,
         title,
         note: (document.getElementById("mGoalNote").value || "").trim(),
         images: [],
@@ -6908,6 +7119,7 @@
     if (!entry) return;
     const it = entry.item || {};
     const curTopic = goalEntryTopic(entry) || (goalBookTopics()[0] ? goalBookTopics()[0].name : "");
+    const deleteMsg = entry.src === "buckets" ? "이 버킷리스트를 삭제할까요?" : "이 목표를 삭제할까요?";
     openModal("항목 수정", `
       <div class="modal-field">
         <label>주제</label>
@@ -6918,6 +7130,10 @@
         <input type="text" id="mGoalTitle" value="${escapeAttr(it.title || "")}" />
       </div>
       <div class="modal-field">
+        <label>분기</label>
+        ${goalQuarterHtml(it)}
+      </div>
+      <div class="modal-field">
         <label>날짜</label>
         ${dateFieldsHtml("mGoal", it)}
       </div>
@@ -6925,23 +7141,33 @@
         <label>메모</label>
         <textarea id="mGoalNote" style="min-height:100px;">${escapeHtml(it.note || "")}</textarea>
       </div>
-      ${it.done ? `<div class="modal-field"><label>달성일</label><input type="date" id="mGoalDoneDate" value="${escapeAttr((it.doneDate || "").slice(0, 10))}" /></div>` : ""}
     `, () => {
       const selEl = document.getElementById("mGoalTopicSel");
       const topic = (selEl && selEl.value) || curTopic;
       if (entry.src === "buckets") it.category = topic;
       else it.topic = topic;
-      if (entry.src === "goals") it.year = normalizeYear(it.year || TODAY_STR.slice(0, 4));
       it.title = (document.getElementById("mGoalTitle").value || "").trim() || it.title;
       it.note = (document.getElementById("mGoalNote").value || "").trim();
       const dates = readDateFields("mGoal");
       it.dateMode = dates.dateMode;
       it.dateFrom = dates.dateFrom;
       it.dateTo = dates.dateTo;
-      const doneEl = document.getElementById("mGoalDoneDate");
-      if (doneEl) it.doneDate = doneEl.value || it.doneDate;
-      if (entry.src === "buckets" && it.doneDate) it.done = true;
+      const q = readGoalQuarter();
+      it.qYear = q.year;
+      it.qQuarter = q.quarter;
+      if (entry.src === "goals") {
+        it.year = q.year;
+        it.period = q.quarter ? `${q.quarter}분기` : "연간";
+      }
+      syncGoalDoneDate(it);
       return true;
+    }, {
+      deleteLabel: "삭제",
+      onDelete: () => {
+        if (!confirm(deleteMsg)) return false;
+        state[entry.src] = state[entry.src].filter(x => x.id !== it.id);
+        return true;
+      }
     });
   }
 
@@ -7204,7 +7430,7 @@
     return `
       <section class="nb-page nb-page--right">
         <div class="nb-page-inner">
-          <div class="nb-note">
+          <div class="nb-note nb-note--edit" onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정">
             <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
             ${sub ? `
               <div class="nb-meta">
@@ -7213,7 +7439,7 @@
               </div>
             ` : ""}
             <div class="nb-note-rule"></div>
-            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 아래 ‘이 페이지 수정’으로 감상을 남겨 보세요.</span>`}</div>
+            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`}</div>
           </div>
           ${paperPageNo(pageNo)}
         </div>
@@ -7291,7 +7517,7 @@
           <button class="nb-nav next" onclick="notebookStep(1)" aria-label="다음 페이지">${ICONS.chevRight}</button>
         </div>
         <div class="nb-bottom-bar">
-          <span class="nb-bar-left">${onGuide ? "" : `<button class="nb-bar-btn" onclick="openEditArchive('${current.id}')">이 페이지 수정</button>`}</span>
+          <span class="nb-bar-left"></span>
           <button class="nb-add-btn" onclick="openNewArchiveModal('${book.id}')" title="새 기록 추가" aria-label="새 기록 추가">${NB_ICONS.plus}</button>
           <span class="nb-bar-right"></span>
         </div>
@@ -7345,7 +7571,7 @@
         if (isYear || isDay || !isMobileViewport()) return;
         const last = Number(spread.dataset.swipedAt || 0);
         if (last && Date.now() - last < 420) return;
-        if (e.target.closest("button, a, input, textarea, select, label, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
+        if (e.target.closest("button, a, input, textarea, select, label, .gb-row, .gb-list, .nb-note, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
         const nextSide = spread.dataset.side === "right" ? "left" : "right";
         const spreadId = spread.id;
         turnToPage(nextSide === "right" ? 1 : -1, () => setMobileBookSide(spreadId, nextSide));
@@ -7718,9 +7944,12 @@
   }
 
   function openNewArchiveModal(bookId) {
-    const book = bookId ? getBookById(bookId) : null;
+    // 일기 화면에서 + 로 열 때: 지금 보던 책 → 마지막으로 보던 책 → 첫 분류 순서로 기본 책을 잡는다
+    const book = bookId ? getBookById(bookId)
+      : (getBookById(notebookBookId) || getBookById(state.shelfSelectedBookId) || null);
     modalArchiveImages = [];
-    const defCat = (book && book.category) || (state.archiveCategories[0] ? state.archiveCategories[0].name : "기타");
+    const firstCat = state.archiveCategories[0] ? state.archiveCategories[0].name : "기타";
+    const defCat = (book && (book.category || book.title)) || firstCat;
     const defBook = book ? book.id : resolveArchiveBookId("", defCat);
     openModal(book ? `‘${book.title}’에 새 기록` : "새 아카이브 기록", `
       <div class="modal-field">
@@ -7775,7 +8004,13 @@
         note: document.getElementById("mNewArchiveNote").value.trim(),
         images: [...modalArchiveImages]
       });
+      applyBookModel(state);
+      // 어느 책에 담겼는지 바로 알아볼 수 있게: 책장 선택 + Archive에서 그 기록으로 바로 열리게
+      state.shelfSelectedBookId = bookId;
+      notebookBookId = bookId;
+      notebookPageIndex = 0;
       notebookFocusId = newId;
+      showToast(`‘${(targetBook && targetBook.title) || "아카이브"}’ 책에 기록을 담았습니다.`, "ok");
       return true;
     });
   }
@@ -7846,6 +8081,14 @@
       if (targetBook) a.category = targetBook.category || targetBook.title || a.category;
       delete a.image;
       return true;
+    }, {
+      deleteLabel: "삭제",
+      onDelete: () => {
+        if (!confirm("이 아카이브 기록을 삭제할까요?")) return false;
+        state.archives = state.archives.filter(x => x.id !== id);
+        applyBookModel(state);
+        return true;
+      }
     });
   }
 
@@ -8989,15 +9232,31 @@
   }
 
   // ---------- 공통 모달 ----------
-  function openModal(title, bodyHtml, onSave) {
+  function openModal(title, bodyHtml, onSave, opts = {}) {
     document.getElementById("modalTitle").textContent = title;
     document.getElementById("modalBody").innerHTML = bodyHtml;
+    const danger = opts && typeof opts.onDelete === "function"
+      ? `<button class="btn btn-danger" id="modalDeleteBtn">${escapeHtml(opts.deleteLabel || "삭제")}</button>`
+      : "";
     document.getElementById("modalActions").innerHTML = `
+      ${danger}
       <button class="btn" onclick="closeModal()">취소</button>
       <button class="btn btn-primary" id="modalSaveBtn">저장</button>
     `;
     const modal = document.getElementById("editModal");
     modal.classList.add("open");
+    const delBtn = document.getElementById("modalDeleteBtn");
+    if (delBtn) {
+      delBtn.onclick = () => {
+        const removed = opts.onDelete();
+        if (removed === false) return;
+        closeModal();
+        saveState();
+        render();
+        refreshCategoryManager();
+        refreshSettingsIfOpen();
+      };
+    }
     document.getElementById("modalSaveBtn").onclick = () => {
       const result = typeof onSave === "function" ? onSave() : true;
       if (result === false) return;
@@ -9153,6 +9412,9 @@
     openBookModal,
     openNewArchiveModal,
     openEditArchive,
+    openEditGoalItem,
+    deleteGoalItem,
+    toggleGoalItem,
     openEditGoal,
     openYearBook,
     openYearBookModal,

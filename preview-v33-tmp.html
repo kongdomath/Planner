@@ -2379,6 +2379,10 @@
     .nb-note-sub { font-size: 12px; color: #82868f; letter-spacing: .01em; }
     .nb-note-rule { height: 1px; margin: 14px 0 16px; background: linear-gradient(90deg, rgba(120,126,140,.42), rgba(120,126,140,0)); }
     .nb-note-body { font-size: 14.5px; line-height: 2.05; color: #3b404a; white-space: pre-wrap; word-break: break-word; letter-spacing: -0.004em; }
+    /* 글 면: 별도 수정 버튼 없이 내용을 누르면 바로 수정 (빈 곳 탭은 면 뒤집기 그대로) */
+    .nb-note--edit { cursor: pointer; border-radius: 6px; margin: -6px; padding: 6px; transition: background .14s ease; }
+    .nb-note--edit:hover { background: rgba(120,126,140,.05); }
+    .nb-note--edit:hover .nb-note-title { color: #14181f; }
     .nb-note-empty { color: #a0a4ad; font-size: 12.5px; }
     .nb-guide { align-items: center; justify-content: center; text-align: center; gap: 12px; }
     .nb-guide-plus {
@@ -6751,9 +6755,10 @@
       </div>`;
   }
 
-  function goalPageHeadHtml(label, from, to, total) {
-    // 한 장에 다 들어가면 `2개`, 여러 장으로 나뉘었을 때만 `1/2쪄`
-    const count = !total ? "" : (from === 1 && to >= total ? `${total}개` : `${from}/${total}쪄`);
+  function goalPageHeadHtml(label, from, to, total, pageInGroup, groupPages) {
+    // 한 장에 다 들어가면 `2개`, 여러 장으로 나뉜 기간만 `1/2쪽`
+    let count = "";
+    if (total) count = (!groupPages || groupPages <= 1) ? `${total}개` : `${pageInGroup || 1}/${groupPages}쪽`;
     return `<div class="gb-page-head"><span class="gb-page-period">${escapeHtml(label)}</span><span class="gb-page-count">${escapeHtml(count)}</span></div>`;
   }
 
@@ -6772,7 +6777,7 @@
         <div class="nb-spread">
           <section class="nb-page nb-page--left"><div class="nb-page-inner">
             ${goalTopicHeadHtml(topic)}
-            ${goalPageHeadHtml("0000 · 0분기", 1, 9, 9)}
+            ${goalPageHeadHtml("0000 · 0분기", 1, 9, 9, 1, 1)}
             <div class="gb-list">${entries.map(renderGoalBookRow).join("")}</div>
             ${paperPageNo(1)}
           </div></section>
@@ -6822,6 +6827,7 @@
     const capCont = Math.max(96, avail - contH - pageNoH - gap * 2 - 8);
     const pages = [];
     groups.forEach(group => {
+      const groupStart = pages.length;
       let i = 0;
       let shown = 0;
       while (i < group.items.length) {
@@ -6848,6 +6854,8 @@
         });
         shown += chunk.length;
       }
+      const groupPages = pages.length - groupStart;
+      pages.slice(groupStart).forEach((p, k) => { p.pageInGroup = k + 1; p.groupPages = groupPages; });
     });
     return pages;
   }
@@ -6928,7 +6936,7 @@
         <section class="nb-page nb-page--${sideSel}">
           <div class="nb-page-inner">
             ${head}
-            ${goalPageHeadHtml(page.label, page.groupFrom, page.groupTo, page.groupTotal)}
+            ${goalPageHeadHtml(page.label, page.groupFrom, page.groupTo, page.groupTotal, page.pageInGroup, page.groupPages)}
             ${listHtml}
             ${paperPageNo(pageNo)}
           </div>
@@ -7422,7 +7430,7 @@
     return `
       <section class="nb-page nb-page--right">
         <div class="nb-page-inner">
-          <div class="nb-note">
+          <div class="nb-note nb-note--edit" onclick="openEditArchive('${a.id}')" title="눌러서 수정" role="button" tabindex="0" aria-label="${escapeAttr(a.title || "")} 수정">
             <h2 class="nb-note-title">${escapeHtml(a.title)}</h2>
             ${sub ? `
               <div class="nb-meta">
@@ -7431,7 +7439,7 @@
               </div>
             ` : ""}
             <div class="nb-note-rule"></div>
-            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 아래 ‘이 페이지 수정’으로 감상을 남겨 보세요.</span>`}</div>
+            <div class="nb-note-body">${a.note ? escapeHtml(a.note) : `<span class="nb-note-empty">아직 글이 없습니다. 이곳을 누르면 바로 적을 수 있어요.</span>`}</div>
           </div>
           ${paperPageNo(pageNo)}
         </div>
@@ -7509,7 +7517,7 @@
           <button class="nb-nav next" onclick="notebookStep(1)" aria-label="다음 페이지">${ICONS.chevRight}</button>
         </div>
         <div class="nb-bottom-bar">
-          <span class="nb-bar-left">${onGuide ? "" : `<button class="nb-bar-btn" onclick="openEditArchive('${current.id}')">이 페이지 수정</button>`}</span>
+          <span class="nb-bar-left"></span>
           <button class="nb-add-btn" onclick="openNewArchiveModal('${book.id}')" title="새 기록 추가" aria-label="새 기록 추가">${NB_ICONS.plus}</button>
           <span class="nb-bar-right"></span>
         </div>
@@ -7563,7 +7571,7 @@
         if (isYear || isDay || !isMobileViewport()) return;
         const last = Number(spread.dataset.swipedAt || 0);
         if (last && Date.now() - last < 420) return;
-        if (e.target.closest("button, a, input, textarea, select, label, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
+        if (e.target.closest("button, a, input, textarea, select, label, .gb-row, .gb-list, .nb-note, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
         const nextSide = spread.dataset.side === "right" ? "left" : "right";
         const spreadId = spread.id;
         turnToPage(nextSide === "right" ? 1 : -1, () => setMobileBookSide(spreadId, nextSide));
