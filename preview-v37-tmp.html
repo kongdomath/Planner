@@ -2488,6 +2488,8 @@
     .nb-stamps--inline { margin-top: 6px; }
     /* v3.6 책 안쪽의 + 버튼은 없앴다 — 마지막 면은 책 요약과 뒤표지 */
     .nb-guide-summary { gap: 10px; justify-content: center; }
+    .nb-guide-empty { gap: 10px; justify-content: center; text-align: center; }
+    .nb-guide-empty .nb-note-empty { line-height: 1.8; }
     .nb-summary-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #2b2f37; }
     .nb-summary-list { list-style: none; margin: 4px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 9px; }
     .nb-summary-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 12px; color: #7d818b; border-bottom: 1px dashed rgba(120,126,140,.28); padding-bottom: 8px; }
@@ -8226,8 +8228,9 @@
     render();
   }
 
+  // v3.7 책의 마지막 페이지 = 실제 마지막 기록 (마지막 요약 페이지는 없다)
   function notebookTotalPages(book) {
-    return bookArchives(book.id).length + 1;
+    return Math.max(1, bookArchives(book.id).length);
   }
 
   function notebookStep(delta) {
@@ -8390,28 +8393,25 @@
     return { nums, next: n };
   }
 
-  function renderNotebookGuidePages(book, recs, pageNo) {
-    const last = recs.length ? recs[recs.length - 1] : null;
-    const lastLabel = last ? (last.title || dottedDate(itemDateFrom(last) || itemDateTo(last))) : "—";
+  // v3.7 아카이브 책의 마지막 요약 페이지는 없앴다 — 마지막 페이지는 실제 마지막 기록 그대로
+
+
+  function renderNotebookEmptyPages(book) {
     return `
       <section class="nb-page nb-page--left">
-        <div class="nb-page-inner nb-guide-summary">
+        <div class="nb-page-inner nb-guide-empty">
           <div class="nb-summary-title">${escapeHtml(book.title)}</div>
-          <ul class="nb-summary-list">
-            <li><span>기록</span><b>${recs.length}개</b></li>
-            <li><span>최근 기록</span><b>${last ? escapeHtml(lastLabel) : "—"}</b></li>
-            <li><span>연결</span><b>${escapeHtml(book.category || book.subject || "자유 주제")}</b></li>
-          </ul>
-          ${paperPageNo(pageNo)}
+          <p class="nb-note-empty">아직 기록이 없습니다. 아래 <b>+</b> 로 첫 기록을 남겨 보세요.</p>
+          ${paperPageNo(1)}
         </div>
       </section>
-      ${nbBlankLeafHtml("right", pageNo + 1)}
+      ${nbBlankLeafHtml("right", 2)}
     `;
   }
 
   function renderNotebookReader(book) {
     const recs = bookArchives(book.id);
-    const total = recs.length + 1;
+    const total = Math.max(1, recs.length);
     if (notebookFocusId) {
       const fi = recs.findIndex(a => a.id === notebookFocusId);
       if (fi >= 0) notebookPageIndex = fi;
@@ -8419,8 +8419,7 @@
     }
     notebookPageIndex = Math.min(total - 1, Math.max(0, notebookPageIndex));
     const idx = notebookPageIndex;
-    const onGuide = idx >= recs.length;
-    const current = onGuide ? null : recs[idx];
+    const current = recs[idx] || null;
     const bookSub = String(book.subtitle || "").trim();
     const subBits = [];
     const subLine = bookSub || (book.category && book.category !== book.title ? book.category : "");
@@ -8428,11 +8427,11 @@
     subBits.push(`${recs.length}페이지`);
 
     const numbers = notebookPageNumbers(recs);
-    const hasPhotos = !onGuide && normalizeImages(current).length > 0;
+    const hasPhotos = current ? normalizeImages(current).length > 0 : false;
     // v3.7 사진 없는 기록도 데스크톱·아이패드에서는 양면 책(가운데 제본 그늘 유지), 모바일은 한 면
-    const singleNote = !onGuide && !hasPhotos && isMobileViewport();
-    const spreadBody = onGuide
-      ? renderNotebookGuidePages(book, recs, numbers.next)
+    const singleNote = Boolean(current) && !hasPhotos && isMobileViewport();
+    const spreadBody = !current
+      ? renderNotebookEmptyPages(book)
       : hasPhotos
         ? `${renderNotebookLeftPage(current, book, numbers.nums[idx])}${renderNotebookRightPage(current, numbers.nums[idx] + 1)}`
         : singleNote
