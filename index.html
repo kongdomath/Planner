@@ -2104,8 +2104,7 @@
       touch-action: pan-y;
       cursor: grab;
       user-select: none; -webkit-user-select: none;
-      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
-      mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+      /* v4.1: 양옆 책에 걸리던 안개 마스크를 없앤다 (블러 없이 선명하게 보이도록) */
     }
     .nb-carousel.dragging { cursor: grabbing; }
     .nb-cover-btn {
@@ -2158,6 +2157,36 @@
     .nb-cover--photo .nb-cover-title b { background: rgba(18,21,30,.55); border-radius: 2px; padding: 5px 6px; color: #fff; }
     .nb-cover--photo .nb-cover-title i { display: none; }
     .nb-cover--photo .nb-cover-title span { background: rgba(18,21,30,.45); border-radius: 2px; padding: 3px 6px; display: inline-block; }
+    /* v4.1: 책장 표지 얼굴 — Calendar·Archive 모두 Goals 앞표지(.nb-coverface-plate + .nb-cover-foot)와 같은 결
+       (세리프 제목 · 얇은 가로 구분선 · 부제 · 아래 메타). 알약 배지(nb-cover-chip)는 쓰지 않는다. */
+    .nb-cover-face {
+      position: absolute; left: calc(21px * var(--cs, 1)); right: calc(10px * var(--cs, 1));
+      top: 50%; transform: translateY(-50%); z-index: 2; text-align: center;
+      color: #f7f2e6; padding: 0 calc(4px * var(--cs, 1));
+    }
+    .nb-cover-face b {
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+      font-size: calc(18px * var(--cs, 1)); line-height: 1.26; letter-spacing: .03em; word-break: keep-all;
+    }
+    .nb-cover-face i {
+      display: block; width: calc(24px * var(--cs, 1)); height: max(1px, calc(var(--cs, 1) * 1px));
+      margin: calc(9px * var(--cs, 1)) auto; background: rgba(247,242,230,.45);
+    }
+    .nb-cover-face span {
+      display: block; font-size: calc(8px * var(--cs, 1)); letter-spacing: .24em; text-transform: uppercase;
+      color: rgba(247,242,230,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nb-cover-face-foot {
+      position: absolute; left: 0; right: 0; bottom: calc(14px * var(--cs, 1)); z-index: 2;
+      text-align: center; font-size: calc(7.5px * var(--cs, 1)); letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(247,242,230,.46);
+      padding: 0 calc(12px * var(--cs, 1)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nb-cover--photo .nb-cover-face b { background: rgba(14,17,26,.5); border-radius: 2px; padding: calc(5px * var(--cs, 1)) calc(7px * var(--cs, 1)); color: #fff; }
+    .nb-cover--photo .nb-cover-face i { display: none; }
+    .nb-cover--photo .nb-cover-face span { background: rgba(14,17,26,.44); border-radius: 2px; padding: calc(3px * var(--cs, 1)) calc(7px * var(--cs, 1)); display: inline-block; }
+    .nb-cover--photo .nb-cover-face-foot { color: rgba(255,255,255,.66); }
     .nb-cover-label {
       position: absolute; left: 26px; right: 16px; top: 30px;
       background: rgba(252,251,247,.95); border-radius: 3px;
@@ -3206,7 +3235,7 @@
     .spine-swatch { width: 30px; height: 30px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; padding: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
     .spine-swatch.selected { border-color: #1f2421; box-shadow: inset 0 0 0 2px #fff; }
     .book-cover-preview { display: flex; align-items: center; gap: 14px; }
-    .book-cover-preview .nb-cover { width: 92px; height: 128px; box-shadow: 0 8px 16px rgba(10,13,22,.22); }
+    .book-cover-preview .nb-cover { width: 92px; height: 128px; --cs: .5; box-shadow: 0 8px 16px rgba(10,13,22,.22); }
     /* v3.9: 미니 표지(하드커버 결)를 미리보기 크기에 맞게 줄인다 */
     .book-cover-preview .nb-cover-frame { inset: 5px 4px 5px 13px; }
     .book-cover-preview .nb-cover-title { left: 14px; right: 5px; }
@@ -3597,8 +3626,10 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "4.0";
+  const APP_VERSION = "4.1";
   const STORAGE_KEY = "personal_archive_planner_v8";
+  // v4.1: 지운 표시를 state와 따로 한 번 더 남겨 둔다 (저장 공간 부족·구버전 기기 push에도 삭제가 이기게)
+  const TOMBSTONE_KEY = "personal_archive_planner_v8_deleted";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
     "personal_archive_planner_v6",
@@ -3606,6 +3637,7 @@
     "personal_archive_planner_v4"
   ];
   const LEGACY_INDEX_KEY = "archive_planner_index_v2_3";
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const YEARS = [2026, 2027, 2028, 2029, 2030];
   const PERIODS = ["연간", "상반기", "하반기", "1분기", "2분기", "3분기", "4분기"];
   const BOOK_SPINE_PALETTE = ["#b23a48", "#2f3e5c", "#6b7350", "#c9b79c", "#3f6f6a", "#6d4b6b", "#c39340", "#3a3f4b"];
@@ -4016,6 +4048,10 @@
   };
 
   let state = normalizeState(loadState());
+  // v4.1: 기기에 따로 남겨 둔 지운 표시를 합친 뒤, 지운 항목이 하나도 남지 않게 한 번 걸러 낸다
+  //  (state 저장이 실패했거나 다른 기기가 예전 기록을 올려도 삭제가 되살아나지 않도록)
+  state.deleted = mergeDeletedMaps(state.deleted, readTombstones());
+  pruneDeletedItems();
   let searchQuery = "";
   let searchOpen = false;
   let goalFiltersOpen = false;
@@ -4114,6 +4150,23 @@
   }
 
   function nbClosedCoverHtml(opts) { return bookCoverHtml(opts); }
+
+  // v4.1: 책장(Calendar · Archive) 책 표지의 앞면 — Goals 앞표지와 같은 결로 맞춘다
+  //  · 세리프 제목 → 얇은 가로 구분선 → 대문자 부제 → 아래 잔잔한 메타 문구
+  //  · 우상단 `3p`/`68일` 알약 배지는 두지 않는다
+  function shelfCoverFaceHtml(opts) {
+    const o = opts || {};
+    const sub = String(o.sub || "").trim();
+    const foot = String(o.foot || "").trim();
+    return `
+          <span class="nb-cover-frame" aria-hidden="true"></span>
+          <span class="nb-cover-face">
+            <b>${escapeHtml(o.title || "")}</b>
+            ${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}
+          </span>
+          ${foot ? `<span class="nb-cover-face-foot">${escapeHtml(foot)}</span>` : ""}
+    `;
+  }
 
   function bookCloseMotion(opts) {
     const conf = opts || {};
@@ -4962,13 +5015,21 @@
       qYear: String(b.qYear || "").slice(0, 4),
       qQuarter: [1, 2, 3, 4].includes(Number(b.qQuarter)) ? Number(b.qQuarter) : 0
     }));
-    merged.archives = (Array.isArray(merged.archives) ? merged.archives : []).map(a => ({
-      ...a,
-      images: normalizeImages(a),
-      dateMode: ["none", "day", "range", "from", "to"].includes(a.dateMode) ? a.dateMode : (a.date ? "day" : "none"),
-      dateFrom: String(a.dateFrom || ""),
-      dateTo: String(a.dateTo || "")
-    }));
+    merged.archives = (Array.isArray(merged.archives) ? merged.archives : []).map(a => {
+      // v4.1: 아카이브는 '기록일' 하루 기준이다. 형식이 깨졌거나 기록일과 같은 종료일은 잔여값으로 보고 지운다
+      //  (잔여 종료일 때문에 달력이 기간 전체로 도배되던 문제의 원인)
+      const dateFrom = ISO_DATE_RE.test(String(a.dateFrom || "")) ? String(a.dateFrom) : "";
+      let dateTo = ISO_DATE_RE.test(String(a.dateTo || "")) ? String(a.dateTo) : "";
+      if (dateTo && dateFrom && dateTo === dateFrom) dateTo = "";
+      if (dateTo && dateFrom && dateTo < dateFrom) dateTo = "";
+      return {
+        ...a,
+        images: normalizeImages(a),
+        dateMode: ["none", "day", "range", "from", "to"].includes(a.dateMode) ? a.dateMode : (a.date ? "day" : "none"),
+        dateFrom,
+        dateTo
+      };
+    });
     merged.todos = (Array.isArray(merged.todos) ? merged.todos : []).map(t => ({
       done: false,
       ...t
@@ -5197,10 +5258,14 @@
 
   function saveState(options) {
     const skipCloud = Boolean(options && options.skipCloud);
+    const immediate = Boolean(options && options.immediate);
+    // 지운 표시가 있는 항목은 기기에도 계정에도 남기지 않는다 (되살아나기 방지)
+    pruneDeletedItems();
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       lastSavedAt = new Date();
-      if (!skipCloud && typeof scheduleCloudPush === "function") scheduleCloudPush();
+      // 즉시 저장(삭제 같은 되돌리기 어려운 변경): 디바운스 없이 바로 계정에 밀어 보낸다
+      if (!skipCloud && typeof scheduleCloudPush === "function") scheduleCloudPush(immediate ? 0 : 1500);
       return true;
     } catch (e) {
       const msg = `${(e && e.name) || ""} ${(e && e.message) || ""}`;
@@ -5262,7 +5327,7 @@
     state.shelfSelectedBookId = "";
     notebookBookId = "";
     notebookPageIndex = 0;
-    saveState();
+    saveState({ immediate: true });
     render();
     refreshSettingsIfOpen();
   }
@@ -5708,16 +5773,14 @@
     else if (ar.bottom > tr.bottom) tabs.scrollTop += ar.bottom - tr.bottom + 4;
   }
 
+  // v4.1: 아카이브는 달력·하루 페이지에서 '기록일' 하루에만 보여 준다.
+  //  예전에는 기간(dateFrom ~ dateTo) 기록을 그 사이 모든 날에 찍어서, 예전 버전이 남겨 둔 종료일만으로도
+  //  달력이 두 달 내내 같은 제목(면도날)으로 도배됐다. 기간 정보는 카드의 도장에서만 보여 준다.
   function archiveOnDay(a, dateStr) {
     if (!a || !dateStr) return false;
     if (dateModeOf(a) === "none") return false;
-    const from = itemDateFrom(a);
-    const to = itemDateTo(a);
-    if (from && to) return dateStr >= from && dateStr <= to;
-    // 시작일만/종료일만 있는 기록은 그 하루에만 표시한다
-    if (from) return dateStr === from;
-    if (to) return dateStr === to;
-    return false;
+    const day = itemDateFrom(a) || itemDateTo(a);
+    return Boolean(day) && dateStr === day;
   }
 
   function getDayMeta(dateStr) {
@@ -5796,15 +5859,14 @@
       if (!Number.isFinite(vi)) return;
       const rel = vi - pos;
       const abs = Math.abs(rel);
-      const scale = Math.max(0.6, 1 - 0.15 * abs);
-      const rot = Math.max(-48, Math.min(48, -rel * 30));
+      // v4.1: 양옆 책을 블러 없이 선명하게 — 살짝 축소 + 약간 풀린 투명도만 준다 (안개·흐림 없음)
+      const scale = abs < 0.04 ? 1 : 0.84;
+      const rot = Math.max(-40, Math.min(40, -rel * 26));
       const x = rel * step;
       const y = abs * Math.max(6, step * 0.02);
       btn.style.transform = `translate(-50%, -50%) translateX(${x.toFixed(2)}px) translateY(${y.toFixed(2)}px) rotateY(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
-      btn.style.opacity = String(abs > 3.15 ? 0 : Math.max(0.22, 1 - 0.22 * abs));
-      btn.style.filter = abs < 0.04
-        ? "none"
-        : `brightness(${(1 - Math.min(0.4, abs * 0.14)).toFixed(3)}) saturate(${(1 - Math.min(0.26, abs * 0.08)).toFixed(3)})`;
+      btn.style.opacity = String(abs > 3.15 ? 0 : (abs < 0.04 ? 1 : Math.max(0.4, 0.68 - 0.1 * (abs - 1))));
+      btn.style.filter = "none";
       btn.style.zIndex = String(200 - Math.round(abs * 20));
       btn.classList.toggle("is-active", abs < 0.5);
     });
@@ -6143,16 +6205,15 @@
     const entry = getYearBook(y) || {};
     const title = entry.title || String(y);
     const sub = typeof entry.subtitle === "string" ? entry.subtitle : "Yearly Note";
+    // v4.1: Goals 앞표지와 같은 얼굴 — 제목 · 구분선 · 부제 · 아래 메타. 알약 배지(68일/올해)는 없앤다.
+    const foot = `${isThisYear ? "올해" : y} · 기록 ${days}일`;
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('year', this)" aria-label="${escapeAttr(title)} 펼치기" title="${escapeAttr(title)} 펼치기">
         <span class="nb-cover nb-cover--year ${entry.cover ? "nb-cover--photo" : ""}" style="--spine:${yearSpineColor(y)}">
-          ${isThisYear ? `<span class="nb-year-now">올해</span>` : ""}
           ${entry.cover ? `<img class="nb-cover-photo" src="${entry.cover}" alt="" decoding="async" />` : ""}
-          <span class="nb-cover-frame" aria-hidden="true"></span>
-          <span class="nb-cover-title"><b>${escapeHtml(title)}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
+          ${shelfCoverFaceHtml({ title, sub, foot })}
           <span class="nb-cover-spine"></span>
           <span class="nb-cover-shine"></span>
-          <span class="nb-cover-chip">${days}일</span>
         </span>
       </button>
     `;
@@ -7198,7 +7259,7 @@
       state.books.forEach(b => { if (b.category === target.name) b.category = ""; });
     }
     goalLayoutCache = { sig: "", model: null };
-    saveState();
+    saveState({ immediate: true });
     render();
     refreshCategoryManager();
   }
@@ -8426,15 +8487,16 @@
     const coverImg = book.cover || "";
     const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
     const sub = String(book.subtitle || "").trim();
+    const cat = String(book.category || "").trim();
+    // v4.1: Goals 앞표지와 같은 얼굴 — 제목 · 구분선 · 부제 · 아래 메타(3페이지 · 독서). `3p` 알약 배지는 없앤다.
+    const foot = [recs.length ? `${recs.length}페이지` : "기록 없음", cat].filter(Boolean).join(" · ");
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('archive', this)" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
         <span class="nb-cover ${coverImg ? "nb-cover--photo" : ""}" style="--spine:${spine}">
           ${coverImg ? `<img class="nb-cover-photo" src="${coverImg}" alt="" decoding="async" />` : ""}
-          <span class="nb-cover-frame" aria-hidden="true"></span>
-          <span class="nb-cover-title"><b>${escapeHtml(book.title)}</b>${(sub && sub !== book.title) ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
+          ${shelfCoverFaceHtml({ title: book.title, sub: sub !== book.title ? sub : "", foot })}
           <span class="nb-cover-spine"></span>
           <span class="nb-cover-shine"></span>
-          <span class="nb-cover-chip">${recs.length}p</span>
         </span>
       </button>
     `;
@@ -8960,8 +9022,7 @@
     return `
       <span class="nb-cover ${cover ? "nb-cover--photo" : ""}" style="--spine:${color}">
         ${cover ? `<img class="nb-cover-photo" src="${cover}" alt="" />` : ""}
-        <span class="nb-cover-frame" aria-hidden="true"></span>
-        <span class="nb-cover-title"><b>${escapeHtml(title || "새 책")}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
+        ${shelfCoverFaceHtml({ title: title || "새 책", sub })}
         <span class="nb-cover-spine"></span>
         <span class="nb-cover-shine"></span>
       </span>
@@ -9137,7 +9198,7 @@
       notebookShelfIndex = 0;
     }
     closeModal();
-    saveState();
+    saveState({ immediate: true });
     render();
   }
 
@@ -9570,7 +9631,7 @@
     markDeleted(collection, id);
     state[collection] = state[collection].filter(x => x.id !== id);
     if (collection === "archives") applyBookModel(state);
-    saveState();
+    saveState({ immediate: true });
     render();
     refreshCategoryManager();
   }
@@ -10126,6 +10187,7 @@
         const data = (snap && snap.data && snap.data()) || {};
         const stamp = Number(data.updatedAt) || 0;
         if (!stamp) return;
+        noteCloudStamp(stamp);
         if (stamp <= readCloudBaseline(authUser.uid)) return; // 내가(또는 이미 받은) 저장
         if (anyOverlayOpen() || isTypingNow() || document.visibilityState !== "visible") {
           pendingCloudAdopt = true;
@@ -10166,6 +10228,19 @@
     try { localStorage.setItem(CLOUD_BASELINE_KEY, JSON.stringify({ uid: authUser.uid, updatedAt: Number(updatedAt) || 0 })); } catch (_) {}
   }
 
+  // v4.1: 기기 시계가 서로 달라도 '지운 것을 바로잡는 push'가 항상 최신으로 보이게 한다.
+  //  (다른 기기 시계가 앞서 있으면 이 기기의 정정 push가 과거로 보여 무시됐다 → 삭제가 되살아난 원인)
+  let lastCloudStampSeen = 0;
+  function noteCloudStamp(stamp) {
+    const s = Number(stamp) || 0;
+    if (s > lastCloudStampSeen) lastCloudStampSeen = s;
+    return s;
+  }
+  function nextCloudStamp() {
+    lastCloudStampSeen = Math.max(Date.now(), lastCloudStampSeen + 1);
+    return lastCloudStampSeen;
+  }
+
   function cloudErrorText(err) {
     const code = String((err && err.code) || "");
     const raw = String((err && err.message) || err || "");
@@ -10199,7 +10274,7 @@
     }
     const stateRef = cloudStateRef(fb);
     const partsRef = cloudPartsRef(fb);
-    const stamp = Date.now();
+    const stamp = nextCloudStamp();
     if (bytes <= CLOUD_SINGLE_DOC_BYTES) {
       await dbMod.setDoc(stateRef, { schema: 2, state: JSON.parse(serialized), bytes, updatedAt: stamp, appVersion: APP_VERSION });
       const old = await dbMod.getDocs(partsRef);
@@ -10218,6 +10293,7 @@
     }
     cloudBytes = bytes;
     lastCloudAt = new Date();
+    noteCloudStamp(stamp);
     writeCloudBaseline(stamp);
   }
 
@@ -10226,6 +10302,7 @@
     const snap = await dbMod.getDoc(cloudStateRef(fb));
     if (!snap.exists()) return { state: null, updatedAt: 0, bytes: 0 };
     const data = snap.data() || {};
+    noteCloudStamp(Number(data.updatedAt) || 0);
     if (data.state && typeof data.state === "object") {
       return { state: data.state, updatedAt: Number(data.updatedAt) || 0, bytes: Number(data.bytes) || 0 };
     }
@@ -10262,6 +10339,8 @@
     try {
       const fb = await getFirebase();
       if (!fb) return false;
+      // 지운 항목은 계정으로 올리기 전에 한 번 더 걸러 낸다
+      pruneDeletedItems();
       const serialized = JSON.stringify(state);
       if (serialized === lastPushedSerialized) {
         lastCloudAt = new Date();
@@ -10328,20 +10407,60 @@
   }
 
   // ---------- 지운 항목 표시 (기기 사이 되살아나기 방지) ----------
+  const TOMBSTONE_LIMIT = 500;
   function deletedMap() {
     if (!state.deleted || typeof state.deleted !== "object" || Array.isArray(state.deleted)) state.deleted = {};
     return state.deleted;
+  }
+  function trimDeletedMap(map) {
+    const keys = Object.keys(map || {});
+    if (keys.length <= TOMBSTONE_LIMIT) return map;
+    keys.sort((a, b) => (Number(map[a]) || 0) - (Number(map[b]) || 0))
+      .slice(0, keys.length - TOMBSTONE_LIMIT)
+      .forEach(k => { delete map[k]; });
+    return map;
+  }
+  // state와 별도로 남겨 두는 지운 표시 장부 (v4.1)
+  //  · markDeleted 때 바로 localStorage에 적어 두기 때문에, 동기화 디바운스 중에 창을 닫아도 삭제가 남는다
+  //  · state 저장이 공간 부족으로 실패해도 삭제 표시는 따로 살아 있다
+  function readTombstones() {
+    try {
+      const raw = localStorage.getItem(TOMBSTONE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+      const out = {};
+      Object.keys(parsed).forEach(k => {
+        const t = Number(parsed[k]);
+        if (k && t > 0) out[k] = t;
+      });
+      return out;
+    } catch (_) { return {}; }
+  }
+  function writeTombstones(map) {
+    try { localStorage.setItem(TOMBSTONE_KEY, JSON.stringify(map || {})); } catch (_) {}
+  }
+  function persistTombstones() {
+    writeTombstones(trimDeletedMap(mergeDeletedMaps(readTombstones(), deletedMap())));
   }
   function markDeleted(listKey, id) {
     if (!listKey || !id) return;
     const map = deletedMap();
     map[listKey + ":" + id] = Date.now();
-    const keys = Object.keys(map);
-    if (keys.length > 500) {
-      keys.sort((a, b) => (Number(map[a]) || 0) - (Number(map[b]) || 0))
-        .slice(0, keys.length - 500)
-        .forEach(k => { delete map[k]; });
-    }
+    trimDeletedMap(map);
+    // 창을 바로 닫아도 살아남도록 여기서 곧바로 적어 둔다
+    persistTombstones();
+  }
+  // 지운 표시가 있는 항목은 저장·전송 전에 걸러 낸다 (어느 경로로 들어와도 되살아나지 않게)
+  function pruneDeletedItems() {
+    const map = deletedMap();
+    ["goals", "buckets", "archives", "todos", "books"].forEach(key => {
+      const list = Array.isArray(state[key]) ? state[key] : [];
+      const kept = list.filter(it => !it || !it.id || !map[key + ":" + it.id]);
+      if (kept.length !== list.length) state[key] = kept;
+    });
+    const logs = (state.logs && typeof state.logs === "object") ? state.logs : null;
+    if (logs) Object.keys(logs).forEach(d => { if (map["logs:" + d]) delete logs[d]; });
   }
   function mergeDeletedMaps(a, b) {
     const out = {};
@@ -10448,8 +10567,8 @@
     const cloud = normalizeState(cloudState);
     const stats = { logsAdded: 0, itemsAdded: 0 };
     const merged = { ...local };
-    // 지운 표시는 양쪽 것을 합쳐서 가장 강한 기준으로 쓴다
-    merged.deleted = mergeDeletedMaps(local.deleted, cloud.deleted);
+    // 지운 표시는 양쪽 것과 기기 장부를 모두 합쳐서 가장 강한 기준으로 쓴다
+    merged.deleted = mergeDeletedMaps(mergeDeletedMaps(local.deleted, cloud.deleted), readTombstones());
 
     const localLogs = local.logs || {};
     const cloudLogs = cloud.logs || {};
@@ -10516,18 +10635,26 @@
 
     // 이 기기가 예시 그대로면 계정 기록을 그대로 불러옵니다.
     if (localUntouched) {
+      // v4.1: 이 기기에 지운 표시만 남아 있을 수 있다 (기록을 다 지운 뒤 새 기기처럼 보일 때).
+      //  계정 기록을 그대로 받아도 이 기기에서 지운 항목은 되살리지 않고, 그 결과를 계정에도 밀어 둔다.
+      const localTombstones = mergeDeletedMaps(state.deleted, readTombstones());
+      const adopted = normalizeState({
+        ...cloud.state,
+        deleted: mergeDeletedMaps(cloud.state && cloud.state.deleted, localTombstones)
+      });
       const cloudCanon0 = stableStringify(cloud.state);
+      const adoptedCanon = stableStringify(adopted);
       // v3.9: 내용이 이미 같다면 다시 그리지 않는다 (접속 직후 화면 덜컹임 방지)
-      if (stableStringify(state) === cloudCanon0) {
+      if (stableStringify(state) === adoptedCanon) {
         lastPushedSerialized = JSON.stringify(state);
-        cloudBytes = cloud.bytes || jsonBytes(cloudCanon0);
+        cloudBytes = cloud.bytes || jsonBytes(adoptedCanon);
         lastCloudAt = new Date();
         writeCloudBaseline(cloud.updatedAt);
         refreshSettingsIfOpen();
         if (manual) showToast("계정과 이미 같은 기록입니다.", "info", 2800);
         return;
       }
-      state = normalizeState(cloud.state);
+      state = adopted;
       saveState({ skipCloud: true });
       lastPushedSerialized = JSON.stringify(state);
       cloudBytes = cloud.bytes || jsonBytes(lastPushedSerialized);
@@ -10535,6 +10662,11 @@
       writeCloudBaseline(cloud.updatedAt);
       render();
       refreshSettingsIfOpen();
+      // 이 기기에서 지운 항목 때문에 계정과 달라졌으면 바로 정정 push
+      if (adoptedCanon !== cloudCanon0) {
+        lastPushedSerialized = "";
+        await pushCloudState();
+      }
       if (manual) showToast("계정에 저장된 기록을 불러왔습니다.", "ok", 4000);
       return;
     }
@@ -10544,7 +10676,7 @@
 
     // 이 기기가 마지막으로 맞춘 뒤 계정 쪽이 변하지 않았다면, 이 기기 기록이 기준입니다.
     // (기기에서 지운 항목이 계정 때문에 되살아나지 않게)
-    const baseline = readCloudBaseline(authUser.uid);
+    const baseline = noteCloudStamp(readCloudBaseline(authUser.uid));
     const cloudChanged = Number(cloud.updatedAt) > baseline;
 
     if (localCanon === cloudCanon) {
@@ -10800,7 +10932,7 @@
         const removed = opts.onDelete();
         if (removed === false) return;
         closeModal();
-        saveState();
+        saveState({ immediate: true });
         render();
         refreshCategoryManager();
         refreshSettingsIfOpen();
