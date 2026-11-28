@@ -7200,15 +7200,25 @@
       model.topics.push({ name: topic.name, icon: topic.icon, entries, pages: paginateTopicPages(topic, entries, metrics), pageStart: 0 });
     });
     // 주제마다 왼쪽 면에서 시작하도록 페이지 수가 홀수면 면 하나를 채운다
+    // v3.5: 마지막 주제 뒤는 채우지 않는다 — 그 오른면이 책 뒤표지가 된다
     model.topics.forEach((t, ti) => {
       t.pageStart = model.flat.length;
       t.pages.forEach(p => model.flat.push({ ...p, topicIndex: ti }));
-      if (model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: ti });
+      const isLast = ti === model.topics.length - 1;
+      if (!isLast && model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: ti });
     });
-    if (!model.flat.length) model.flat.push({ filler: true, topicIndex: 0 }, { filler: true, topicIndex: 0 });
-    if (model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: Math.max(0, model.topics.length - 1) });
+    if (!model.flat.length) model.flat.push({ filler: true, topicIndex: 0 });
     goalLayoutCache = { sig, model };
     return model;
+  }
+
+  // v3.5 책 구조 계산: 앞표지 1스프레드 + 내지 + (필요하면) 덮힌 뒤표지 1스프레드
+  function goalBookSpreads(model) {
+    const len = model.flat.length;
+    const contentSpreads = Math.max(1, Math.ceil(len / 2));
+    // 마지막 장이 왼쪽 면이면 그 오른면을 뒤표지로 쓰고, 꽉 차면 뒤에 덮힌 뒤표지를 둔다
+    const backOnLast = len % 2 === 1;
+    return { contentSpreads, backOnLast, total: 1 + contentSpreads + (backOnLast ? 0 : 1) };
   }
 
   // v3.5: Goals 책 앞표지·뒤표지 — 책장 색(파란색)과 같은 표지 질감
@@ -7295,19 +7305,23 @@
       `;
     }
     const model = goalBookModel();
-    const contentSpreads = Math.max(1, Math.ceil(model.flat.length / 2));
-    // v3.5 책 구조: 0 = 앞표지, 1 ~ contentSpreads = 학업·전공 첫 장 ~ 경험·성취 끝 장, 마지막 = 뒤표지
-    const totalSpreads = contentSpreads + 2;
+    const spreads = goalBookSpreads(model);
+    const contentSpreads = spreads.contentSpreads;
+    const backOnLast = spreads.backOnLast;
+    // v3.5 책 구조: 0 = 앞표지, 1 ~ contentSpreads = 학업·전공 첫 장 ~ 경험·성취 끝 장, 그 뒤 덮힌 뒤표지
+    const totalSpreads = spreads.total;
     let spreadIdx = Math.round(Number(state.goalBookPage) || 0);
     if (!Number.isFinite(spreadIdx) || spreadIdx < 0) spreadIdx = 0;
     spreadIdx = Math.min(totalSpreads - 1, spreadIdx);
     state.goalBookPage = spreadIdx;
     const onFrontCover = spreadIdx === 0;
-    const onBackCover = spreadIdx === totalSpreads - 1;
+    const onBackCover = !onFrontCover && spreadIdx > contentSpreads;
     const bodyIdx = spreadIdx - 1;
     const showBody = !onFrontCover && !onBackCover;
+    const lastBodySpread = showBody && backOnLast && bodyIdx === contentSpreads - 1;
     const pageA = showBody ? (model.flat[bodyIdx * 2] || { filler: true, topicIndex: 0 }) : null;
-    const pageB = showBody ? (model.flat[bodyIdx * 2 + 1] || { filler: true, topicIndex: (pageA && pageA.topicIndex) || 0 }) : null;
+    const rawB = showBody ? model.flat[bodyIdx * 2 + 1] : null;
+    const pageB = showBody ? (rawB || { filler: true, topicIndex: (pageA && pageA.topicIndex) || 0 }) : null;
     const activeTopicIndex = showBody ? Math.max(0, Math.min(model.topics.length - 1,
       pageA.filler ? ((pageB && pageB.topicIndex) || 0) : pageA.topicIndex)) : 0;
     const activeTopic = model.topics[activeTopicIndex] || model.topics[0];
@@ -7316,9 +7330,11 @@
     state.goalTopicFilter = activeTopic.name;
     state.bucketCatFilter = activeTopic.name;
 
-    const pageHtml = (page, pageNo, sideSel) => {
+    const pageHtml = (page, pageNo, sideSel, asBackCover) => {
+      // 마지막 장 다음 오른면은 빈 종이가 아니라 책 뒤표지
+      if (asBackCover) return nbBackCoverHtml(sideSel, GOAL_COVER_SPINE, { title: "Goals", sub: "뒤표지" });
       if (!page || page.filler) {
-        // 장 나눔용 빈 면은 뒤표지가 아니라 종이 그대로 (뒤표지는 책 맨 끝 전용)
+        // 주제 사이 장 나눔용 빈 면은 종이 그대로 (뒤표지는 책 맨 끝 전용)
         return `
         <section class="nb-page nb-page--${sideSel} nb-page--blank">
           <div class="nb-page-inner"></div>
@@ -7374,7 +7390,7 @@
             <span class="nb-edge nb-edge--right"></span>
             ${onFrontCover ? goalCoverFaceHtml("front")
               : onBackCover ? goalCoverFaceHtml("back")
-              : `${pageHtml(pageA, bodyIdx * 2 + 1, "left")}${pageHtml(pageB, bodyIdx * 2 + 2, "right")}`}
+              : `${pageHtml(pageA, bodyIdx * 2 + 1, "left")}${pageHtml(pageB, bodyIdx * 2 + 2, "right", lastBodySpread && !rawB)}`}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
             <div class="idx-tabs idx-tabs--topic ${tabClass}" role="tablist" aria-label="주제 인덱스">${tabButtons}</div>
@@ -7413,7 +7429,8 @@
 
   function goalBookStep(delta) {
     const model = goalBookModel();
-    const total = Math.max(1, Math.ceil(model.flat.length / 2)) + 2;
+    const spreads = goalBookSpreads(model);
+    const total = spreads.total;
     const cur = Math.max(0, Math.min(total - 1, Math.round(Number(state.goalBookPage) || 0)));
     const next = cur + delta;
     if (next < 0 || next >= total) return;
@@ -7422,9 +7439,9 @@
       goalBookSide = "left";
       saveState();
     };
-    // 앞표지·뒤표지 경계는 표지가 회전하며 열리고 덮인다
+    // 앞표지는 열리고 덮이며, 꽉 찬 뒤끝에만 덮힌 뒤표지 스프레드가 있다
     if (cur === 0 || next === 0) { goalCoverTurn(delta, "front", apply); return; }
-    if (cur === total - 1 || next === total - 1) { goalCoverTurn(delta, "back", apply); return; }
+    if (!spreads.backOnLast && (cur === total - 1 || next === total - 1)) { goalCoverTurn(delta, "back", apply); return; }
     turnToPage(delta, apply);
   }
 
