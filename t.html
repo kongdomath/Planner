@@ -29,8 +29,9 @@
     var r = el.getBoundingClientRect();
     var x = r.left + r.width / 2, y = r.top + r.height / 2;
     var j = jitter === undefined ? 7 : jitter;
+    var win = W();
     var pt = function (dx, dy) {
-      return new W().Touch({
+      return new win.Touch({
         identifier: 11, target: el,
         clientX: x + dx, clientY: y + dy, pageX: x + dx, pageY: y + dy,
         screenX: x + dx, screenY: y + dy,
@@ -38,7 +39,7 @@
       });
     };
     var send = function (type, t, active) {
-      el.dispatchEvent(new W().TouchEvent(type, {
+      el.dispatchEvent(new win.TouchEvent(type, {
         touches: active ? [t] : [], targetTouches: active ? [t] : [], changedTouches: [t],
         bubbles: true, cancelable: true, composed: true
       }));
@@ -56,11 +57,12 @@
     var el = carousel.querySelector(".nb-cover-btn.is-active") || carousel;
     var r = el.getBoundingClientRect();
     var x = r.left + r.width / 2, y = r.top + r.height / 2;
+    var win = W();
     var pt = function (tx, ty) {
-      return new W().Touch({ identifier: 12, target: carousel, clientX: tx, clientY: ty, pageX: tx, pageY: ty, screenX: tx, screenY: ty, radiusX: 9, radiusY: 9, force: 1 });
+      return new win.Touch({ identifier: 12, target: carousel, clientX: tx, clientY: ty, pageX: tx, pageY: ty, screenX: tx, screenY: ty, radiusX: 9, radiusY: 9, force: 1 });
     };
     var send = function (type, t, active) {
-      carousel.dispatchEvent(new W().TouchEvent(type, {
+      carousel.dispatchEvent(new win.TouchEvent(type, {
         touches: active ? [t] : [], targetTouches: active ? [t] : [], changedTouches: [t],
         bubbles: true, cancelable: true, composed: true
       }));
