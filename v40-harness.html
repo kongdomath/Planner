@@ -107,9 +107,19 @@ function run() {
             o.spread = r(q1(D, "#nbSpread"));
             o.face = r(q1(D, "#nbSpread .nb-page--cover"));
           });
-          res.errors = (P.errors && P.errors()) || [];
-          res.ok = true;
-          log(JSON.stringify(res, null, 1));
+          try {
+            P.setTab("year"); P.render();
+            P.openYearBook(2026);
+          } catch (e3) { res.yearOpenErr = String(e3); }
+          setTimeout(function () {
+            shot("yearOpenCover", function (o) {
+              o.spread = r(q1(D, "#nbYearSpread"));
+              o.face = r(q1(D, "#nbYearSpread .nb-page--cover"));
+            });
+            res.errors = (P.errors && P.errors()) || [];
+            res.ok = true;
+            log(JSON.stringify(res, null, 1));
+          }, 800);
         }, 800);
       }, 700);
     } catch (e) {
