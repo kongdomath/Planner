@@ -1,0 +1,82 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>v3.9 harness</title>
+<style>html,body{margin:0;padding:0;background:#161a22}body{display:flex;align-items:flex-start}iframe{border:0;display:block;background:#fff}</style>
+</head><body>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = Number(q.get("w") || 390), h = Number(q.get("h") || 844);
+  var src = q.get("src") || "preview-v39-tmp.html";
+  var f = document.createElement("iframe");
+  f.width = String(w); f.height = String(h); f.src = src;
+  document.body.appendChild(f);
+  window.F = function () { return f; };
+  window.W = function () { return f.contentWindow; };
+  window.D = function () { return f.contentDocument; };
+  window.P = function () { return f.contentWindow.__planner; };
+  window.wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  // 프레임마다 어두운 책상(.nb-stage)이 실제로 보이는지 확인한다.
+  // stage 가 없거나 opacity 가 낮은 프레임 = 하얀 백지로 비는 프레임.
+  window.sampleFrames = function (ms) {
+    return new Promise(function (resolve) {
+      var win = window.W(), doc = window.D();
+      var log = [], t0 = performance.now(), lastT = 0;
+      function step(t) {
+        var el = doc.querySelector(".nb-stage");
+        var op = 0, bg = "";
+        if (el) {
+          var cs = win.getComputedStyle(el);
+          op = Number(cs.opacity);
+          bg = cs.backgroundImage ? "img" : cs.backgroundColor;
+        }
+        var blank = !el || op < 0.9;
+        log.push({ t: Math.round(performance.now() - t0), stage: !!el, op: Math.round(op * 100) / 100, blank: blank });
+        if (performance.now() - t0 < ms) requestAnimationFrame(step);
+        else resolve({ frames: log.length, blanks: log.filter(function (x) { return x.blank; }).length, log: log });
+      }
+      requestAnimationFrame(step);
+    });
+  };
+
+  window.photo = function (seed, w, h) {
+    var c = document.createElement("canvas");
+    c.width = w || 720; c.height = h || 540;
+    var x = c.getContext("2d");
+    var g = x.createLinearGradient(0, 0, c.width, c.height);
+    g.addColorStop(0, "hsl(" + (seed * 47 % 360) + ",55%,58%)");
+    g.addColorStop(1, "hsl(" + (seed * 47 % 360 + 60) + ",45%,32%)");
+    x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
+    for (var i = 0; i < 60; i++) {
+      x.fillStyle = "rgba(255,255,255," + (0.04 + (i % 5) * 0.02) + ")";
+      x.beginPath();
+      x.arc((i * 137 + seed * 31) % c.width, (i * 89 + seed * 17) % c.height, 6 + (i % 7) * 4, 0, 6.283);
+      x.fill();
+    }
+    return c.toDataURL("image/jpeg", 0.8);
+  };
+
+  window.seed = function (bookId, count) {
+    var P = window.P(), st = P.getState();
+    var book = (st.books || []).find(function (b) { return b.id === bookId; }) || (st.books || [])[0];
+    if (!book) return "no book";
+    var n = count || 3;
+    for (var i = 0; i < n; i++) {
+      st.archives.push({
+        id: "seed" + Date.now() + "_" + i,
+        bookId: book.id,
+        category: book.category || book.title,
+        title: "테스트 기록 " + (i + 1),
+        subtitle: "사진 두 장",
+        note: "책 넘김 성능 확인용 기록입니다. " + new Array(8).join("문장을 조금 길게 적어 페이지가 실제처럼 보이게 합니다. "),
+        dateMode: "day",
+        date: "2026-11-0" + ((i % 9) + 1),
+        dateFrom: "2026-11-0" + ((i % 9) + 1),
+        dateTo: "",
+        images: [window.photo(i * 3 + 1), window.photo(i * 3 + 2)]
+      });
+    }
+    P.render();
+    return book.title + " +" + n;
+  };
+</script>
+</body></html>

@@ -2119,11 +2119,36 @@
       position: relative; display: block;
       width: 176px; height: 246px;
       border-radius: 3px 8px 8px 3px;
-      background: linear-gradient(160deg, rgba(255,255,255,.26), rgba(0,0,0,.22)), var(--spine, #2f3e5c);
-      box-shadow: 0 12px 22px rgba(10,13,22,.42), 0 1px 0 rgba(255,255,255,.22) inset;
+      background:
+        linear-gradient(155deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 24%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.34) 100%),
+        var(--spine, #2f3e5c);
+      box-shadow: 0 12px 22px rgba(10,13,22,.42), inset 0 0 0 1px rgba(255,255,255,.10);
       overflow: hidden;
     }
     .nb-cover-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nb-cover-photo + .nb-cover-frame { display: none; }
+    /* v3.9: 책장 미니 표지도 Goals 앞표지와 같은 양장 하드커버 결 (안쪽 테두리 + 세리프 제목) */
+    .nb-cover-frame {
+      position: absolute; inset: 8px 7px 8px 19px; border: 1px solid rgba(255,255,255,.18);
+      border-radius: 2px; pointer-events: none;
+    }
+    .nb-cover-title {
+      position: absolute; left: 21px; right: 9px; top: 50%; transform: translateY(-50%);
+      text-align: center; color: #f7f2e6; padding: 0 3px;
+    }
+    .nb-cover-title b {
+      font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+      font-size: 17px; line-height: 1.25; letter-spacing: .02em; word-break: keep-all;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .nb-cover-title i { display: block; width: 22px; height: 1px; margin: 8px auto; background: rgba(247,242,230,.45); }
+    .nb-cover-title span {
+      display: block; font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+      color: rgba(247,242,230,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nb-cover--photo .nb-cover-title b { background: rgba(18,21,30,.55); border-radius: 2px; padding: 5px 6px; color: #fff; }
+    .nb-cover--photo .nb-cover-title i { display: none; }
+    .nb-cover--photo .nb-cover-title span { background: rgba(18,21,30,.45); border-radius: 2px; padding: 3px 6px; display: inline-block; }
     .nb-cover-label {
       position: absolute; left: 26px; right: 16px; top: 30px;
       background: rgba(252,251,247,.95); border-radius: 3px;
@@ -2598,6 +2623,12 @@
     .shelf-in-prev { animation: shelfInPrev .34s cubic-bezier(.22,.75,.28,1) both; }
 
     /* ===== v3.1 실제 책 넘김: 아래에 다음 페이지(underlay) + 앞/뒷면이 있는 종이(leaf) ===== */
+    /* v3.9: 넘김 종이에 실제 페이지 DOM을 그대로 옮겨 넣는다 (사진을 다시 그리지 않아 iOS Safari가 덜 버벅인다) */
+    .nb-flip-face > .nb-page { position: absolute; inset: 0; height: 100%; }
+    .nb-spread .nb-underlay-page { display: block !important; }
+    /* 넘김이 도는 동안에는 무거운 그림자를 잠시 줄여 페인트 비용을 낮춘다 */
+    .nb-spread[data-turning="1"] { box-shadow: 0 16px 26px -20px rgba(6,9,18,.45); }
+    .nb-flip, .nbf-shut { will-change: transform; }
     .nb-flip {
       position: absolute; top: 0; bottom: 0; z-index: 9;
       perspective: 3200px; perspective-origin: 50% 50%;
@@ -2719,6 +2750,23 @@
       display: block; font-family: Georgia, "Times New Roman", serif;
       font-size: 42px; letter-spacing: .04em; line-height: 1.2;
     }
+    /* v3.9: 책 제목이 길어도 표지 밖으로 넘치지 않게 */
+    .nb-page--cover .nb-coverface-plate b { font-size: clamp(19px, 3.2vw, 42px); word-break: keep-all; }
+    /* v3.9: 표지 사진(연도·아카이브 책) — 사진 위에서도 제목이 읽히게 어둡게 깔고 글자를 얹는다 */
+    .nb-page--cover .nb-cover-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 0;
+    }
+    .nb-page--cover.is-photo .nb-cover-inner::after {
+      content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(180deg, rgba(10,13,20,.42) 0%, rgba(10,13,20,.16) 42%, rgba(10,13,20,.62) 100%);
+    }
+    .nb-page--cover.is-photo .nb-cover-frame { z-index: 1; }
+    .nb-page--cover.is-photo .nb-coverface-plate b {
+      background: rgba(14,17,26,.48); border-radius: 3px; padding: 8px 12px; color: #fff;
+    }
+    .nb-page--cover.is-photo .nb-coverface-plate span {
+      display: inline-block; background: rgba(14,17,26,.42); border-radius: 3px; padding: 4px 9px;
+    }
     .nb-coverface-plate i { display: block; width: 54px; height: 1px; margin: 16px auto; background: rgba(255,255,255,.42); }
     .nb-coverface-plate span {
       display: block; font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase;
@@ -2775,6 +2823,11 @@
       transform-origin: left center;
     }
     .nbf-cover--narrow.nbf-cover--back { border-radius: 4px 10px 10px 4px; transform-origin: right center; }
+    /* v3.9: 표지 여닫김도 실제 앞표지 그림을 그대로 쓴다 (Goals·Calendar·Archive 같은 표지 결) */
+    .nbf-cover--art { padding: 0; background: transparent; box-shadow: none; }
+    .nbf-cover--art::before, .nbf-cover--art::after { display: none; }
+    .nbf-cover-face { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+    .nbf-cover-face > .nb-page { position: absolute; inset: 0; height: 100%; border-radius: inherit; }
     @keyframes nbfNarrowOpenLeft { from { transform: rotateY(0deg); opacity: 1; } 62% { opacity: 1; } to { transform: rotateY(-104deg); opacity: 0; } }
     @keyframes nbfNarrowCloseLeft { from { transform: rotateY(-104deg); opacity: 0; } 34% { opacity: 1; } to { transform: rotateY(0deg); opacity: 1; } }
     @keyframes nbfNarrowOpenRight { from { transform: rotateY(0deg); opacity: 1; } 62% { opacity: 1; } to { transform: rotateY(104deg); opacity: 0; } }
@@ -2901,11 +2954,15 @@
     .nb-spread.is-closing > .nb-page { opacity: 0; }
     .nb-spread.is-closing[data-shut-mobile="1"] > .nb-page { opacity: 1; }
     .nb-spread.is-closing.is-closed > .nb-page { opacity: 0; }
-    /* 책을 완전히 닫은 뒤에 책장으로 넘어간다 (닫히는 도중에 옆으로 밀리지 않게) */
+    /* v3.9: 책을 닫은 뒤 책장으로 넘어갈 때 책상(.nb-stage) 자체는 그대로 두고 내용만 바꾼다.
+       예전에는 스테이지 전체가 opacity 0으로 사라져 그 사이 하얀 빈 화면이 한 프레임씩 보였다. */
     @keyframes nbStageLeave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.986); } }
     @keyframes nbStageEnter { from { opacity: 0; transform: scale(1.012); } to { opacity: 1; transform: none; } }
-    .nb-stage.is-leaving { animation: nbStageLeave .19s ease-in both; pointer-events: none; }
+    .nb-stage.is-leaving { pointer-events: none; }
     .nb-stage.is-entering { animation: nbStageEnter .3s cubic-bezier(.22,.75,.28,1) both; }
+    /* 스테이지 배경·점 패턴은 고정한 채 들어오는 내용만 부드럽게 앉힌다 */
+    @keyframes nbContentIn { from { opacity: .28; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .nb-stage.is-swapping > * { animation: nbContentIn .24s cubic-bezier(.22,.75,.28,1) both; }
     .nb-page--filler {
       background-image: radial-gradient(rgba(122,128,142,.17) 1px, transparent 1px);
       background-size: 19px 19px;
@@ -3232,8 +3289,8 @@
       }
       .nb-cover-btn { transform: translateY(4px) scale(.94); }
       .nb-cover { width: 190px; height: 264px; }
-      .nb-cover-label { left: 30px; right: 16px; top: 30px; padding: 13px 11px 14px; }
-      .nb-cover-label b { font-size: 16px; }
+      .nb-cover-title b { font-size: 18px; }
+      .nb-cover-frame { inset: 9px 8px 9px 21px; }
       .nb-book-meta h3 { font-size: 20px; }
       .nb-actions { gap: 14px; margin-top: 14px; }
       .nb-bottom-bar { height: 62px; margin-top: 10px; gap: 8px; }
@@ -3321,8 +3378,8 @@
     @media (min-height: 900px) {
       .nb-carousel { height: 372px; }
       .nb-cover { width: 214px; height: 300px; }
-      .nb-cover-label { left: 32px; right: 18px; top: 34px; padding: 13px 12px 14px; }
-      .nb-cover-label b { font-size: 16.5px; }
+      .nb-cover-title b { font-size: 20px; }
+      .nb-cover-frame { inset: 10px 9px 10px 23px; }
       .nb-cover-chip { font-size: 10.5px; }
       .nb-book-meta h3 { font-size: 26px; }
       .nb-cover--year .nb-year-plate b { font-size: 38px; }
@@ -3947,6 +4004,8 @@
   let notebookPageIndex = 0;
   let notebookMobileSide = "left";
   let notebookFocusId = "";
+  // v3.9: 책장에서 책을 고르면 앞표지가 먼저 앉았다가 열린다 (Goals와 같은 책 형태)
+  let notebookCoverOpen = false;
   let draftBookCover = "";
   let draftBookSpine = "";
   let goalBookSide = "left";
@@ -3979,10 +4038,11 @@
     if (el) el.innerHTML = html;
   }
 
-  function nbFlipFace(html, cls) {
+  function nbFlipFace(node, cls) {
     const el = document.createElement("div");
     el.className = `nb-flip-face ${cls}`;
-    el.innerHTML = html;
+    if (typeof node === "string") el.innerHTML = node;
+    else if (node) el.appendChild(node);
     return el;
   }
 
@@ -4001,13 +4061,16 @@
   let pendingStageIn = false;
 
   // 닫힌 책 표지 그림 (양장 하드커버 결 · 책등 쪽 그늘)
-  function nbClosedCoverHtml(opts) {
+  // v3.9: Goals·Calendar·Archive 가 모두 이 표지 그림 하나를 쓴다 (책 형태 통일)
+  function bookCoverHtml(opts) {
     const o = opts || {};
     const back = o.back === true;
     const color = normalizeSpineColor(o.spine, "#2f3e5c");
     const sub = String(o.sub || "").trim();
+    const cover = String(o.cover || "");
     return `
-      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back" : ""} ${back ? "nb-coverart--spine-right" : ""}" style="--spine:${color}" aria-hidden="true">
+      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back" : ""} ${back ? "nb-coverart--spine-right" : ""} ${cover ? "is-photo" : ""}" style="--spine:${color}" ${o.label ? `aria-label="${escapeAttr(o.label)}"` : `aria-hidden="true"`}>
+        ${cover ? `<img class="nb-cover-bg" src="${cover}" alt="" decoding="async" />` : ""}
         <div class="nb-cover-inner">
           <span class="nb-cover-frame" aria-hidden="true"></span>
           <div class="nb-coverface-plate">
@@ -4020,6 +4083,8 @@
     `;
   }
 
+  function nbClosedCoverHtml(opts) { return bookCoverHtml(opts); }
+
   function bookCloseMotion(opts) {
     const conf = opts || {};
     const done = typeof conf.after === "function" ? conf.after : function () {};
@@ -4031,18 +4096,18 @@
     const FOLD = 540;   // 장이 접혀 덮히는 시간
     const TURN = 480;   // 닫힌 책이 Y축으로 돌아 앞표지가 되는 시간
     const HOLD = 150;   // 앞표지에서 한 박자
-    const LEAVE = 190;  // 책장으로 넘어가는 페이드
     spread.dataset.closing = "1";
     spread.dataset.turning = "1";
     spread.dataset.shutMobile = mobile ? "1" : "0";
     spread.classList.add("is-closing");
-    bookCloseLock = Date.now() + FOLD + TURN + HOLD + LEAVE + 500;
-    try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + TURN + HOLD + LEAVE); } catch (_) {}
+    bookCloseLock = Date.now() + FOLD + TURN + HOLD + 520;
+    try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + TURN + HOLD); } catch (_) {}
 
     const pages = Array.from(spread.querySelectorAll(".nb-page"));
     const leftEl = pages.find(p => p.classList.contains("nb-page--left")) || null;
     const rightEl = pages.find(p => p.classList.contains("nb-page--right")) || null;
-    const shownEl = pages.find(p => p.offsetParent !== null) || leftEl || rightEl || pages[0] || null;
+    const wideEl = pages.find(p => !p.classList.contains("nb-page--left") && !p.classList.contains("nb-page--right") && !p.classList.contains("nb-page--cover")) || null;
+    const shownEl = pages.find(p => p.offsetParent !== null) || leftEl || rightEl || wideEl || pages[0] || null;
     const leafSource = mobile ? shownEl : ((side === "back" ? rightEl : leftEl) || shownEl);
     const stillSource = mobile ? null : (side === "back" ? leftEl : rightEl);
 
@@ -4053,10 +4118,11 @@
 
     const body = document.createElement("div");
     body.className = "nbf-shut-body " + (mobile ? "" : (side === "back" ? "nbf-shut-body--back" : "nbf-shut-body--front"));
+    // v3.9: 페이지 HTML을 복사하지 않고 실제 DOM을 그대로 옮긴다 (큰 사진이 두 번 그려지며 생기던 렉 제거)
     if (stillSource) {
       const still = document.createElement("div");
       still.className = "nbf-shut-still " + (side === "back" ? "nbf-shut-still--left" : "nbf-shut-still--right");
-      still.innerHTML = stillSource.outerHTML;
+      still.appendChild(stillSource);
       body.appendChild(still);
     }
     const leaf = document.createElement("div");
@@ -4064,7 +4130,7 @@
     leaf.className = "nbf-shut-leaf " + leafSideCls + " " + (side === "front" ? "is-front" : "is-back");
     const leafFront = document.createElement("div");
     leafFront.className = "nbf-shut-face";
-    leafFront.innerHTML = leafSource ? leafSource.outerHTML : "";
+    if (leafSource && leafSource !== stillSource) leafFront.appendChild(leafSource);
     const leafBack = document.createElement("div");
     leafBack.className = "nbf-shut-face nbf-shut-face--back";
     leafBack.innerHTML = side === "back" ? (conf.coverBack || "") : (conf.coverFront || "");
@@ -4098,19 +4164,16 @@
       sp.classList.remove("is-closing", "is-closed");
     };
     const finishClosed = () => {
-      // 여기까지 오면 앞표지로 온전히 닫힌 닫힌 책 상태 — 이제야 다음 화면으로 넘어간다
+      // 여기까지 오면 앞표지로 온전히 닫힌 책 — 이제 책장/다음 화면으로 넘어간다
       if (conf.keepStage) {
         done();
         requestAnimationFrame(() => { host.remove(); clearOnSpread(); });
         return;
       }
-      const stage = document.querySelector(".nb-stage");
-      if (stage) stage.classList.add("is-leaving");
-      setTimeout(() => {
-        host.remove();
-        pendingStageIn = true;
-        done();
-      }, LEAVE);
+      // v3.9: 스테이지를 페이드아웃하지 않고 그 자리에서 내용만 바꾼다 (하얀 백지 프레임 0건)
+      host.remove();
+      pendingStageIn = true;
+      done();
     };
     const afterFold = () => {
       host.classList.add("is-folded");
@@ -4134,9 +4197,10 @@
 
     const mobile = isMobileViewport();
     const oldSide = spread.dataset.side === "right" ? "right" : "left";
-    const oldLeft = nbPageHtml(spread, ".nb-page--left");
-    const oldRight = nbPageHtml(spread, ".nb-page--right");
-    const oldShown = oldSide === "right" ? oldRight : oldLeft;
+    const oldLeft = spread.querySelector(".nb-page--left");
+    const oldRight = spread.querySelector(".nb-page--right");
+    const oldSingle = spread.querySelector(".nb-page--wide") || spread.querySelector(".nb-page--cover");
+    const oldShown = (oldSide === "right" ? oldRight : oldLeft) || oldSingle || oldLeft || oldRight;
 
     mutate();
     render();
@@ -4144,43 +4208,54 @@
     const destSpread = document.querySelector(".nb-spread");
     if (!destSpread) return;
     const destSide = destSpread.dataset.side === "right" ? "right" : "left";
-    const destLeft = nbPageHtml(destSpread, ".nb-page--left");
-    const destRight = nbPageHtml(destSpread, ".nb-page--right");
-    const destShown = destSide === "right" ? destRight : destLeft;
-    const sideCls = s => (s === "right" ? "nb-page--right" : "nb-page--left");
+    const destLeft = destSpread.querySelector(".nb-page--left");
+    const destRight = destSpread.querySelector(".nb-page--right");
+    const destSingle = destSpread.querySelector(".nb-page--wide") || destSpread.querySelector(".nb-page--cover");
+    const destShown = (destSide === "right" ? destRight : destLeft) || destSingle;
+    const full = mobile || (!oldLeft && !oldRight) || (!destLeft && !destRight);
 
     const host = document.createElement("div");
     const leaf = document.createElement("div");
     leaf.className = "nb-flip-leaf";
+    // v3.9: 페이지 HTML을 복사하지 않고 실제 DOM을 옮긴다 — 큰 사진이 들어간 아카이브·일기 책에서
+    //       넘길 때마다 페이지를 다시 그리며 생기던 iOS Safari 렉을 없앤다. 끝나면 제자리로 돌려 둔다.
+    let restore = null;
 
-    if (mobile) {
+    if (full) {
       host.className = "nb-flip nb-flip--full";
       if (step > 0) {
-        // 지금 페이지가 책등(왼쪽) 축으로 넘어가고, 아래에 다음 페이지가 드러난다
-        leaf.appendChild(nbFlipFace(oldShown, `nb-flip-front nb-page ${sideCls(oldSide)}`));
+        // 지금 장이 책등 축으로 넘어가고, 아래에 다음 장이 드러난다
+        leaf.appendChild(nbFlipFace(oldShown, "nb-flip-front"));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
         leaf.classList.add("is-next");
       } else {
-        // 지금 페이지를 아래에 깔고, 앞 장이 앞면을 보이며 되돌아 들어온다
-        nbSetPageHtml(destSpread, "." + sideCls(destSide), oldShown);
-        leaf.appendChild(nbFlipFace(destShown, `nb-flip-front nb-page ${sideCls(destSide)}`));
+        // 지금 장을 아래에 깔고, 목적지 장이 앞면을 보이며 되돌아 들어온다
+        if (!oldShown || !destShown) return;
+        oldShown.classList.add("nb-underlay-page");
+        destSpread.replaceChild(oldShown, destShown);
+        leaf.appendChild(nbFlipFace(destShown, "nb-flip-front nb-page--left"));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
         leaf.classList.add("is-back");
+        restore = () => { oldShown.replaceWith(destShown); oldShown.classList.remove("nb-underlay-page"); };
       }
     } else {
       host.className = step > 0 ? "nb-flip nb-flip--right" : "nb-flip nb-flip--left";
       if (step > 0) {
         // 왼쪽엔 지금 왼쪽 장이 남아 있고, 오른쪽 장이 넘어가면서 뒷면(다음 왼쪽 장)이 내려앉는다
-        nbSetPageHtml(destSpread, ".nb-page--left", oldLeft);
-        leaf.appendChild(nbFlipFace(oldRight, "nb-flip-front nb-page nb-page--right"));
-        leaf.appendChild(nbFlipFace(destLeft, "nb-flip-back nb-page nb-page--left"));
+        if (!oldLeft || !oldRight || !destLeft) return;
+        destSpread.replaceChild(oldLeft, destLeft);
+        leaf.appendChild(nbFlipFace(oldRight, "nb-flip-front nb-page--right"));
+        leaf.appendChild(nbFlipFace(destLeft, "nb-flip-back nb-page--left"));
         leaf.classList.add("is-next");
+        restore = () => { oldLeft.replaceWith(destLeft); };
       } else {
         // 오른쪽엔 지금 오른쪽 장이 남아 있고, 왼쪽 장이 오른쪽으로 넘어간다
-        nbSetPageHtml(destSpread, ".nb-page--right", oldRight);
-        leaf.appendChild(nbFlipFace(oldLeft, "nb-flip-front nb-page nb-page--left"));
-        leaf.appendChild(nbFlipFace(destRight, "nb-flip-back nb-page nb-page--right"));
+        if (!oldLeft || !oldRight || !destRight) return;
+        destSpread.replaceChild(oldRight, destRight);
+        leaf.appendChild(nbFlipFace(oldLeft, "nb-flip-front nb-page--left"));
+        leaf.appendChild(nbFlipFace(destRight, "nb-flip-back nb-page--right"));
         leaf.classList.add("is-prev");
+        restore = () => { oldRight.replaceWith(destRight); };
       }
     }
 
@@ -4192,8 +4267,9 @@
     const finish = () => {
       if (finished) return;
       finished = true;
-      nbSetPageHtml(destSpread, ".nb-page--left", destLeft);
-      nbSetPageHtml(destSpread, ".nb-page--right", destRight);
+      if (restore) {
+        try { restore(); } catch (_) {}
+      }
       host.remove();
       destSpread.dataset.turning = "";
     };
@@ -5527,6 +5603,30 @@
     if (label) label.textContent = `오늘 ${TODAY_STR}`;
   }
 
+  // v3.9: 화면을 통째로 갈아 끼우지 않고 어두운 책상(.nb-stage) 위의 내용만 바꾼다.
+  //  예전엔 책을 덮고 책장으로 돌아갈 때 스테이지가 opacity 0으로 사라져 그 사이 화면이 하얗게 비었다 (frame_4 렉).
+  function mountMainHtml(main, bodyHtml) {
+    const holder = document.createElement("div");
+    holder.innerHTML = bodyHtml;
+    const nextStage = holder.firstElementChild;
+    const prevStage = main.firstElementChild;
+    const isStage = el => Boolean(el && el.classList && el.classList.contains("nb-stage"));
+    if (!main || !isStage(nextStage) || !isStage(prevStage)) {
+      if (main) main.innerHTML = bodyHtml;
+      return false;
+    }
+    prevStage.className = nextStage.className;
+    prevStage.removeAttribute("style");
+    while (prevStage.firstChild) prevStage.removeChild(prevStage.firstChild);
+    while (nextStage.firstChild) prevStage.appendChild(nextStage.firstChild);
+    Array.from(main.children).forEach(child => { if (child !== prevStage) child.remove(); });
+    return true;
+  }
+
+  // v3.9: 같은 화면을 다시 그리고 있는지 기억해 두어, 바뀐 것이 없으면 DOM을 건드리지 않는다
+  //  (로그인·동기화 확인이 끝날 때마다 화면이 덜컹거리던 문제 완화)
+  let lastMainHtml = "";
+
   function render() {
     if (diaryPending) flushDiaryDraft();
     state.activeTab = normalizeTab(state.activeTab);
@@ -5542,13 +5642,19 @@
     else if (state.activeTab === "archive") bodyHtml = renderArchiveView();
     else bodyHtml = renderYearView();
 
-    main.innerHTML = bodyHtml;
+    const unchanged = bodyHtml === lastMainHtml && main && main.querySelector(".nb-stage");
+    if (!unchanged) {
+      mountMainHtml(main, bodyHtml);
+      lastMainHtml = bodyHtml;
+    }
     if (pendingStageIn) {
       pendingStageIn = false;
       const stage = main.querySelector(".nb-stage");
-      if (stage) {
-        stage.classList.add("is-entering");
-        setTimeout(() => stage.classList.remove("is-entering"), 360);
+      if (stage && !unchanged) {
+        stage.classList.remove("is-swapping");
+        void stage.offsetWidth;
+        stage.classList.add("is-swapping");
+        setTimeout(() => stage.classList.remove("is-swapping"), 300);
       }
     }
     syncCarousels();
@@ -5602,6 +5708,8 @@
   let yearPageIndex = 0;  // 0 ~ 11 (1월 ~ 12월)
   let yearDayDate = "";   // 값이 있으면 그 날짜의 하루 페이지
   let yearMobileSide = "left";
+  // v3.9: 책장에서 책을 고르면 Goals처럼 앞표지가 먼저 앉았다가 열린다
+  let yearCoverOpen = false;
   // v3.4: 하루 페이지는 [일기] → (사진) → Goals·Archive 로 여러 장이 될 수 있다 (스프레드 단위로 넘김)
   let yearDaySpread = 0;
 
@@ -5996,11 +6104,11 @@
     const sub = typeof entry.subtitle === "string" ? entry.subtitle : "Yearly Note";
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('year', this)" aria-label="${escapeAttr(title)} 펼치기" title="${escapeAttr(title)} 펼치기">
-        <span class="nb-cover nb-cover--year" style="--spine:${yearSpineColor(y)}">
+        <span class="nb-cover nb-cover--year ${entry.cover ? "nb-cover--photo" : ""}" style="--spine:${yearSpineColor(y)}">
           ${isThisYear ? `<span class="nb-year-now">올해</span>` : ""}
-          ${entry.cover
-            ? `<img class="nb-cover-photo" src="${entry.cover}" alt="" /><span class="nb-cover-plate">${escapeHtml(title)}</span>`
-            : `<span class="nb-year-plate"><b>${escapeHtml(title)}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>`}
+          ${entry.cover ? `<img class="nb-cover-photo" src="${entry.cover}" alt="" decoding="async" />` : ""}
+          <span class="nb-cover-frame" aria-hidden="true"></span>
+          <span class="nb-cover-title"><b>${escapeHtml(title)}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
           <span class="nb-cover-spine"></span>
           <span class="nb-cover-shine"></span>
           <span class="nb-cover-chip">${days}일</span>
@@ -6073,13 +6181,39 @@
     if (!y) return;
     if (!getYearBook(y)) ensureYearBook(y);
     yearShelfIndex = Math.max(0, getYearBooks().findIndex(b => b.year === y));
-    yearBookYear = y;
     const isThisYear = String(y) === TODAY_STR.slice(0, 4);
     const fallbackMonth = isThisYear ? Number(TODAY_STR.slice(5, 7)) - 1 : 0;
-    yearPageIndex = Number.isInteger(monthIndex) ? Math.min(11, Math.max(0, monthIndex)) : fallbackMonth;
+    const targetMonth = Number.isInteger(monthIndex) ? Math.min(11, Math.max(0, monthIndex)) : fallbackMonth;
+    // 같은 책을 이미 펼쳐 놓고 있었으면 그 달로만 넘긴다
+    if (yearBookYear === y && yearCoverOpen && !yearDayDate) {
+      if (targetMonth === yearPageIndex) { render(); return; }
+      turnToPage(targetMonth > yearPageIndex ? 1 : -1, () => {
+        yearPageIndex = targetMonth;
+        yearMobileSide = "left";
+      });
+      return;
+    }
+    yearBookYear = y;
+    yearPageIndex = targetMonth;
     yearDayDate = "";
     yearMobileSide = "left";
-    render();
+    yearCoverOpen = false;
+    render();   // 책장에서 고른 책이 같은 표지 모습으로 앞표지에 앉는다
+    requestAnimationFrame(() => {
+      if (Number(yearBookYear) !== y || yearCoverOpen || yearDayDate) return;
+      openYearCover();
+    });
+  }
+
+  // 앞표지가 열리며 내지(그 달)가 드러난다 — Goals와 같은 표지 넘김
+  function openYearCover() {
+    if (yearCoverOpen) return;
+    bookCoverTurn({
+      spreadId: "nbYearSpread",
+      cover: "front",
+      direction: "open",
+      mutate: () => { yearCoverOpen = true; }
+    });
   }
 
   // 그 연도 노트 안에서 하루 페이지 열기 (달력 → 일기는 책장 3D로 넘어간다)
@@ -6091,6 +6225,7 @@
     ensureYearBook(Number(ds.slice(0, 4)));
     yearBookYear = Number(ds.slice(0, 4));
     yearPageIndex = Number(ds.slice(5, 7)) - 1;
+    yearCoverOpen = true;
     yearDayDate = ds;
     yearMobileSide = "left";
     yearDaySpread = 0;
@@ -6139,33 +6274,53 @@
     openYearDay(TODAY_STR);
   }
 
-  function closeYearBook() {
+  function closeYearBook(side) {
+    const year = Number(yearBookYear);
+    const spread = document.getElementById("nbYearSpread");
+    if (!year || !spread || prefersReducedMotion() || Date.now() < bookCloseLock) {
+      goYearShelf();
+      return;
+    }
+    const coverFront = yearCoverHtml(false);
+    const coverBack = yearCoverHtml(true);
+    bookCloseMotion({
+      side: side === "back" ? "back" : "front",
+      coverFront,
+      coverBack,
+      after: goYearShelf
+    });
+  }
+
+  // 움직임 없이 바로 책장으로 (닫힘 모션이 끝난 뒤 호출됨)
+  function goYearShelf() {
     yearBookYear = 0;
     yearPageIndex = 0;
     yearDayDate = "";
+    yearCoverOpen = false;
     render();
   }
 
   function openYearPage(idx, side) {
     yearPageIndex = Math.min(11, Math.max(0, Number(idx) || 0));
     yearDayDate = "";
+    yearCoverOpen = true;
     if (side === "right" || side === "left") yearMobileSide = side;
     render();
   }
 
   function yearPageStep(delta) {
     const year = Number(yearBookYear);
+    if (!year || !delta) return;
+    // 앞표지: 앞으로 넘기면 표지가 열리고, 뒤로 넘기면 책을 덮어 책장으로
+    if (!yearCoverOpen) {
+      if (delta > 0) openYearCover();
+      else closeYearBook("front");
+      return;
+    }
     const next = yearPageIndex + delta;
     // 맨 앞·맨 뒤에서는 책을 그 자리에서 온전히 덮어 닫은 뒤 책장으로 돌아간다
     if (next < 0 || next > 11) {
-      const yTitle = yearBookTitle(year);
-      const ySub = yearBookSubtitle(year);
-      bookCloseMotion({
-        side: next < 0 ? "front" : "back",
-        coverFront: nbClosedCoverHtml({ title: yTitle, sub: ySub, foot: "Archive Planner", spine: yearSpineColor(year) }),
-        coverBack: nbClosedCoverHtml({ title: yTitle, sub: "뒤표지", foot: "Archive Planner", spine: yearSpineColor(year), back: true }),
-        after: () => { closeYearBook(); }
-      });
+      closeYearBook(next < 0 ? "front" : "back");
       return;
     }
     if (next === yearPageIndex) return;
@@ -6175,9 +6330,15 @@
     });
   }
 
-  // 분기 인덱스: 1·4·7·10월 페이지로 부드럽게 이동
+  // 분기 인덱스: 1·4·7·10월 페이지로 부드럽게 이동 (앞표지에서는 표지가 열리며 들어간다)
   function yearQuarterJump(quarter) {
     const target = Math.min(11, Math.max(0, (Number(quarter) || 0) * 3));
+    if (!yearCoverOpen) {
+      yearPageIndex = target;
+      yearMobileSide = "left";
+      openYearCover();
+      return;
+    }
     if (target === yearPageIndex) return;
     turnToPage(target > yearPageIndex ? 1 : -1, () => {
       yearPageIndex = target;
@@ -6256,7 +6417,6 @@
     const month = Math.min(11, Math.max(0, yearPageIndex)) + 1;
     const monthRecords = collectMonthDays(year, month);
     const monthIdx = month - 1;
-
     const leftPage = `
       <section class="nb-page nb-page--left">
         <div class="nb-page-inner">
@@ -6295,7 +6455,6 @@
     const yTitle = yearBookTitle(year);
     const ySub = yearBookSubtitle(year);
     const stats = yearGoalStats(year);
-    const isThisYear = String(year) === TODAY_STR.slice(0, 4);
     return `
       <div class="nb-stage">
         <div class="nb-reader-head">
@@ -6312,15 +6471,68 @@
             ${rightPage}
             <span class="nb-spine"></span>
             ${BOOK_COIL}
-            <div class="idx-tabs idx-tabs--quarter" role="tablist" aria-label="분기 인덱스">
-              ${[0, 1, 2, 3].map(q => `
-                <button class="idx-tab idx-tab--q${q + 1} ${quarter === q ? "is-active" : ""}" role="tab" aria-label="${q + 1}분기 (${q * 3 + 1}월)" aria-selected="${quarter === q ? "true" : "false"}" onclick="yearQuarterJump(${q})" title="${q + 1}분기 (${q * 3 + 1}월)">
-                  <span>${stackedLabel(`${q + 1}분기`)}</span>
-                </button>
-              `).join("")}
-            </div>
+            <div class="idx-tabs idx-tabs--quarter" role="tablist" aria-label="분기 인덱스">${yearQuarterTabsHtml(quarter)}</div>
           </div>
           <button class="nb-nav next" onclick="yearPageStep(1)" aria-label="다음 달">${ICONS.chevRight}</button>
+        </div>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left"></span>
+          <button class="nb-add-btn" onclick="openYearDay('${TODAY_STR}')" title="오늘 기록 추가" aria-label="오늘 기록 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
+        </div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
+      </div>
+    `;
+  }
+
+  function yearQuarterTabsHtml(activeQuarter) {
+    return [0, 1, 2, 3].map(q => `
+      <button class="idx-tab idx-tab--q${q + 1} ${activeQuarter === q ? "is-active" : ""}" role="tab" aria-label="${q + 1}분기 (${q * 3 + 1}월)" aria-selected="${activeQuarter === q ? "true" : "false"}" onclick="yearQuarterJump(${q})" title="${q + 1}분기 (${q * 3 + 1}월)">
+        <span>${stackedLabel(`${q + 1}분기`)}</span>
+      </button>
+    `).join("");
+  }
+
+  // v3.9: 연도 책 앞·뒤표지 — Goals와 같은 하드커버 표지 그림
+  function yearCoverHtml(year, back) {
+    const y = Number(year || yearBookYear);
+    const entry = getYearBook(y) || {};
+    const title = entry.title || String(y || "");
+    const sub = (typeof entry.subtitle === "string" && entry.subtitle.trim()) ? entry.subtitle.trim() : "Yearly Note";
+    return bookCoverHtml({
+      title,
+      sub: back ? "뒤표지" : sub,
+      foot: back ? "Archive Planner" : `${countYearDays(y)}일 기록`,
+      spine: yearSpineColor(y),
+      cover: entry.cover || "",
+      back,
+      label: back ? "" : `${title} 앞표지`
+    });
+  }
+
+  // 책장에서 책을 고르면 이 앞표지가 앉았다가 표지가 열린다 (Goals와 같은 책 형태)
+  function renderYearCoverBook(year) {
+    const yTitle = yearBookTitle(year);
+    const ySub = yearBookSubtitle(year);
+    const quarter = Math.floor(Math.min(11, Math.max(0, yearPageIndex)) / 3);
+    return `
+      <div class="nb-stage">
+        <div class="nb-reader-head">
+          <button class="nb-back" onclick="closeYearBook()">${ICONS.chevLeft}책장</button>
+          <div class="nb-reader-title">
+            <b>${escapeHtml(yTitle)}</b>
+            <span>${escapeHtml(ySub || "Yearly Note")}</span>
+          </div>
+          <span class="nb-reader-spacer" aria-hidden="true"></span>
+        </div>
+        <div class="nb-book nb-book--indexed">
+          <button class="nb-nav prev" onclick="yearPageStep(-1)" aria-label="이전">${ICONS.chevLeft}</button>
+          <div class="nb-spread" id="nbYearSpread" data-cover="front" data-side="left">
+            ${yearCoverHtml(year, false)}
+            <span class="nb-spine"></span>
+            <div class="idx-tabs idx-tabs--quarter" role="tablist" aria-label="분기 인덱스">${yearQuarterTabsHtml(quarter)}</div>
+          </div>
+          <button class="nb-nav next" onclick="yearPageStep(1)" aria-label="다음">${ICONS.chevRight}</button>
         </div>
         <div class="nb-bottom-bar">
           <span class="nb-bar-left"></span>
@@ -6335,7 +6547,7 @@
   function renderYearView() {
     const year = Number(yearBookYear);
     if (yearDayDate) return renderYearDay(yearDayDate);
-    if (year >= 1900) return renderYearReader(year);
+    if (year >= 1900) return yearCoverOpen ? renderYearReader(year) : renderYearCoverBook(year);
     return renderYearShelf();
   }
 
@@ -7653,57 +7865,57 @@
 
   function goalCoverFaceHtml(kind) {
     const back = kind === "back";
-    return `
-      <section class="nb-page nb-page--cover ${back ? "nb-page--cover--back nb-coverart--spine-right" : ""}" style="--spine:${normalizeSpineColor(GOAL_COVER_SPINE, "#2f3e5c")}" ${back ? `aria-hidden="true"` : `aria-label="Goals 앞표지"`}>
-        <div class="nb-cover-inner">
-          <span class="nb-cover-frame" aria-hidden="true"></span>
-          <div class="nb-coverface-plate">
-            <b>Goals</b>
-            <i></i>
-            <span>${back ? "뒤표지" : "Archive Planner"}</span>
-          </div>
-          <span class="nb-cover-foot">${back ? "Archive Planner" : "목표 · 기록"}</span>
-        </div>
-      </section>
-    `;
+    return bookCoverHtml({
+      title: "Goals",
+      sub: back ? "뒤표지" : "Archive Planner",
+      foot: back ? "Archive Planner" : "목표 · 기록",
+      spine: GOAL_COVER_SPINE,
+      back,
+      label: back ? "" : "Goals 앞표지"
+    });
   }
 
-  // v3.6 표지 넘김: 닫힌 책(1페이지 너비)이 열리거나 덮인다.
-  //  · 열 때: 펼친 책을 먼저 깔고, 닫힌 책 자리에서 표지가 책등을 축으로 젖혀지며 사라진다
-  //  · 덮을 때: 표지가 젖혀진 자리에서 되돌아와 닫힌 책 자리에 앉고, 그 위에서 표지 화면으로 바뀐다
-  //  한 번 넘기는 동안 다시 넘기지 않도록 coverTurnLock으로 잠근다 (자동으로 두 번 넘어가던 문제)
+  // v3.9 표지 여닫김 엔진 통일: Goals·Calendar·Archive 모두 같은 함수와 같은 표지 그림을 쓴다.
+  //  · 열 때: 내지를 먼저 깔고, 닫힌 책 자리에서 지금 앞표지가 책등을 축으로 젖혀지며 사라진다
+  //  · 덮을 때: 내지 위로 표지가 되돌아와 앉고, 그 자리에서 표지 화면이 된다
+  //  한 번 넘기는 동안 다시 넘기지 않도록 coverTurnLock으로 잠근다.
   let coverTurnLock = 0;
-  function goalCoverTurn(step, kind, mutate) {
-    const spread = document.getElementById("goalSpread");
-    if (!spread || prefersReducedMotion()) { mutate(); render(); return; }
-    if (spread.dataset.turning === "1") return;
-    coverTurnLock = Date.now() + 820;
-    const back = kind === "back";
-    const opening = back ? step < 0 : step > 0;
+  function bookCoverTurn(opts) {
+    const conf = opts || {};
+    const spreadId = String(conf.spreadId || "");
+    const back = conf.cover === "back";
+    const opening = conf.direction !== "close";
+    const mutate = typeof conf.mutate === "function" ? conf.mutate : function () {};
+    const after = typeof conf.after === "function" ? conf.after : function () {};
+    const spread = spreadId ? document.getElementById(spreadId) : null;
+    if (!spread || prefersReducedMotion()) { mutate(); render(); after(); return; }
+    if (spread.dataset.turning === "1" || Date.now() < coverTurnLock) return;
+    coverTurnLock = Date.now() + 900;
     const cls = `nbf-cover--${opening ? "open" : "close"}-${back ? "right" : "left"}`;
-    const makeCover = () => {
+    const makeCover = html => {
       const el = document.createElement("div");
-      el.className = `nbf-cover nbf-cover--goal nbf-cover--narrow ${back ? "nbf-cover--back" : ""} ${cls}`;
-      el.style.setProperty("--spine", normalizeSpineColor(GOAL_COVER_SPINE, "#2f3e5c"));
-      el.innerHTML = `<div class="nbf-cover-plate"><b>Goals</b><i></i><span>${back ? "뒤표지" : "Archive Planner"}</span></div>`;
+      el.className = `nbf-cover nbf-cover--art nbf-cover--narrow ${back ? "nbf-cover--back" : ""} ${cls}`;
+      el.innerHTML = `<div class="nbf-cover-face">${html}</div>`;
       return el;
     };
     // 새 표지 화면이 앉을 때 한 번만 살짝 흔들리게
     const settleCover = () => {
-      const dest = document.getElementById("goalSpread");
+      const dest = document.getElementById(spreadId);
       const face = dest && dest.querySelector(".nb-page--cover");
       if (!face) return;
       face.classList.add("nb-cover-enter");
       face.addEventListener("animationend", () => face.classList.remove("nb-cover-enter"), { once: true });
     };
     if (opening) {
+      const liveCover = spread.querySelector(".nb-page--cover");
+      const html = liveCover ? liveCover.outerHTML : (conf.coverHtml || "");
       mutate();
       render();
-      const dest = document.getElementById("goalSpread");
+      const dest = document.getElementById(spreadId);
       if (!dest) return;
       dest.dataset.turning = "1";
       dest.classList.add("cover-opening");
-      const cover = makeCover();
+      const cover = makeCover(html);
       dest.appendChild(cover);
       let finished = false;
       const finish = () => {
@@ -7713,13 +7925,14 @@
         dest.classList.remove("cover-opening");
         dest.dataset.turning = "";
         coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
+        after();
       };
       cover.addEventListener("animationend", finish, { once: true });
       setTimeout(finish, 820);
     } else {
       spread.dataset.turning = "1";
       spread.classList.add("cover-closing");
-      const cover = makeCover();
+      const cover = makeCover(conf.coverHtml || "");
       spread.appendChild(cover);
       let finished = false;
       const finish = () => {
@@ -7732,10 +7945,23 @@
         render();
         settleCover();
         coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
+        after();
       };
       cover.addEventListener("animationend", finish, { once: true });
       setTimeout(finish, 820);
     }
+  }
+
+  function goalCoverTurn(step, kind, mutate) {
+    const back = kind === "back";
+    const opening = back ? step < 0 : step > 0;
+    bookCoverTurn({
+      spreadId: "goalSpread",
+      cover: back ? "back" : "front",
+      direction: opening ? "open" : "close",
+      coverHtml: goalCoverFaceHtml(back ? "back" : "front"),
+      mutate
+    });
   }
 
   function renderGoalBookView() {
@@ -8149,10 +8375,10 @@
     const sub = String(book.subtitle || "").trim();
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('archive', this)" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
-        <span class="nb-cover" style="--spine:${spine}">
-          ${coverImg
-            ? `<img class="nb-cover-photo" src="${coverImg}" alt="" /><span class="nb-cover-plate">${escapeHtml(book.title)}</span>`
-            : `<span class="nb-cover-label"><b>${escapeHtml(book.title)}</b>${(sub && sub !== book.title) ? `<span>${escapeHtml(sub)}</span>` : ""}</span>`}
+        <span class="nb-cover ${coverImg ? "nb-cover--photo" : ""}" style="--spine:${spine}">
+          ${coverImg ? `<img class="nb-cover-photo" src="${coverImg}" alt="" decoding="async" />` : ""}
+          <span class="nb-cover-frame" aria-hidden="true"></span>
+          <span class="nb-cover-title"><b>${escapeHtml(book.title)}</b>${(sub && sub !== book.title) ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
           <span class="nb-cover-spine"></span>
           <span class="nb-cover-shine"></span>
           <span class="nb-cover-chip">${recs.length}p</span>
@@ -8237,17 +8463,67 @@
     const idx = getBooks().findIndex(b => b.id === id);
     if (idx >= 0) notebookShelfIndex = idx;
     state.shelfSelectedBookId = id;
+    const sameBook = notebookBookId === id;
     notebookBookId = id;
-    notebookPageIndex = 0;
+    if (!sameBook) notebookPageIndex = 0;
     notebookMobileSide = "left";
     saveState();
-    render();
+    if (sameBook && notebookCoverOpen) { render(); return; }
+    notebookCoverOpen = false;
+    render();   // 책장에서 고른 책이 같은 표지 모습으로 앞표지에 앉는다
+    requestAnimationFrame(() => {
+      if (notebookBookId !== id || notebookCoverOpen) return;
+      openNotebookCover();
+    });
+  }
+
+  function openNotebookCover() {
+    if (notebookCoverOpen || !notebookBookId) return;
+    bookCoverTurn({
+      spreadId: "nbSpread",
+      cover: "front",
+      direction: "open",
+      mutate: () => { notebookCoverOpen = true; }
+    });
+  }
+
+  // v3.9: 아카이브 책 앞·뒤표지 — Goals와 같은 하드커버 표지 그림
+  function notebookCoverHtml(book, back) {
+    const b = book || getBookById(notebookBookId) || {};
+    const sub = String(b.subtitle || "").trim() || (b.category && b.category !== b.title ? String(b.category) : "Archive");
+    return bookCoverHtml({
+      title: b.title || "",
+      sub: back ? "뒤표지" : sub,
+      foot: back ? "Archive Planner" : `${bookArchives(b.id).length}페이지`,
+      spine: normalizeSpineColor(b.spine, BOOK_SPINE_PALETTE[0]),
+      cover: b.cover || "",
+      back,
+      label: back ? "" : `${b.title || ""} 앞표지`
+    });
   }
 
   function closeNotebookBook() {
+    const book = getBookById(notebookBookId);
+    const spread = document.getElementById("nbSpread");
+    if (!book || !spread || prefersReducedMotion() || Date.now() < bookCloseLock) {
+      goNotebookShelf();
+      return;
+    }
+    const coverFront = notebookCoverHtml(book, false);
+    const coverBack = notebookCoverHtml(book, true);
+    bookCloseMotion({
+      side: "front",
+      coverFront,
+      coverBack,
+      after: goNotebookShelf
+    });
+  }
+
+  function goNotebookShelf() {
     notebookBookId = "";
     notebookPageIndex = 0;
     notebookMobileSide = "left";
+    notebookCoverOpen = false;
     render();
   }
 
@@ -8258,18 +8534,25 @@
 
   function notebookStep(delta) {
     const book = getBookById(notebookBookId);
-    if (!book) return;
+    if (!book || !delta) return;
+    if (!notebookCoverOpen) {
+      if (delta > 0) openNotebookCover();
+      else closeNotebookBook();
+      return;
+    }
     const total = notebookTotalPages(book);
     const next = notebookPageIndex + delta;
     if (next < 0 || next >= total) {
       // 맨 앞·맨 뒤: 책을 그 자리에서 온전히 덮어 닫은 뒤 책장으로 돌아간다
-      const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
-      const sub = String(book.subtitle || "").trim() || (book.category && book.category !== book.title ? book.category : "");
+      const spread = document.getElementById("nbSpread");
+      if (!spread || prefersReducedMotion() || Date.now() < bookCloseLock) { goNotebookShelf(); return; }
+      const coverFront = notebookCoverHtml(book, false);
+      const coverBack = notebookCoverHtml(book, true);
       bookCloseMotion({
         side: next < 0 ? "front" : "back",
-        coverFront: nbClosedCoverHtml({ title: book.title || "", sub: sub || "Archive", foot: "Archive Planner", spine }),
-        coverBack: nbClosedCoverHtml({ title: book.title || "", sub: "뒤표지", foot: "Archive Planner", spine, back: true }),
-        after: () => { closeNotebookBook(); }
+        coverFront,
+        coverBack,
+        after: goNotebookShelf
       });
       return;
     }
@@ -8419,6 +8702,38 @@
   // v3.7 아카이브 책의 마지막 요약 페이지는 없앴다 — 마지막 페이지는 실제 마지막 기록 그대로
 
 
+  // v3.9: 책장에서 고른 아카이브 책의 앞표지 (Goals와 같은 책 형태)
+  function renderNotebookCoverBook(book) {
+    const recs = bookArchives(book.id);
+    const sub = String(book.subtitle || "").trim() || (book.category && book.category !== book.title ? book.category : "");
+    return `
+      <div class="nb-stage">
+        <div class="nb-reader-head">
+          <button class="nb-back" onclick="closeNotebookBook()">${ICONS.chevLeft}책장</button>
+          <div class="nb-reader-title">
+            <b>${escapeHtml(book.title)}</b>
+            <span>${sub ? `${escapeHtml(sub)} · ` : ""}${recs.length}페이지</span>
+          </div>
+          <span class="nb-reader-spacer" aria-hidden="true"></span>
+        </div>
+        <div class="nb-book">
+          <button class="nb-nav prev" onclick="notebookStep(-1)" aria-label="이전">${ICONS.chevLeft}</button>
+          <div class="nb-spread" id="nbSpread" data-cover="front" data-side="left">
+            ${notebookCoverHtml(book, false)}
+            <span class="nb-spine"></span>
+          </div>
+          <button class="nb-nav next" onclick="notebookStep(1)" aria-label="다음">${ICONS.chevRight}</button>
+        </div>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left"></span>
+          <button class="nb-add-btn" onclick="openNewArchiveModal('${book.id}')" title="새 기록 추가" aria-label="새 기록 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
+        </div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
+      </div>
+    `;
+  }
+
   function renderNotebookEmptyPages(book) {
     return `
       <section class="nb-page nb-page--left">
@@ -8433,6 +8748,8 @@
   }
 
   function renderNotebookReader(book) {
+    if (notebookFocusId) notebookCoverOpen = true;
+    if (!notebookCoverOpen) return renderNotebookCoverBook(book);
     const recs = bookArchives(book.id);
     const total = Math.max(1, recs.length);
     if (notebookFocusId) {
@@ -8524,12 +8841,15 @@
         if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.35) {
           spread.dataset.swipedAt = String(Date.now());
           const dir = dx < 0 ? 1 : -1;
-          if (isYear) bookTurn(spread, dir, () => yearPageStep(1), () => yearPageStep(-1));
-          else if (isGoal) {
-            // 앞표지·뒤표지에서는 한 면 뒤집기가 아니라 표지 단위로 넘긴다
-            if (spread.dataset.cover) goalBookStep(dir);
-            else bookTurn(spread, dir, () => goalBookStep(1), () => goalBookStep(-1));
+          // v3.9: 앞표지·뒤표지는 한 면 뒤집기가 아니라 책(표지) 단위로 넘긴다
+          if (spread.dataset.cover) {
+            if (isGoal) goalBookStep(dir);
+            else if (isYear) yearPageStep(dir);
+            else notebookStep(dir);
+            return;
           }
+          if (isYear) bookTurn(spread, dir, () => yearPageStep(1), () => yearPageStep(-1));
+          else if (isGoal) bookTurn(spread, dir, () => goalBookStep(1), () => goalBookStep(-1));
           else if (isDay) dayNavStep(dir);
           else bookTurn(spread, dir, () => notebookStep(1), () => notebookStep(-1));
         }
@@ -8540,13 +8860,15 @@
         if (last && Date.now() - last < 420) return;
         // 표지를 여닫는 중·직후의 따라오는 클릭은 무시한다 (한 번만 넘어가도록)
         if (Date.now() < coverTurnLock) return;
-        // Goals 앞표지를 누르면 책이 열린다 (데스크톱·모바일 공통), 뒤표지는 넘길 곳이 없다
-        if (isGoal && spread.dataset.cover === "front") {
+        // 앞표지를 누르면 책이 열린다 (Goals·Calendar·Archive 공통), 뒤표지는 넘길 곳이 없다
+        if (spread.dataset.cover === "front") {
           if (e.target.closest(".idx-tab, .nb-nav")) return;
-          goalBookStep(1);
+          if (isGoal) goalBookStep(1);
+          else if (isYear) yearPageStep(1);
+          else notebookStep(1);
           return;
         }
-        if (isGoal && spread.dataset.cover) return;
+        if (spread.dataset.cover) return;
         if (isYear || isDay || !isMobileViewport()) return;
         if (e.target.closest("button, a, input, textarea, select, label, .gb-row, .gb-list, .nb-note, .nb-stamps, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
         const nextSide = spread.dataset.side === "right" ? "left" : "right";
@@ -8576,10 +8898,10 @@
     const color = normalizeSpineColor(spine, BOOK_SPINE_PALETTE[0]);
     const sub = typeof subtitle === "string" ? subtitle.trim() : "";
     return `
-      <span class="nb-cover" style="--spine:${color}">
-        ${cover
-          ? `<img class="nb-cover-photo" src="${cover}" alt="" />`
-          : `<span class="nb-cover-label"><b>${escapeHtml(title || "새 책")}</b>${sub ? `<span>${escapeHtml(sub)}</span>` : ""}</span>`}
+      <span class="nb-cover ${cover ? "nb-cover--photo" : ""}" style="--spine:${color}">
+        ${cover ? `<img class="nb-cover-photo" src="${cover}" alt="" />` : ""}
+        <span class="nb-cover-frame" aria-hidden="true"></span>
+        <span class="nb-cover-title"><b>${escapeHtml(title || "새 책")}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
         <span class="nb-cover-spine"></span>
         <span class="nb-cover-shine"></span>
       </span>
@@ -8769,10 +9091,10 @@
     const t = String(title || year || "");
     const sub = typeof subtitle === "string" ? subtitle : "Yearly Note";
     return `
-      <span class="nb-cover nb-cover--year" style="--spine:${color}">
-        ${cover
-          ? `<img class="nb-cover-photo" src="${cover}" alt="" /><span class="nb-cover-plate">${escapeHtml(t)}</span>`
-          : `<span class="nb-year-plate"><b>${escapeHtml(t)}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>`}
+      <span class="nb-cover nb-cover--year ${cover ? "nb-cover--photo" : ""}" style="--spine:${color}">
+        ${cover ? `<img class="nb-cover-photo" src="${cover}" alt="" decoding="async" />` : ""}
+        <span class="nb-cover-frame" aria-hidden="true"></span>
+        <span class="nb-cover-title"><b>${escapeHtml(t)}</b>${sub ? `<i></i><span>${escapeHtml(sub)}</span>` : ""}</span>
         <span class="nb-cover-spine"></span>
         <span class="nb-cover-shine"></span>
       </span>
@@ -9275,6 +9597,8 @@
   const FIREBASE_SDK_VERSION = "10.12.2";
   const LOCAL_MODE_KEY = "personal_archive_planner_local_mode";
   const AUTH_PROMPT_SKIP_KEY = "personal_archive_planner_auth_prompt_skipped";
+  // v3.9: 전에 로그인했던 브라우저인지 기억해 두어, 돌아온 사람에게 로그인 화면을 띄우지 않는다
+  const SIGNED_IN_KEY = "personal_archive_planner_signed_in";
   const CLOUD_BASELINE_KEY = "personal_archive_planner_cloud_baseline";
   const CLOUD_SINGLE_DOC_BYTES = 650000; // 이 크기 이하면 Firestore 문서 하나에 저장
   const CLOUD_CHUNK_CHARS = 150000;      // 넘으면 나눠 저장 (문서당 1MB 한도 대비)
@@ -9342,6 +9666,15 @@
   function rememberAuthPromptSkip() {
     try { sessionStorage.setItem(AUTH_PROMPT_SKIP_KEY, "1"); } catch (_) {}
   }
+  function hadSignedInBefore() {
+    try { return localStorage.getItem(SIGNED_IN_KEY) === "1"; } catch (_) { return false; }
+  }
+  function rememberSignedIn(on) {
+    try {
+      if (on) localStorage.setItem(SIGNED_IN_KEY, "1");
+      else localStorage.removeItem(SIGNED_IN_KEY);
+    } catch (_) {}
+  }
 
   function isIOSDevice() {
     const ua = navigator.userAgent || "";
@@ -9406,6 +9739,7 @@
       authResolved = true;
       authConfigState = "ok";
       authUser = user ? { uid: user.uid, email: user.email || "", name: user.displayName || "" } : null;
+      rememberSignedIn(Boolean(authUser));
       if (authUser) {
         rememberLocalMode(false);
         const screen = document.getElementById("authScreen");
@@ -9502,14 +9836,18 @@
     renderAuthScreen();
     const el = document.getElementById("authScreen");
     if (!el) return;
+    if (el.classList.contains("open")) return;
     el.classList.add("open");
     el.setAttribute("aria-hidden", "false");
-    // 로그인 화면이 뜬 순간 미리 받아 두어, Google 버튼을 누를 때 await 없이 팝업을 엽니다.
-    preloadFirebase();
+    // 로그인 화면이 뜬 키에 미리 받아 두어, Google 버튼을 누를 때 await 없이 팝업을 엽니다.
+    // v3.9: SDK(수백 KB) 다운로드·파싱이 로그인 화면의 첫 프레임을 막지 않도록 한 프레임 뒤에 시작합니다.
+    const warm = () => preloadFirebase();
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => setTimeout(warm, 90));
+    else setTimeout(warm, 90);
     setTimeout(() => {
       const email = document.getElementById("authEmail");
       if (email) { try { email.focus(); } catch (_) {} }
-    }, 80);
+    }, 160);
   }
 
   function closeAuthScreen() {
@@ -10118,6 +10456,17 @@
 
     // 이 기기가 예시 그대로면 계정 기록을 그대로 불러옵니다.
     if (localUntouched) {
+      const cloudCanon0 = stableStringify(cloud.state);
+      // v3.9: 내용이 이미 같다면 다시 그리지 않는다 (접속 직후 화면 덜컹임 방지)
+      if (stableStringify(state) === cloudCanon0) {
+        lastPushedSerialized = JSON.stringify(state);
+        cloudBytes = cloud.bytes || jsonBytes(cloudCanon0);
+        lastCloudAt = new Date();
+        writeCloudBaseline(cloud.updatedAt);
+        refreshSettingsIfOpen();
+        if (manual) showToast("계정과 이미 같은 기록입니다.", "info", 2800);
+        return;
+      }
       state = normalizeState(cloud.state);
       saveState({ skipCloud: true });
       lastPushedSerialized = JSON.stringify(state);
@@ -10214,14 +10563,15 @@
 
   async function bootstrapAuth() {
     if (!isFirebaseConfigured()) return;
+    const wantsPrompt = !hasChosenLocalMode() && !hasSkippedAuthPrompt();
+    // v3.9: 로그인한 적이 없는 첫 방문이면 네트워크 확인(최대 5초)을 기다리지 않고 로그인 화면을 바로 띄운다.
+    //       (예전엔 확인이 끝난 뒤 1~2초 지나 화면이 튀어나와 덜컹거렸다.)
+    if (wantsPrompt && !hadSignedInBefore()) openAuthScreen();
     // Firebase Authentication이 준비되지 않은 프로젝트라면 SDK(수백 KB)를 내려받지 않고
-    // 첫 화면에서 바로 안내합니다. 준비되어 있으면 그때 SDK를 불러와 로그인 상태를 확인합니다.
+    // 안내만 합니다. 준비되어 있으면 그때 SDK를 불러와 로그인 상태를 확인합니다.
     authConfigState = await probeAuthConfig();
     if (authConfigState === "not-configured") {
-      if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) {
-        openAuthScreen();
-        return;
-      }
+      if (wantsPrompt) { renderAuthScreen(); return; }
       if (!authStartupNoticeShown) {
         authStartupNoticeShown = true;
         showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 시작해 주세요.", "warn", 6500);
@@ -10247,19 +10597,21 @@
       if (err && String(err.code || "").includes("configuration")) authConfigState = "not-configured";
     }
 
-    if (authUser) return;
+    if (authUser) { closeAuthScreenIfOpen(); return; }
     if (authConfigState === "not-configured") {
-      if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) {
-        openAuthScreen();
-        return;
-      }
+      if (wantsPrompt) { renderAuthScreen(); return; }
       if (!authStartupNoticeShown) {
         authStartupNoticeShown = true;
         showToast("Firebase 로그인 설정이 아직 완료되지 않았습니다. Firebase 콘솔 → Authentication에서 시작해 주세요.", "warn", 6500);
       }
       return;
     }
-    if (!hasChosenLocalMode() && !hasSkippedAuthPrompt()) openAuthScreen();
+    if (wantsPrompt) openAuthScreen();
+  }
+
+  function closeAuthScreenIfOpen() {
+    const screen = document.getElementById("authScreen");
+    if (screen && screen.classList.contains("open")) closeAuthScreen();
   }
 
   function renderSettingsBody() {
@@ -10631,9 +10983,10 @@
     goalBookSide = "left";
   }
   render();
-  // 로그인 버튼을 누르는 순간 팝업이 바로 열리도록 SDK를 미리 받아 둡니다.
-  preloadFirebase();
-  bootstrapAuth();
+  // v3.9: 첫 화면을 먼저 그린 뒤 Firebase 확인을 시작한다 (접속 직후 덜컹임 완화)
+  const startAuthFlow = () => { preloadFirebase(); bootstrapAuth(); };
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => setTimeout(startAuthFlow, 80));
+  else setTimeout(startAuthFlow, 80);
 </script>
 </body>
 </html>
