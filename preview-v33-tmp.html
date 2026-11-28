@@ -6752,7 +6752,8 @@
   }
 
   function goalPageHeadHtml(label, from, to, total) {
-    const count = total ? `${from}–${to} / ${total}` : "";
+    // 한 장에 다 들어가면 `2개`, 여러 장으로 나뉘었을 때만 `1/2쪄`
+    const count = !total ? "" : (from === 1 && to >= total ? `${total}개` : `${from}/${total}쪄`);
     return `<div class="gb-page-head"><span class="gb-page-period">${escapeHtml(label)}</span><span class="gb-page-count">${escapeHtml(count)}</span></div>`;
   }
 
