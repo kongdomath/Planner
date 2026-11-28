@@ -7327,7 +7327,7 @@
     const rawB = showBody ? model.flat[bodyIdx * 2 + 1] : null;
     const pageB = showBody ? (rawB || { filler: true, topicIndex: (pageA && pageA.topicIndex) || 0 }) : null;
     const activeTopicIndex = showBody ? Math.max(0, Math.min(model.topics.length - 1,
-      pageA.filler ? ((pageB && pageB.topicIndex) || 0) : pageA.topicIndex)) : 0;
+      ((isMobileViewport() && goalBookSide === "right" && rawB) ? rawB : pageA).topicIndex || 0)) : 0;
     const activeTopic = model.topics[activeTopicIndex] || model.topics[0];
     // FAB·모달이 지금 페이지의 주제를 기본값으로 쓰도록 맞춰 둠
     state.goalBookTopic = activeTopic.name;
