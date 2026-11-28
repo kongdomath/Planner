@@ -2897,7 +2897,10 @@
     .nb-coverart--spine-right { border-radius: 4px 10px 10px 4px; }
     /* 닫히는 동안 책등 인덱스 탭은 사라진다 */
     .nb-spread.is-closing .idx-tabs { opacity: 0; transition: opacity .18s ease; }
+    /* 펼친 면은 접힌 장에 가려 보이지 않게 한다 (모바일은 장이 지나간 자리에 속지가 남도록 접힌 뒤에 감춘다) */
     .nb-spread.is-closing > .nb-page { opacity: 0; }
+    .nb-spread.is-closing[data-shut-mobile="1"] > .nb-page { opacity: 1; }
+    .nb-spread.is-closed > .nb-page { opacity: 0; }
     /* 책을 완전히 닫은 뒤에 책장으로 넘어간다 (닫히는 도중에 옆으로 밀리지 않게) */
     @keyframes nbStageLeave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.986); } }
     @keyframes nbStageEnter { from { opacity: 0; transform: scale(1.012); } to { opacity: 1; transform: none; } }
@@ -4029,6 +4032,7 @@
     const LEAVE = 190;  // 책장으로 넘어가는 페이드
     spread.dataset.closing = "1";
     spread.dataset.turning = "1";
+    spread.dataset.shutMobile = mobile ? "1" : "0";
     spread.classList.add("is-closing");
     bookCloseLock = Date.now() + FOLD + TURN + HOLD + LEAVE + 500;
     try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + TURN + HOLD + LEAVE); } catch (_) {}
@@ -4088,7 +4092,8 @@
       if (!sp) return;
       sp.dataset.closing = "";
       sp.dataset.turning = "";
-      sp.classList.remove("is-closing");
+      sp.dataset.shutMobile = "";
+      sp.classList.remove("is-closing", "is-closed");
     };
     const finishClosed = () => {
       // 여기까지 오면 앞표지로 온전히 닫힌 닫힌 책 상태 — 이제야 다음 화면으로 넘어간다
@@ -4107,6 +4112,7 @@
     };
     const afterFold = () => {
       host.classList.add("is-folded");
+      spread.classList.add("is-closed");
       if (side !== "back") { setTimeout(finishClosed, HOLD); return; }
       card.classList.add("is-turning");
       setTimeout(finishClosed, TURN + HOLD);
