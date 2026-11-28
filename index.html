@@ -2445,8 +2445,12 @@
     .nb-day-num { font-size: 13px; color: #3b404a; font-variant-numeric: tabular-nums; }
     .nb-day.is-sun .nb-day-num, .nb-day.is-holiday .nb-day-num { color: #c05a60; }
     .nb-day.is-sat .nb-day-num { color: #4e6f9a; }
-    .nb-day.is-today { background: #2f3a52; border-color: #2f3a52; }
-    .nb-day.is-today .nb-day-num { color: #fff; font-weight: 700; }
+    .nb-day.is-today { background: transparent; border-color: transparent; }
+    .nb-day.is-today .nb-day-num {
+      color: #fff; font-weight: 700;
+      background: #2f3a52; border-radius: 6px; padding: 1px 7px;
+      box-shadow: 0 1px 3px rgba(20,26,38,.35);
+    }
     .nb-day-dots { display: flex; gap: 2px; height: 4px; }
     .nb-day-dots i { width: 4px; height: 4px; border-radius: 50%; display: block; }
     .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 2px; height: 13px; }
