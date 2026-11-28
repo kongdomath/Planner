@@ -3510,7 +3510,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.7";
+  const APP_VERSION = "3.8";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -9898,14 +9898,35 @@
     return !String(v == null ? "" : v).trim();
   }
 
-  function mergeImageLists(a, b) {
-    const out = [];
-    [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])].forEach(src => {
-      if (!src) return;
-      const exists = out.some(x => (typeof src === "string" ? x === src : JSON.stringify(x) === JSON.stringify(src)));
-      if (!exists) out.push(src);
-    });
-    return out;
+  // ---------- 사진 목록 합치기 (v3.8) ----------
+  // 사진은 '최신 쪽(win)이 직접 들고 있으면' 그 목록을 그대로 쓴다.
+  //  예전에는 같은 항목의 사진을 양쪽에서 합집합했기 때문에, 한 기기에서 사진 2장 중 1장을 지워도
+  //  다른 기기·클라우드에 남아 있던 사본 때문에 동기화할 때마다 되살아났다.
+  //  지운 결과(빈 목록)도 '가지고 있는 것'으로 보고, win 쪽에 사진 필드가 아예 없을 때만 lose 쪽을 보조로 쓴다.
+  function imageStateOf(item) {
+    if (!item || typeof item !== "object") return { present: false, list: [] };
+    if (Array.isArray(item.images)) return { present: true, list: item.images.filter(Boolean) };
+    if (item.image !== undefined && item.image !== null) return { present: true, list: item.image ? [item.image] : [] };
+    return { present: false, list: [] };
+  }
+  function applyImageState(item, list) {
+    item.images = Array.isArray(list) ? list.filter(Boolean) : [];
+    delete item.image;
+    return item;
+  }
+  // 하루 페이지 사진은 photos(최신) 또는 images(예전 이름)로 저장된다
+  function photoStateOf(log) {
+    if (!log || typeof log !== "object") return { present: false, list: [] };
+    if (Array.isArray(log.photos)) return { present: true, list: log.photos.filter(Boolean) };
+    if (Array.isArray(log.images)) return { present: true, list: log.images.filter(Boolean) };
+    if (log.image !== undefined && log.image !== null) return { present: true, list: log.image ? [log.image] : [] };
+    return { present: false, list: [] };
+  }
+  function applyPhotoState(log, list) {
+    log.photos = Array.isArray(list) ? list.filter(Boolean) : [];
+    delete log.images;
+    delete log.image;
+    return log;
   }
 
   // ---------- 지운 항목 표시 (기기 사이 되살아나기 방지) ----------
@@ -9942,11 +9963,14 @@
     ["oneLine", "diary", "memo", "text", "mood"].forEach(k => {
       if (k in lose && isEmptyText(win[k]) && !isEmptyText(lose[k])) out[k] = lose[k];
     });
-    const images = mergeImageLists(normalizeImages(l), normalizeImages(c));
-    if (images.length) out.images = images;
-    // 하루 페이지 사진(log.photos)도 양쪽 기록을 합친다
-    const photos = mergeImageLists(Array.isArray(l.photos) ? l.photos : [], Array.isArray(c.photos) ? c.photos : []);
-    if (photos.length) out.photos = photos;
+    // 사진: 최신 쪽(win)이 사진을 들고 있으면 그 목록 그대로 — 지운 사진이 합집합으로 되살아나지 않게
+    const winPhotos = photoStateOf(win);
+    if (winPhotos.present) {
+      applyPhotoState(out, winPhotos.list);
+    } else {
+      const losePhotos = photoStateOf(lose);
+      if (losePhotos.present) applyPhotoState(out, losePhotos.list);
+    }
     return cleanUndefined(out);
   }
 
@@ -9979,15 +10003,21 @@
       const lose = item;
       const merged = { ...lose, ...win };
       Object.keys(lose).forEach(k => {
-        if (k === "images") return;
+        if (k === "images" || k === "image") return; // 사진은 아래에서 최신 쪽 기준으로 따로 정한다
         // 제목·부제목은 빈 값도 사용자가 지운 결과로 본다 (반대쪽 값으로 되살리지 않음)
         if (k === "title" || k === "subtitle" || k === "subject") return;
         const cur = merged[k];
         const emptyCur = cur === undefined || cur === null || cur === "" || (Array.isArray(cur) && !cur.length);
         if (emptyCur && lose[k] !== undefined && lose[k] !== null && lose[k] !== "") merged[k] = lose[k];
       });
-      const images = mergeImageLists(normalizeImages(win), normalizeImages(lose));
-      if (images.length) merged.images = images;
+      // 사진: 최신 쪽(win)이 사진을 들고 있으면 그 목록 그대로 — 지운 사진이 합집합으로 되살아나지 않게
+      const winImages = imageStateOf(win);
+      if (winImages.present) {
+        applyImageState(merged, winImages.list);
+      } else {
+        const loseImages = imageStateOf(lose);
+        if (loseImages.present) applyImageState(merged, loseImages.list);
+      }
       out[at] = merged;
     });
     return { list: out, added };
