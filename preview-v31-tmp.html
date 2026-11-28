@@ -4576,9 +4576,22 @@
 
     main.innerHTML = bodyHtml;
     syncCarousels();
+    scrollActiveIndexTab();
     applyPendingTurnAnimation();
     bindNotebookGestures();
     bindShelfCarousels();
+  }
+
+  // 주제가 많아 인덱스 탭이 책 높이를 넘으면 탭 영역만 스크롤되고, 지금 주제 탭이 보 이게 맞춘다
+  function scrollActiveIndexTab() {
+    const tabs = document.querySelector(".idx-tabs");
+    if (!tabs || tabs.scrollHeight <= tabs.clientHeight + 1) return;
+    const active = tabs.querySelector(".idx-tab.is-active");
+    if (!active) return;
+    const tr = tabs.getBoundingClientRect();
+    const ar = active.getBoundingClientRect();
+    if (ar.top < tr.top) tabs.scrollTop += ar.top - tr.top - 4;
+    else if (ar.bottom > tr.bottom) tabs.scrollTop += ar.bottom - tr.bottom + 4;
   }
 
   function archiveOnDay(a, dateStr) {
