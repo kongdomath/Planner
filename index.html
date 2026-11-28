@@ -2900,7 +2900,7 @@
     /* 펼친 면은 접힌 장에 가려 보이지 않게 한다 (모바일은 장이 지나간 자리에 속지가 남도록 접힌 뒤에 감춘다) */
     .nb-spread.is-closing > .nb-page { opacity: 0; }
     .nb-spread.is-closing[data-shut-mobile="1"] > .nb-page { opacity: 1; }
-    .nb-spread.is-closed > .nb-page { opacity: 0; }
+    .nb-spread.is-closing.is-closed > .nb-page { opacity: 0; }
     /* 책을 완전히 닫은 뒤에 책장으로 넘어간다 (닫히는 도중에 옆으로 밀리지 않게) */
     @keyframes nbStageLeave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.986); } }
     @keyframes nbStageEnter { from { opacity: 0; transform: scale(1.012); } to { opacity: 1; transform: none; } }
