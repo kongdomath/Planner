@@ -7199,13 +7199,10 @@
       const metrics = entries.length ? measureGoalPages(topic, entries) : null;
       model.topics.push({ name: topic.name, icon: topic.icon, entries, pages: paginateTopicPages(topic, entries, metrics), pageStart: 0 });
     });
-    // 주제마다 왼쪽 면에서 시작하도록 페이지 수가 홀수면 면 하나를 채운다
-    // v3.5: 마지막 주제 뒤는 채우지 않는다 — 그 오른면이 책 뒤표지가 된다
+    // v3.5: 주제 사이에 빈 면을 두지 않고 이어서 채운다 (빈 장 없이 책이 이어지도록)
     model.topics.forEach((t, ti) => {
       t.pageStart = model.flat.length;
       t.pages.forEach(p => model.flat.push({ ...p, topicIndex: ti }));
-      const isLast = ti === model.topics.length - 1;
-      if (!isLast && model.flat.length % 2 !== 0) model.flat.push({ filler: true, topicIndex: ti });
     });
     if (!model.flat.length) model.flat.push({ filler: true, topicIndex: 0 });
     goalLayoutCache = { sig, model };
@@ -7414,12 +7411,13 @@
     const topic = model.topics[next];
     // 0번은 앞표지이므로 주제 첫 장은 그다음 스프레드
     const dest = 1 + Math.floor((topic.pageStart || 0) / 2);
+    const destSide = (topic.pageStart || 0) % 2 === 0 ? "left" : "right";
     const cur = Math.round(Number(state.goalBookPage) || 0);
-    if (dest === cur && goalBookSide === "left" && state.goalBookTopic === topic.name) return;
+    if (dest === cur && goalBookSide === destSide && state.goalBookTopic === topic.name) return;
     const apply = () => {
       state.goalBookPage = dest;
       state.goalBookTopic = topic.name;
-      goalBookSide = "left";
+      goalBookSide = destSide;
       saveState();
     };
     // 앞표지에서 인덱스를 누르면 표지가 열리며 해당 주제로 들어간다
@@ -7461,7 +7459,7 @@
       if (page.items.some(e => e.item.id === id)) {
         state.goalBookPage = 1 + Math.floor(i / 2);
         state.goalBookTopic = (model.topics[page.topicIndex] || {}).name || state.goalBookTopic;
-        goalBookSide = "left";
+        goalBookSide = i % 2 === 0 ? "left" : "right";
         saveState();
         render();
         return;
