@@ -2707,6 +2707,8 @@
     }
     .nb-spread[data-cover] .nb-page--cover { border-radius: 10px 4px 4px 10px; }
     .nb-spread[data-cover="back"] .nb-page--cover { border-radius: 4px 10px 10px 4px; }
+    /* 뒤표지(닫힌 책)에는 주제 탭을 세우지 않는다 */
+    .nb-spread[data-cover="back"] .idx-tabs { display: none; }
     /* 닫힌 책이 덮이거나 열릴 때 표지만 살짝 흔들려 앉는다 */
     @keyframes nbCoverEnter {
       from { opacity: .62; transform: rotateY(-9deg) translateX(-8px); }
@@ -4102,11 +4104,14 @@
     return "";
   }
 
-  // 날짜 도장 (아카이브 · 목표 공용) — 시작일만 `2026.11.28 ~`, 종료일만 `~ 2026.12.19`
+  // 날짜 도장 (아카이브 · 목표 공용)
+  //  · 시작일만: `2026.11.28 ~`   · 종료일만: `~ 2026.12.19`
+  //  · 둘 다 있고 다름: 두 줄 기간  · 하루: `2026.11.28`
   function stampHtml(from, to, opts = {}) {
     if (!from && !to) return "";
     const kind = opts.kind ? ` nb-stamp--${opts.kind}` : "";
     const label = opts.label ? `<span>${escapeHtml(opts.label)}</span>` : "";
+    const open = opts.open === true;
     if (from && to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
       return `<span class="nb-stamp nb-stamp--range${kind}"><b>${escapeHtml(dottedDate(from))}</b><span class="nb-stamp-date">${escapeHtml(second)}</span>${label}</span>`;
@@ -4114,7 +4119,11 @@
     if (from && to) {
       return `<span class="nb-stamp${kind}"><b>${escapeHtml(dottedDate(from))}</b>${label}</span>`;
     }
-    if (from) return `<span class="nb-stamp nb-stamp--open${kind}"><b>${escapeHtml(dottedDate(from))} ~</b>${label}</span>`;
+    if (from) {
+      return open
+        ? `<span class="nb-stamp nb-stamp--open${kind}"><b>${escapeHtml(dottedDate(from))} ~</b>${label}</span>`
+        : `<span class="nb-stamp${kind}"><b>${escapeHtml(dottedDate(from))}</b>${label}</span>`;
+    }
     return `<span class="nb-stamp nb-stamp--open${kind}"><b>~ ${escapeHtml(dottedDate(to))}</b>${label}</span>`;
   }
 
@@ -4128,7 +4137,7 @@
     else if (mode === "from") label = "진행 중";
     else if (mode === "to") label = "예정";
     else label = /^\d{4}-\d{2}-\d{2}$/.test(from) ? `${KO_DOW[getDayOfWeek(from)]}요일` : "DATE";
-    return stampHtml(from, to, { label });
+    return stampHtml(from, to, { label, open: mode === "from" });
   }
 
   // ---------- 통합 목표·버킷 항목 ----------
@@ -4204,12 +4213,13 @@
     const label = done ? "DONE" : "PLAN";
     const title = done ? "달성한 날짜" : "예정일";
     const cls = done ? "gb-stamp" : "gb-stamp gb-stamp--plan";
+    const mode = dateModeOf(item);
     if (from && to && to !== from) {
       const second = from.slice(0, 4) === to.slice(0, 4) ? `– ${to.slice(5).replace("-", ".")}` : `– ${dottedDate(to)}`;
       return `<span class="${cls} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))}</b><span>${escapeHtml(second)} · ${label}</span></span>`;
     }
     // 시작일만: 아직 끝나지 않은 기간
-    if (from && !to) {
+    if (from && mode === "from") {
       return `<span class="${cls} gb-stamp--range" title="${title}"><b>${escapeHtml(dottedDate(from))} ~</b><span>${label}</span></span>`;
     }
     // 종료일만: 시작일을 모르는 기간
