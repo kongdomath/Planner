@@ -10895,6 +10895,9 @@
         const parsed = JSON.parse(String(e.target.result));
         const isLegacy = !parsed.logs && !parsed.topics && looksLikeLegacyIndex(parsed);
         state = isLegacy ? (migrateLegacyIndex(parsed) || clone(defaultState)) : normalizeState(parsed);
+        // v4.1: 백업 복원은 사용자가 직접 고른 결과다 — 이 기기의 지운 표시 장부도 복원본 기준으로 맞춘다
+        //  (예전에 지웠던 항목이 들어 있는 백업을 일부러 복원했는데 장부 때문에 다시 지워지지 않도록)
+        writeTombstones(state.deleted || {});
         saveState();
         render();
         refreshSettingsIfOpen();
