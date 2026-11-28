@@ -1924,7 +1924,10 @@
     .nb-dayphotos--n3 .nb-pola:first-child img { aspect-ratio: 16 / 9; }
     .nb-dayphotos--n4 .nb-pola { width: calc(50% - 6px); }
     .nb-dayphotos--n5 .nb-pola { width: calc(33.333% - 8px); }
-    .nb-dayphotos--n1 img { aspect-ratio: 4 / 3; }
+    /* 5장: 위 3장(정사각) + 아래 2장(가로) 콜라주로 페이지를 고르게 채운다 */
+    .nb-dayphotos--n5 .nb-pola:nth-child(n+4) { width: calc(50% - 6px); }
+    .nb-dayphotos--n5 .nb-pola:nth-child(n+4) img { aspect-ratio: 4 / 3; }
+    .nb-dayphotos--n1 img { aspect-ratio: 1 / 1; }
     .nb-dayphotos--n2 img, .nb-dayphotos--n4 img, .nb-dayphotos--n5 img { aspect-ratio: 1 / 1; }
     .nb-dayphotos .nb-pola { padding: 7px 7px 20px; }
     .nb-dayphotos--n5 .nb-pola { padding: 5px 5px 15px; }
@@ -3797,7 +3800,7 @@
         nbSetPageHtml(destSpread, sideCls(destSide), oldShown);
         leaf.appendChild(nbFlipFace(destShown, `nb-flip-front nb-page ${sideCls(destSide)}`));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
-        leaf.classList.add("is-in");
+        leaf.classList.add("is-back");
       }
     } else {
       host.className = step > 0 ? "nb-flip nb-flip--right" : "nb-flip nb-flip--left";
