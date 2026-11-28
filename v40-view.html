@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>v4.0 화면 보기</title>
+<style>html,body{margin:0;padding:0;background:#0d1016}iframe{border:0;display:block}</style>
+</head><body>
+<iframe id="f"></iframe>
+<script>
+var q = new URLSearchParams(location.search);
+var f = document.getElementById("f");
+f.width = q.get("w") || "390";
+f.height = q.get("h") || "844";
+f.src = q.get("src") || "index.html";
+var tab = q.get("tab");
+f.onload = function () {
+  if (!tab) return;
+  var W = f.contentWindow, D = f.contentDocument;
+  var P = W.__planner;
+  if (!P) return;
+  try {
+    P.setTab(tab);
+    P.render();
+    if (tab === "archive") {
+      var bs = P.getState().books || [];
+      if (!bs.length) {
+        bs.unshift({ id: "tb1", title: "차", subtitle: "차를 기록하다", category: "독서 · 문화", spine: "#3f6f6a", cover: "" });
+        bs.push({ id: "tb2", title: "여행", subtitle: "여행 노트", category: "생활 · 루틴", spine: "#5b4a72", cover: "" });
+        bs.push({ id: "tb3", title: "전시", subtitle: "전시 기록", category: "독서 · 문화", spine: "#8a5a3c", cover: "" });
+      }
+      P.selectShelfBook(bs[0].id);
+    }
+  } catch (e) { document.title = "ERR " + e; }
+};
+</script>
+</body></html>
