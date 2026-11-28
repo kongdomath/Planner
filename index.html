@@ -2454,6 +2454,7 @@
     }
     .nb-note-single { gap: 0; }
     .nb-note--wide { margin: 0; padding: 0; }
+    .nb-note--wide .nb-note-body, .nb-note--wide .nb-note-head { max-width: 64ch; }
     .nb-note-head { display: flex; flex-direction: column; gap: 7px; }
     .nb-note-head .nb-note-title { margin: 0; }
     .nb-stamps--inline { margin-top: 6px; }
@@ -3869,12 +3870,13 @@
     return el;
   }
 
-  // 맨 앞/맨 뒤 경계: 책을 덮으며 북커버가 드러난 뒤 책장으로 돌아간다
+  // 맨 앞/맨 뒤 경계: 책을 덮으며 닫힌 책(1페이지 너비)이 드러난 뒤 책장으로 돌아간다
   function closeBookWithCover(spread, dir, opts, done) {
     if (!spread) { done(); return; }
     spread.dataset.turning = "1";
+    spread.classList.add("cover-closing");
     const cover = document.createElement("div");
-    cover.className = "nbf-cover";
+    cover.className = `nbf-cover nbf-cover--narrow ${dir > 0 ? "nbf-cover--close-right" : "nbf-cover--close-left"}`;
     cover.style.setProperty("--spine", opts.spine || "#2f3e5c");
     cover.innerHTML = `<div class="nbf-cover-plate"><b>${escapeHtml(opts.title || "")}</b>${opts.sub ? `<i></i><span>${escapeHtml(opts.sub)}</span>` : ""}</div>`;
     spread.appendChild(cover);
@@ -3883,11 +3885,12 @@
       if (finished) return;
       finished = true;
       cover.remove();
+      spread.classList.remove("cover-closing");
       spread.dataset.turning = "";
       done();
     };
     cover.addEventListener("animationend", finish, { once: true });
-    setTimeout(finish, 700);
+    setTimeout(finish, 820);
   }
 
   function turnToPage(dir, mutate, opts = {}) {
