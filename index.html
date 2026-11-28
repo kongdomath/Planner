@@ -1772,6 +1772,7 @@
     textarea.nb-day-diary {
       flex: 1 1 auto; min-height: 108px; overflow-y: auto; resize: none;
       font-size: 16px; line-height: 30px;
+      word-break: keep-all; overflow-wrap: break-word;
       background: transparent !important;
       background-image: repeating-linear-gradient(to bottom, transparent 0 29px, rgba(120,126,140,.16) 29px 30px) !important;
       background-position: 0 7px !important;
@@ -3066,7 +3067,8 @@
     }
     .nb-day-dots { display: flex; gap: 2px; height: 4px; }
     .nb-day-dots i { width: 4px; height: 4px; border-radius: 50%; display: block; }
-    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 1px; height: 11px; }
+    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 3px; height: 9px; }
+    .nb-dot { width: 5px; height: 5px; border-radius: 50%; display: block; opacity: .82; }
     .nb-mark { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
     .nb-mark svg { display: block; }
     .nb-month-row .marks { display: flex; align-items: center; gap: 1px; flex-shrink: 0; }
@@ -5059,7 +5061,7 @@
         results.push({
           type: "기록 · 일기",
           title: one || `${dateStr} 일기`,
-          sub: `${dateStr} · ${snippet}`,
+          sub: `${dottedDate(dateStr)} · ${snippet}`,
           action: () => selectDate(dateStr, true)
         });
       }
@@ -5092,7 +5094,7 @@
         results.push({
           type: `아카이브 · ${a.category || ""}`,
           title: String(a.title || ""),
-          sub: `${a.date || ""}${a.subtitle ? ` · ${a.subtitle}` : ""}`,
+          sub: `${humanDateRange(itemDateFrom(a), itemDateTo(a))}${a.subtitle ? ` · ${a.subtitle}` : ""}`,
           action: () => {
             state.activeTab = "archive";
             yearDayDate = "";
@@ -5644,12 +5646,13 @@
     return "기록";
   }
 
+  // v3.6 달력 날짜 밑 표시: 8px 아이콘은 뭉개져 보여서 작은 색 점으로 바꿨다
   function dayDotsHtml(meta) {
     const marks = [];
-    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push(miniTabIcon("diary", 8));
-    if (meta && meta.hasAchieved) marks.push(miniTabIcon("goals", 8));
-    if (meta && meta.hasArchive) marks.push(miniTabIcon("archive", 8));
-    return marks.join("");
+    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push("diary");
+    if (meta && meta.hasAchieved) marks.push("goals");
+    if (meta && meta.hasArchive) marks.push("archive");
+    return marks.map(k => `<span class="nb-dot" style="background:${TAB_MARK_COLORS[k] || "#6b7280"}"></span>`).join("");
   }
 
 
@@ -7558,8 +7561,10 @@
       goalBookSide = destSide;
       saveState();
     };
-    // 앞표지에서 인덱스를 누르면 표지가 열리며 해당 주제로 들어간다
+    // 앞표지·뒤표지에서 인덱스를 누르면 표지가 열리며 해당 주제로 들어간다
+    const spreads = goalBookSpreads(model);
     if (cur === 0) { goalCoverTurn(1, "front", apply); return; }
+    if (cur > spreads.contentSpreads) { goalCoverTurn(-1, "back", apply); return; }
     turnToPage(dest > cur ? 1 : -1, apply);
   }
 
@@ -8080,6 +8085,7 @@
             <b>${escapeHtml(book.title)}</b>
             <span>${subBits.map(escapeHtml).join(" · ")}</span>
           </div>
+          <span class="nb-reader-spacer" aria-hidden="true"></span>
         </div>
         <div class="nb-book">
           <button class="nb-nav prev" onclick="notebookStep(-1)" aria-label="이전 페이지">${ICONS.chevLeft}</button>
