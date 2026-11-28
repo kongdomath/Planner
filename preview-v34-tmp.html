@@ -2616,6 +2616,11 @@
     .nb-flip-leaf.is-next { animation: nbfFlipNext .66s cubic-bezier(.45,.05,.25,1) both; }
     .nb-flip-leaf.is-prev { animation: nbfFlipPrev .66s cubic-bezier(.45,.05,.25,1) both; }
     .nb-flip-leaf.is-back { animation: nbfFlipBack .6s cubic-bezier(.4,.06,.3,1) both; }
+    /* 모바일 단면: 책 밖(왼쪽)으로 넘어가며 얇게 남는 부분이 어색하지 않도록 살짝 사라진다 */
+    @keyframes nbfLeafFadeOut { 0%, 52% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes nbfLeafFadeIn { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: 1; } }
+    .nb-flip--full .nb-flip-leaf.is-next { animation-name: nbfFlipNext, nbfLeafFadeOut; }
+    .nb-flip--full .nb-flip-leaf.is-back { animation-name: nbfFlipBack, nbfLeafFadeIn; }
 
     /* ===== v3.4 마지막 면: 빈 속지 대신 책 뒤표지 ===== */
     .nb-page--backcover {
@@ -3800,7 +3805,7 @@
         leaf.classList.add("is-next");
       } else {
         // 지금 페이지를 아래에 깔고, 앞 장이 앞면을 보이며 되돌아 들어온다
-        nbSetPageHtml(destSpread, sideCls(destSide), oldShown);
+        nbSetPageHtml(destSpread, "." + sideCls(destSide), oldShown);
         leaf.appendChild(nbFlipFace(destShown, `nb-flip-front nb-page ${sideCls(destSide)}`));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
         leaf.classList.add("is-back");
