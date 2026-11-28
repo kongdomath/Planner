@@ -2333,7 +2333,8 @@
     .nb-visual-sub { font-size: 11.5px; color: #8a8e98; letter-spacing: .04em; }
     .nb-visual-rule { width: 40px; height: 1px; background: rgba(120,126,140,.38); margin: 4px 0; }
     .nb-visual-cat { font-size: 10.5px; font-weight: 600; letter-spacing: .18em; color: #7d818b; text-transform: uppercase; }
-    .nb-stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: auto; }
+    .nb-stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: auto; cursor: pointer; }
+    .nb-stamps:hover .nb-stamp { background: rgba(43,76,126,.09); }
     .nb-stamp {
       display: inline-flex; flex-direction: column; align-items: center; gap: 1px;
       border: 1.5px solid rgba(43,76,126,.5); border-radius: 4px;
@@ -6691,7 +6692,6 @@
           ${stamps ? `<div class="gb-row-meta">${stamps}</div>` : ""}
           ${it.note ? `<div class="gb-row-note">${escapeHtml(it.note)}</div>` : ""}
         </div>
-        <button class="icon-btn danger" onclick="deleteItem('${entry.src}', '${it.id}')" title="삭제" aria-label="항목 삭제">${ICONS.trash}</button>
       </div>
     `;
   }
@@ -7418,7 +7418,7 @@
       <section class="nb-page nb-page--left">
         <div class="nb-page-inner">
           ${visual}
-          <div class="nb-stamps">${archiveStampHtml(a)}</div>
+          <div class="nb-stamps" onclick="openEditArchive('${a.id}')" title="눌러서 수정">${archiveStampHtml(a)}</div>
           ${paperPageNo(pageNo)}
         </div>
       </section>
@@ -7571,7 +7571,7 @@
         if (isYear || isDay || !isMobileViewport()) return;
         const last = Number(spread.dataset.swipedAt || 0);
         if (last && Date.now() - last < 420) return;
-        if (e.target.closest("button, a, input, textarea, select, label, .gb-row, .gb-list, .nb-note, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
+        if (e.target.closest("button, a, input, textarea, select, label, .gb-row, .gb-list, .nb-note, .nb-stamps, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
         const nextSide = spread.dataset.side === "right" ? "left" : "right";
         const spreadId = spread.id;
         turnToPage(nextSide === "right" ? 1 : -1, () => setMobileBookSide(spreadId, nextSide));
