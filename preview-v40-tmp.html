@@ -6195,7 +6195,6 @@
           <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex, slot.index)).join("")}</div>
         </div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
-        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
     `;
   }
