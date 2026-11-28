@@ -3429,13 +3429,13 @@
       host.className = "nb-flip nb-flip--full";
       if (step > 0) {
         // 지금 페이지가 책등(왼쪽) 축으로 넘어가고, 아래에 다음 페이지가 드러난다
-        leaf.appendChild(nbFlipFace(oldShown, `nb-flip-front ${sideCls(oldSide)}`));
+        leaf.appendChild(nbFlipFace(oldShown, `nb-flip-front nb-page ${sideCls(oldSide)}`));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
         leaf.classList.add("is-next");
       } else {
         // 지금 페이지를 아래에 깔고, 앞 장이 앞면을 보이며 되돌아 들어온다
         nbSetPageHtml(destSpread, sideCls(destSide), oldShown);
-        leaf.appendChild(nbFlipFace(destShown, `nb-flip-front ${sideCls(destSide)}`));
+        leaf.appendChild(nbFlipFace(destShown, `nb-flip-front nb-page ${sideCls(destSide)}`));
         leaf.appendChild(nbBlankFace("nb-flip-back"));
         leaf.classList.add("is-in");
       }
@@ -3444,14 +3444,14 @@
       if (step > 0) {
         // 왼쪽엔 지금 왼쪽 장이 남아 있고, 오른쪽 장이 넘어가면서 뒷면(다음 왼쪽 장)이 내려앉는다
         nbSetPageHtml(destSpread, ".nb-page--left", oldLeft);
-        leaf.appendChild(nbFlipFace(oldRight, "nb-flip-front nb-page--right"));
-        leaf.appendChild(nbFlipFace(destLeft, "nb-flip-back nb-page--left"));
+        leaf.appendChild(nbFlipFace(oldRight, "nb-flip-front nb-page nb-page--right"));
+        leaf.appendChild(nbFlipFace(destLeft, "nb-flip-back nb-page nb-page--left"));
         leaf.classList.add("is-next");
       } else {
         // 오른쪽엔 지금 오른쪽 장이 남아 있고, 왼쪽 장이 오른쪽으로 넘어간다
         nbSetPageHtml(destSpread, ".nb-page--right", oldRight);
-        leaf.appendChild(nbFlipFace(oldLeft, "nb-flip-front nb-page--left"));
-        leaf.appendChild(nbFlipFace(destRight, "nb-flip-back nb-page--right"));
+        leaf.appendChild(nbFlipFace(oldLeft, "nb-flip-front nb-page nb-page--left"));
+        leaf.appendChild(nbFlipFace(destRight, "nb-flip-back nb-page nb-page--right"));
         leaf.classList.add("is-prev");
       }
     }
