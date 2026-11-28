@@ -2096,8 +2096,10 @@
     }
 
     /* 책장: 손끝을 따라 도는 3D 캐러셀 (가운데 책은 크고 정면, 옆 책은 작고 기울어짐) */
+    /* v4.0: 책장 높이 = Goals 책 높이(--book-h) — 가운데 책이 앞표지와 같은 크기로 앉는다 */
     .nb-carousel {
-      position: relative; width: 100%; height: 304px;
+      position: relative; width: 100%;
+      height: calc(var(--book-h, 660px) + 16px);
       perspective: 1500px; perspective-origin: 50% 46%;
       touch-action: pan-y;
       cursor: grab;
@@ -2108,6 +2110,9 @@
     .nb-carousel.dragging { cursor: grabbing; }
     .nb-cover-btn {
       position: absolute; left: 50%; top: 50%;
+      /* v4.0: 책장 가운데 책 = Goals 앞표지와 같은 상자 (너비·높이·위치를 그대로 맞춘다) */
+      width: min(50%, 600px);
+      height: var(--book-h, 660px);
       background: none; border: 0; padding: 0; cursor: pointer;
       transform-origin: 50% 55%;
       transition: none;
@@ -2117,8 +2122,10 @@
     .nb-cover-btn.is-active { z-index: 200; }
     .nb-cover {
       position: relative; display: block;
-      width: 176px; height: 246px;
-      border-radius: 3px 8px 8px 3px;
+      width: 100%; height: 100%;
+      border-radius: 10px 4px 4px 10px;
+      /* v4.0: 표지 장식(책등·테두리·제목)은 표지 너비에 비례해 같은 결로 커진다 (기준 190px) */
+      --cs: 1;
       background:
         linear-gradient(155deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 24%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.34) 100%),
         var(--spine, #2f3e5c);
@@ -2129,21 +2136,23 @@
     .nb-cover-photo + .nb-cover-frame { display: none; }
     /* v3.9: 책장 미니 표지도 Goals 앞표지와 같은 양장 하드커버 결 (안쪽 테두리 + 세리프 제목) */
     .nb-cover-frame {
-      position: absolute; inset: 8px 7px 8px 19px; border: 1px solid rgba(255,255,255,.18);
-      border-radius: 2px; pointer-events: none;
+      position: absolute;
+      inset: calc(8px * var(--cs, 1)) calc(7px * var(--cs, 1)) calc(8px * var(--cs, 1)) calc(19px * var(--cs, 1));
+      border: max(1px, calc(var(--cs, 1) * 1px)) solid rgba(255,255,255,.18);
+      border-radius: calc(2px * var(--cs, 1)); pointer-events: none;
     }
     .nb-cover-title {
-      position: absolute; left: 21px; right: 9px; top: 50%; transform: translateY(-50%);
+      position: absolute; left: calc(21px * var(--cs, 1)); right: calc(9px * var(--cs, 1)); top: 50%; transform: translateY(-50%);
       text-align: center; color: #f7f2e6; padding: 0 3px;
     }
     .nb-cover-title b {
       font-family: Georgia, "Times New Roman", serif; font-weight: 700;
-      font-size: 17px; line-height: 1.25; letter-spacing: .02em; word-break: keep-all;
+      font-size: calc(17px * var(--cs, 1)); line-height: 1.25; letter-spacing: .02em; word-break: keep-all;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .nb-cover-title i { display: block; width: 22px; height: 1px; margin: 8px auto; background: rgba(247,242,230,.45); }
+    .nb-cover-title i { display: block; width: calc(22px * var(--cs, 1)); height: max(1px, calc(var(--cs, 1) * 1px)); margin: calc(8px * var(--cs, 1)) auto; background: rgba(247,242,230,.45); }
     .nb-cover-title span {
-      display: block; font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+      display: block; font-size: calc(8px * var(--cs, 1)); letter-spacing: .2em; text-transform: uppercase;
       color: rgba(247,242,230,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .nb-cover--photo .nb-cover-title b { background: rgba(18,21,30,.55); border-radius: 2px; padding: 5px 6px; color: #fff; }
@@ -2168,7 +2177,7 @@
       text-align: left; word-break: keep-all;
     }
     .nb-cover-spine {
-      position: absolute; left: 0; top: 0; bottom: 0; width: 13px;
+      position: absolute; left: 0; top: 0; bottom: 0; width: calc(13px * var(--cs, 1));
       background: linear-gradient(90deg, rgba(0,0,0,.32), rgba(255,255,255,.12) 55%, rgba(0,0,0,.18)), var(--spine, #2f3e5c);
       box-shadow: inset -1px 0 0 rgba(0,0,0,.22);
     }
@@ -2177,15 +2186,18 @@
       background: linear-gradient(104deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,.16) 100%);
     }
     .nb-cover-chip {
-      position: absolute; right: 9px; top: 9px; font-size: 10px; font-weight: 700;
+      position: absolute; right: calc(9px * var(--cs, 1)); top: calc(9px * var(--cs, 1));
+      font-size: calc(10px * var(--cs, 1)); font-weight: 700;
       color: rgba(255,255,255,.92); background: rgba(18,21,30,.45);
-      border-radius: 999px; padding: 2px 6px; letter-spacing: .02em;
+      border-radius: 999px; padding: calc(2px * var(--cs, 1)) calc(6px * var(--cs, 1)); letter-spacing: .02em;
     }
     .nb-shelf-empty { text-align: center; padding: 46px 16px 40px; }
     .nb-shelf-empty h3 { margin: 0 0 6px; font-size: 16px; }
     .nb-shelf-empty p { margin: 0 0 16px; font-size: 12.5px; color: rgba(232,235,244,.66); line-height: 1.6; }
 
-    .nb-stage--shelf { padding: 22px 16px 20px; justify-content: center; }
+    /* v4.0: 좌우 여백을 .nb-stage와 똑같이 두어야 책장 책 너비가 Goals 앞표지와 정확히 같아진다 */
+    .nb-stage--shelf { padding: 22px 22px 20px; justify-content: center; }
+    .nb-book--shelf { perspective: none; }
     .nb-book-meta { text-align: center; padding: 0 0 2px; }
     .nb-book-meta h3 {
       margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
@@ -2628,6 +2640,17 @@
     .nb-spread .nb-underlay-page { display: block !important; }
     /* 넘김이 도는 동안에는 무거운 그림자를 잠시 줄여 페인트 비용을 낮춘다 */
     .nb-spread[data-turning="1"] { box-shadow: 0 16px 26px -20px rgba(6,9,18,.45); }
+    /* v4.0 iOS Safari 경량화: 넘김 중에는 장을 각각 한 겹으로 띄우고(translate3d), 레이아웃·페인트를
+       그 장 안으로 가둔다(contain). 책등 inset 그림자와 도트 배경은 회전 중에만 잠시 끈다. */
+    .nb-spread[data-turning="1"] .nb-page {
+      contain: layout paint;
+      box-shadow: none !important;
+      transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    .nb-spread[data-turning="1"] .nb-page--right { background-image: none; }
+    .nb-spread[data-turning="1"] .nb-page::after { display: none; }
     .nb-flip, .nbf-shut { will-change: transform; }
     .nb-flip {
       position: absolute; top: 0; bottom: 0; z-index: 9;
@@ -2675,19 +2698,19 @@
     @keyframes nbfFlipPrev { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
     /* v3.4: 모바일 단면에서 뒤로 넘길 때 — 왼쪽에 접혀 있던 장이 되돌아 들어온다 */
     @keyframes nbfFlipBack { from { transform: rotateY(-180deg); } to { transform: rotateY(0deg); } }
-    .nb-flip-leaf.is-next { animation: nbfFlipNext .66s cubic-bezier(.45,.05,.25,1) both; }
-    .nb-flip-leaf.is-prev { animation: nbfFlipPrev .66s cubic-bezier(.45,.05,.25,1) both; }
-    .nb-flip-leaf.is-back { animation: nbfFlipBack .6s cubic-bezier(.4,.06,.3,1) both; }
+    .nb-flip-leaf.is-next { animation: nbfFlipNext .38s cubic-bezier(.22,1,.36,1) both; }
+    .nb-flip-leaf.is-prev { animation: nbfFlipPrev .38s cubic-bezier(.22,1,.36,1) both; }
+    .nb-flip-leaf.is-back { animation: nbfFlipBack .38s cubic-bezier(.22,1,.36,1) both; }
     /* v3.4: 종이가 90°를 지나는 순간 앞·뒷면을 확실히 바꿔
        반대면 내용이 종이를 비쳐 보이지 않게 한다 (backface-visibility 대체) */
     @keyframes nbfFaceOut { 0%, 37.9% { visibility: visible; } 38%, 100% { visibility: hidden; } }
     @keyframes nbfFaceIn { 0%, 37.9% { visibility: hidden; } 38%, 100% { visibility: visible; } }
     @keyframes nbfFaceOutBack { 0%, 37.9% { visibility: hidden; } 38%, 100% { visibility: visible; } }
     @keyframes nbfFaceInBack { 0%, 37.9% { visibility: visible; } 38%, 100% { visibility: hidden; } }
-    .nb-flip-leaf.is-next .nb-flip-front, .nb-flip-leaf.is-prev .nb-flip-front { animation: nbfFaceOut .66s linear both; }
-    .nb-flip-leaf.is-next .nb-flip-back, .nb-flip-leaf.is-prev .nb-flip-back { animation: nbfFaceIn .66s linear both; }
-    .nb-flip-leaf.is-back .nb-flip-front { animation: nbfFaceOutBack .6s linear both; }
-    .nb-flip-leaf.is-back .nb-flip-back { animation: nbfFaceInBack .6s linear both; }
+    .nb-flip-leaf.is-next .nb-flip-front, .nb-flip-leaf.is-prev .nb-flip-front { animation: nbfFaceOut .38s linear both; }
+    .nb-flip-leaf.is-next .nb-flip-back, .nb-flip-leaf.is-prev .nb-flip-back { animation: nbfFaceIn .38s linear both; }
+    .nb-flip-leaf.is-back .nb-flip-front { animation: nbfFaceOutBack .38s linear both; }
+    .nb-flip-leaf.is-back .nb-flip-back { animation: nbfFaceInBack .38s linear both; }
     /* 모바일 단면: 책 밖(왼쪽)으로 넘어가며 얇게 남는 부분이 어색하지 않도록 살짝 사라진다 */
     @keyframes nbfLeafFadeOut { 0%, 52% { opacity: 1; } 100% { opacity: 0; } }
     @keyframes nbfLeafFadeIn { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: 1; } }
@@ -2832,10 +2855,10 @@
     @keyframes nbfNarrowCloseLeft { from { transform: rotateY(-104deg); opacity: 0; } 34% { opacity: 1; } to { transform: rotateY(0deg); opacity: 1; } }
     @keyframes nbfNarrowOpenRight { from { transform: rotateY(0deg); opacity: 1; } 62% { opacity: 1; } to { transform: rotateY(104deg); opacity: 0; } }
     @keyframes nbfNarrowCloseRight { from { transform: rotateY(104deg); opacity: 0; } 34% { opacity: 1; } to { transform: rotateY(0deg); opacity: 1; } }
-    .nbf-cover--narrow.nbf-cover--open-left { animation: nbfNarrowOpenLeft .74s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--narrow.nbf-cover--close-left { animation: nbfNarrowCloseLeft .74s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--narrow.nbf-cover--open-right { animation: nbfNarrowOpenRight .74s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--narrow.nbf-cover--close-right { animation: nbfNarrowCloseRight .74s cubic-bezier(.42,.02,.58,1) both; }
+    .nbf-cover--narrow.nbf-cover--open-left { animation: nbfNarrowOpenLeft .4s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--narrow.nbf-cover--close-left { animation: nbfNarrowCloseLeft .42s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--narrow.nbf-cover--open-right { animation: nbfNarrowOpenRight .4s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--narrow.nbf-cover--close-right { animation: nbfNarrowCloseRight .42s cubic-bezier(.22,1,.36,1) both; }
     /* v3.6 사진 없는 아카이브 기록: 빈 사진 면 없이 한 면에 제목·도장·감상을 모아 쓴다 */
     .nb-page--wide { grid-column: 1 / -1; }
     .nb-spread[data-single] { grid-template-columns: 1fr; }
@@ -2852,10 +2875,10 @@
     @keyframes nbfCoverCloseLeft { from { transform: rotateY(-158deg); } to { transform: rotateY(0deg); } }
     @keyframes nbfCoverOpenRight { from { transform: rotateY(0deg); } to { transform: rotateY(158deg); } }
     @keyframes nbfCoverCloseRight { from { transform: rotateY(158deg); } to { transform: rotateY(0deg); } }
-    .nbf-cover--open-left { transform-origin: left center; animation: nbfCoverOpenLeft .62s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--close-left { transform-origin: left center; animation: nbfCoverCloseLeft .62s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--open-right { transform-origin: right center; animation: nbfCoverOpenRight .62s cubic-bezier(.42,.02,.58,1) both; }
-    .nbf-cover--close-right { transform-origin: right center; animation: nbfCoverCloseRight .62s cubic-bezier(.42,.02,.58,1) both; }
+    .nbf-cover--open-left { transform-origin: left center; animation: nbfCoverOpenLeft .4s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--close-left { transform-origin: left center; animation: nbfCoverCloseLeft .42s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--open-right { transform-origin: right center; animation: nbfCoverOpenRight .4s cubic-bezier(.22,1,.36,1) both; }
+    .nbf-cover--close-right { transform-origin: right center; animation: nbfCoverCloseRight .42s cubic-bezier(.22,1,.36,1) both; }
     /* 표지가 열리고 닫힐 때 정지 화면의 표지 글자 크기와 맞춘다 */
     .nbf-cover--goal .nbf-cover-plate b { font-size: 40px; }
     /* 경계(맨 앞·맨 뒤)에서 책을 닫을 때 드러나는 북커버 */
@@ -2894,7 +2917,7 @@
        · 뒤에서 닫힘: 오른쪽 장이 왼쪽으로 접혀 덮이며 뒤표지(책등 오른쪽)가 위로 온 뒤,
                      닫힌 책이 Y축으로 180도 돌아 앞표지(책등 왼쪽)가 되어 완전히 닫힌다 */
     .nbf-shut {
-      --shut-fold: 540ms; --shut-turn: 480ms;
+      --shut-fold: 420ms;
       position: absolute; inset: 0; z-index: 14;
       /* 원근을 낮게(멀리) 두어 접히는 장이 화면 가까이 부푸는 느낌을 줄인다 */
       perspective: 4600px; perspective-origin: 50% 50%;
@@ -2913,8 +2936,8 @@
     .nbf-shut-leaf { transform-style: preserve-3d; -webkit-transform-style: preserve-3d; will-change: transform; }
     .nbf-shut-leaf--left { transform-origin: 100% center; }
     .nbf-shut-leaf--right { transform-origin: 0px center; }
-    .nbf-shut-leaf.is-front { animation: nbfShutFoldFront var(--shut-fold) cubic-bezier(.38,.02,.60,1) both; }
-    .nbf-shut-leaf.is-back { animation: nbfShutFoldBack var(--shut-fold) cubic-bezier(.38,.02,.60,1) both; }
+    .nbf-shut-leaf.is-front { animation: nbfShutFoldFront var(--shut-fold) cubic-bezier(.22,1,.36,1) both; }
+    .nbf-shut-leaf.is-back { animation: nbfShutFoldBack var(--shut-fold) cubic-bezier(.22,1,.36,1) both; }
     @keyframes nbfShutFoldFront { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
     @keyframes nbfShutFoldBack { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
     .nbf-shut-face {
@@ -2934,8 +2957,13 @@
     }
     .nbf-shut.is-folded .nbf-shut-closed { visibility: visible; }
     .nbf-shut.is-folded .nbf-shut-body { visibility: hidden; }
-    .nbf-shut-closed.is-turning { animation: nbfShutTurn var(--shut-turn) cubic-bezier(.45,.03,.55,1) both; }
-    @keyframes nbfShutTurn { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+    /* v4.0 A안: 마지막에서 닫힐 때 180도 빙글 돌리지 않는다 — 접혀서 앉은 닫힌 책이
+       앞표지로 살짝 안정되며 바로 책장/앞표지 화면으로 돌아간다 */
+    .nbf-shut.is-folded .nbf-shut-closed { animation: nbfShutSettle .18s ease-out both; }
+    @keyframes nbfShutSettle {
+      from { opacity: .45; }
+      to   { opacity: 1; }
+    }
     .nbf-shut-card-face {
       position: absolute; inset: 0; overflow: hidden;
       border-radius: 10px 4px 4px 10px;
@@ -3194,15 +3222,16 @@
 
     /* 연도별 책 */
     .nb-cover--year { background: linear-gradient(155deg, rgba(255,255,255,.16), rgba(0,0,0,.34)), var(--spine, #33415c); }
-    .nb-year-plate { position: absolute; left: 22px; right: 14px; top: 50%; transform: translateY(-50%); text-align: center; color: #f7f2e6; }
-    .nb-year-plate b { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 34px; letter-spacing: .06em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .nb-year-plate i { display: block; width: 26px; height: 1px; margin: 9px auto; background: rgba(247,242,230,.42); }
-    .nb-year-plate span { display: block; font-size: 8.5px; letter-spacing: .26em; opacity: .62; }
+    .nb-year-plate { position: absolute; left: calc(22px * var(--cs, 1)); right: calc(14px * var(--cs, 1)); top: 50%; transform: translateY(-50%); text-align: center; color: #f7f2e6; }
+    .nb-year-plate b { display: block; font-family: Georgia, "Times New Roman", serif; font-size: calc(34px * var(--cs, 1)); letter-spacing: .06em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-year-plate i { display: block; width: calc(26px * var(--cs, 1)); height: max(1px, calc(var(--cs, 1) * 1px)); margin: calc(9px * var(--cs, 1)) auto; background: rgba(247,242,230,.42); }
+    .nb-year-plate span { display: block; font-size: calc(8.5px * var(--cs, 1)); letter-spacing: .26em; opacity: .62; }
     .nb-year-now {
-      position: absolute; left: 20px; top: 12px; font-size: 9px; font-weight: 700; letter-spacing: .08em;
-      color: #2b3145; background: #f7f2e6; border-radius: 999px; padding: 2px 7px;
+      position: absolute; left: calc(20px * var(--cs, 1)); top: calc(12px * var(--cs, 1));
+      font-size: calc(9px * var(--cs, 1)); font-weight: 700; letter-spacing: .08em;
+      color: #2b3145; background: #f7f2e6; border-radius: 999px; padding: calc(2px * var(--cs, 1)) calc(7px * var(--cs, 1));
     }
-    .nb-cover--year .nb-cover-chip { top: auto; bottom: 9px; right: 9px; }
+    .nb-cover--year .nb-cover-chip { top: auto; bottom: calc(9px * var(--cs, 1)); right: calc(9px * var(--cs, 1)); }
     .nb-legend {
       display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
       margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1);
@@ -3284,19 +3313,17 @@
 
     @media (max-width: 860px) {
       .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(400px, calc(100dvh - 310px), 780px); }
-      .nb-stage--shelf { padding: 18px 4px 16px; }
+      .nb-stage--shelf { padding: 18px 8px 16px; }
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }
-      .nb-carousel { height: 290px; }
       .nb-carousel {
         -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 13%, #000 87%, transparent 100%);
         mask-image: linear-gradient(90deg, transparent 0, #000 13%, #000 87%, transparent 100%);
       }
-      .nb-cover-btn { transform: translateY(4px) scale(.94); }
-      .nb-cover { width: 190px; height: 264px; }
-      .nb-cover-title b { font-size: 18px; }
-      .nb-cover-frame { inset: 9px 8px 9px 21px; }
+      /* v4.0: 책장 가운데 책은 Goals 앞표지와 같은 너비(한 면 전체) — 크기만 미디어쿼리로 바꾸지 않는다 */
+      .nb-cover-btn { width: 100%; }
+      .nb-cover { border-radius: 0 14px 14px 0; }
       .nb-book-meta h3 { font-size: 20px; }
       .nb-actions { gap: 14px; margin-top: 14px; }
       .nb-bottom-bar { height: 62px; margin-top: 10px; gap: 8px; }
@@ -3380,15 +3407,9 @@
       .nb-day-item-title { font-size: 12.5px; }
     }
 
-    /* 화면이 높은 기기(아이패드 세로)에서는 책장 커버도 크게 */
+    /* 화면이 높은 기기(아이패드 세로)에서는 책장 책도 함께 커진다 */
     @media (min-height: 900px) {
-      .nb-carousel { height: 372px; }
-      .nb-cover { width: 214px; height: 300px; }
-      .nb-cover-title b { font-size: 20px; }
-      .nb-cover-frame { inset: 10px 9px 10px 23px; }
-      .nb-cover-chip { font-size: 10.5px; }
       .nb-book-meta h3 { font-size: 26px; }
-      .nb-cover--year .nb-year-plate b { font-size: 38px; }
     }
     @media (min-width: 700px) and (max-width: 860px) {
       .idx-tab { width: 30px; min-height: 60px; font-size: 10.5px; }
@@ -3573,7 +3594,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.9";
+  const APP_VERSION = "4.0";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
@@ -4099,15 +4120,14 @@
     if (spread.dataset.closing === "1" || Date.now() < bookCloseLock) return;
     const side = conf.side === "front" ? "front" : "back";
     const mobile = isMobileViewport();
-    const FOLD = 540;   // 장이 접혀 덮히는 시간
-    const TURN = 480;   // 닫힌 책이 Y축으로 돌아 앞표지가 되는 시간
-    const HOLD = 150;   // 앞표지에서 한 박자
+    const FOLD = 420;   // 장이 접혀 덮히는 시간 (경쾌하게)
+    const HOLD = 160;   // 앞표지로 앉은 책이 한 박자 쉬는 시간
     spread.dataset.closing = "1";
     spread.dataset.turning = "1";
     spread.dataset.shutMobile = mobile ? "1" : "0";
     spread.classList.add("is-closing");
-    bookCloseLock = Date.now() + FOLD + TURN + HOLD + 520;
-    try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + TURN + HOLD); } catch (_) {}
+    bookCloseLock = Date.now() + FOLD + HOLD + 420;
+    try { coverTurnLock = Math.max(coverTurnLock, Date.now() + FOLD + HOLD); } catch (_) {}
 
     const pages = Array.from(spread.querySelectorAll(".nb-page"));
     const leftEl = pages.find(p => p.classList.contains("nb-page--left")) || null;
@@ -4120,7 +4140,6 @@
     const host = document.createElement("div");
     host.className = "nbf-shut";
     host.style.setProperty("--shut-fold", FOLD + "ms");
-    host.style.setProperty("--shut-turn", TURN + "ms");
 
     const body = document.createElement("div");
     body.className = "nbf-shut-body " + (mobile ? "" : (side === "back" ? "nbf-shut-body--back" : "nbf-shut-body--front"));
@@ -4145,19 +4164,13 @@
     body.appendChild(leaf);
     host.appendChild(body);
 
-    // 접힌 뒤 자리 잡은 닫힌 책: 앞면 = 뒤표지(책등 오른쪽) → 180도 돌면 뒷면 = 앞표지(책등 왼쪽)
+    // 접힌 뒤 자리 잡은 닫힌 책: 앞·뒤 어느 쪽에서 닫혔든 항상 앞표지로 앉는다 (v4.0 A안)
     const card = document.createElement("div");
     card.className = "nbf-shut-closed";
     const cardTop = document.createElement("div");
     cardTop.className = "nbf-shut-card-face";
-    cardTop.innerHTML = side === "back" ? (conf.coverBack || "") : (conf.coverFront || "");
+    cardTop.innerHTML = conf.coverFront || (side === "back" ? conf.coverBack : "") || "";
     card.appendChild(cardTop);
-    if (side === "back") {
-      const cardUnder = document.createElement("div");
-      cardUnder.className = "nbf-shut-card-face nbf-shut-card-face--back";
-      cardUnder.innerHTML = conf.coverFront || "";
-      card.appendChild(cardUnder);
-    }
     host.appendChild(card);
     spread.appendChild(host);
 
@@ -4184,22 +4197,30 @@
     const afterFold = () => {
       host.classList.add("is-folded");
       spread.classList.add("is-closed");
-      if (side !== "back") { setTimeout(finishClosed, HOLD); return; }
-      card.classList.add("is-turning");
-      setTimeout(finishClosed, TURN + HOLD);
+      // v4.0 A안: 앞이든 뒤든 180도 빙글 돌리지 않고, 접힌 책이 앞표지로 앉은 뒤 바로 복귀한다
+      setTimeout(finishClosed, HOLD);
     };
     setTimeout(afterFold, FOLD + 20);
   }
 
+  // v4.0: 지금 돌고 있는 넘김을 밖에서도 끝낼 수 있게 들고 있는다 — 빠른 연속 스와이프가 씹히지 않게
+  let activeTurn = null;
+
   function turnToPage(dir, mutate, opts = {}) {
     const step = dir > 0 ? 1 : -1;
-    const spread = document.querySelector(".nb-spread");
+    let spread = document.querySelector(".nb-spread");
     if (!spread || prefersReducedMotion()) {
       mutate();
       render();
       return;
     }
-    if (spread.dataset.turning === "1") return;
+    if (spread.dataset.turning === "1") {
+      // 진행 중이던 넘김을 즉시 정리하고, 지금 들어온 입력으로 바로 다음 장을 넘긴다 (입력을 버리지 않는다)
+      if (!activeTurn || activeTurn.spreadId !== spread.id) return;
+      activeTurn.finish();
+      spread = document.querySelector(".nb-spread");
+      if (!spread) { mutate(); render(); return; }
+    }
 
     const mobile = isMobileViewport();
     const oldSide = spread.dataset.side === "right" ? "right" : "left";
@@ -4278,9 +4299,11 @@
       }
       host.remove();
       destSpread.dataset.turning = "";
+      if (activeTurn && activeTurn.finish === finish) activeTurn = null;
     };
+    activeTurn = { spreadId: destSpread.id, finish };
     leaf.addEventListener("animationend", finish, { once: true });
-    setTimeout(finish, 900);
+    setTimeout(finish, 520);
   }
 
   function applyPendingTurnAnimation() {
@@ -5751,7 +5774,16 @@
     const cover = el ? el.querySelector(".nb-cover-btn") : null;
     const w = cover ? cover.offsetWidth : (isMobileViewport() ? 190 : 176);
     const gap = isMobileViewport() ? 8 : 12;
-    return { el, step: Math.max(104, w * 0.8 + gap * 0.7) };
+    // v4.0: 책이 커진 만큼 옆 책은 가운데 책 뒤로 살짝만 비치게 간격을 너비에 비례해 잡는다
+    return { el, step: Math.max(104, w * 0.72 + gap) };
+  }
+
+  // v4.0: 표지 너비에 맞춰 표지 위 장식(책등·테두리·제목)을 같은 비율로 키운다 (기준 190px)
+  function syncShelfScale(el) {
+    if (!el) return;
+    const cover = el.querySelector(".nb-cover");
+    const w = cover ? cover.offsetWidth : 0;
+    if (w > 0) el.style.setProperty("--cs", (w / 190).toFixed(4));
   }
 
   function applyCarouselTransforms(el, pos, step) {
@@ -5764,7 +5796,7 @@
       const scale = Math.max(0.6, 1 - 0.15 * abs);
       const rot = Math.max(-48, Math.min(48, -rel * 30));
       const x = rel * step;
-      const y = abs * 6;
+      const y = abs * Math.max(6, step * 0.02);
       btn.style.transform = `translate(-50%, -50%) translateX(${x.toFixed(2)}px) translateY(${y.toFixed(2)}px) rotateY(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
       btn.style.opacity = String(abs > 3.15 ? 0 : Math.max(0.22, 1 - 0.22 * abs));
       btn.style.filter = abs < 0.04
@@ -5777,9 +5809,9 @@
 
   function syncCarousels() {
     const y = document.querySelector('[data-shelf="year"]');
-    if (y) applyCarouselTransforms(y, yearShelfIndex, carouselMetrics("year").step);
+    if (y) { syncShelfScale(y); applyCarouselTransforms(y, yearShelfIndex, carouselMetrics("year").step); }
     const a = document.querySelector('[data-shelf="archive"]');
-    if (a) applyCarouselTransforms(a, notebookShelfIndex, carouselMetrics("archive").step);
+    if (a) { syncShelfScale(a); applyCarouselTransforms(a, notebookShelfIndex, carouselMetrics("archive").step); }
   }
 
   function shelfAnimate(kind, from, to, after) {
@@ -5805,7 +5837,7 @@
   let shelfTapLock = 0;
   function shelfCoverTap(kind, btn) {
     if (!btn) return;
-    if (Date.now() - shelfTapLock < 420) return;
+    if (Date.now() - shelfTapLock < 180) return;
     shelfTapLock = Date.now();
     const vi = Number(btn.dataset.vindex);
     const idx = Number(btn.dataset.index);
@@ -6158,7 +6190,9 @@
     return `
       <div class="nb-stage nb-stage--shelf">
         <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
-        <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex, slot.index)).join("")}</div>
+        <div class="nb-book nb-book--indexed nb-book--shelf">
+          <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex, slot.index)).join("")}</div>
+        </div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
         <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
@@ -7886,6 +7920,7 @@
   //  · 덮을 때: 내지 위로 표지가 되돌아와 앉고, 그 자리에서 표지 화면이 된다
   //  한 번 넘기는 동안 다시 넘기지 않도록 coverTurnLock으로 잠근다.
   let coverTurnLock = 0;
+  let activeCoverTurn = null;
   function bookCoverTurn(opts) {
     const conf = opts || {};
     const spreadId = String(conf.spreadId || "");
@@ -7895,8 +7930,14 @@
     const after = typeof conf.after === "function" ? conf.after : function () {};
     const spread = spreadId ? document.getElementById(spreadId) : null;
     if (!spread || prefersReducedMotion()) { mutate(); render(); after(); return; }
-    if (spread.dataset.turning === "1" || Date.now() < coverTurnLock) return;
-    coverTurnLock = Date.now() + 900;
+    if (spread.dataset.turning === "1") {
+      // v4.0: 표지가 돌아가는 중에 또 넘기면 그 동작을 마무리하고 새 동작으로 간다
+      if (!activeCoverTurn || activeCoverTurn.spreadId !== spreadId) return;
+      activeCoverTurn.finish();
+    } else if (Date.now() < coverTurnLock) {
+      return;
+    }
+    coverTurnLock = Date.now() + 480;
     const cls = `nbf-cover--${opening ? "open" : "close"}-${back ? "right" : "left"}`;
     const makeCover = html => {
       const el = document.createElement("div");
@@ -7931,10 +7972,12 @@
         dest.classList.remove("cover-opening");
         dest.dataset.turning = "";
         coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
+        if (activeCoverTurn && activeCoverTurn.finish === finish) activeCoverTurn = null;
         after();
       };
+      activeCoverTurn = { spreadId, finish };
       cover.addEventListener("animationend", finish, { once: true });
-      setTimeout(finish, 820);
+      setTimeout(finish, 520);
     } else {
       spread.dataset.turning = "1";
       spread.classList.add("cover-closing");
@@ -7951,10 +7994,12 @@
         render();
         settleCover();
         coverTurnLock = Math.min(coverTurnLock, Date.now() + 180);
+        if (activeCoverTurn && activeCoverTurn.finish === finish) activeCoverTurn = null;
         after();
       };
+      activeCoverTurn = { spreadId, finish };
       cover.addEventListener("animationend", finish, { once: true });
-      setTimeout(finish, 820);
+      setTimeout(finish, 520);
     }
   }
 
@@ -8433,7 +8478,9 @@
     return `
       <div class="nb-stage nb-stage--shelf">
         <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
-        <div class="nb-carousel" data-shelf="archive" id="nbShelfCarousel">${shelfRing(books.length, notebookShelfIndex, shelfRadius()).map(slot => renderShelfCover(books[slot.index], slot.vindex === notebookShelfIndex, slot.vindex, slot.index)).join("")}</div>
+        <div class="nb-book nb-book--indexed nb-book--shelf">
+          <div class="nb-carousel" data-shelf="archive" id="nbShelfCarousel">${shelfRing(books.length, notebookShelfIndex, shelfRadius()).map(slot => renderShelfCover(books[slot.index], slot.vindex === notebookShelfIndex, slot.vindex, slot.index)).join("")}</div>
+        </div>
         <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
       </div>
     `;
@@ -8833,18 +8880,23 @@
       spread.dataset.gestureBound = "1";
       let sx = 0;
       let sy = 0;
+      let st = 0;
       spread.addEventListener("touchstart", e => {
         const t = e.touches && e.touches[0];
         if (!t) return;
         sx = t.clientX;
         sy = t.clientY;
+        st = Date.now();
       }, { passive: true });
       spread.addEventListener("touchend", e => {
         const t = e.changedTouches && e.changedTouches[0];
         if (!t) return;
         const dx = t.clientX - sx;
         const dy = t.clientY - sy;
-        if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+        // v4.0: 빠른 플릭도 바로 넘어가도록 — 짧은 시간에 훑은 짧은 이동도 스와이프로 본다
+        const quick = Date.now() - st < 300;
+        const sideways = Math.abs(dx) > Math.abs(dy) * 1.2;
+        if (sideways && (Math.abs(dx) > 34 || (quick && Math.abs(dx) > 20))) {
           spread.dataset.swipedAt = String(Date.now());
           const dir = dx < 0 ? 1 : -1;
           // v3.9: 앞표지·뒤표지는 한 면 뒤집기가 아니라 책(표지) 단위로 넘긴다
