@@ -158,7 +158,7 @@
     });
     log("Calendar: 28일 칸 찾음", !!cell);
     cell.click();
-    await wait(500);
+    await wait(1100);
     if (obs.disconnect) obs.disconnect();
     log("Calendar: 달력→일기 전환에 3D 책 넘김 종이가 실제로 그려짐", flipSeen);
     log("Calendar: 넘김 뒤 일기 페이지(#nbDaySpread)가 열림", !!D().querySelector("#nbDaySpread"));
@@ -167,11 +167,11 @@
     var before = P.getState().selectedDate;
     var sp2 = D().querySelector("#nbDaySpread");
     drag(sp2, -90);
-    await wait(1200);
+    await wait(1150);
     var sp3 = D().querySelector("#nbDaySpread");
     log("일기: 첫 스와이프로 반대 면 뒤집힘 (data-side=" + (sp3 && sp3.dataset.side) + ")", !!sp3 && sp3.dataset.side === "right");
     drag(sp3, -90);
-    await wait(1200);
+    await wait(1150);
     var after = P.getState().selectedDate;
     log("일기: 스와이프로 다음 날 이동 (" + before + " → " + after + ")", !!after && after !== before);
 
