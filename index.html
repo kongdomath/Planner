@@ -2166,7 +2166,7 @@
     }
     .nb-cover-face b {
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-      font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+      font-family: Georgia, "Times New Roman", "Nanum Myeongjo", "AppleMyungjo", Batang, "바탕", serif; font-weight: 700;
       font-size: calc(18px * var(--cs, 1)); line-height: 1.26; letter-spacing: .03em; word-break: keep-all;
     }
     .nb-cover-face i {
@@ -2801,7 +2801,7 @@
     }
     .nb-coverface-plate { position: relative; z-index: 2; text-align: center; padding: 0 12px; }
     .nb-coverface-plate b {
-      display: block; font-family: Georgia, "Times New Roman", serif;
+      display: block; font-family: Georgia, "Times New Roman", "Nanum Myeongjo", "AppleMyungjo", Batang, "바탕", serif;
       font-size: 42px; letter-spacing: .04em; line-height: 1.2;
     }
     /* v3.9: 책 제목이 길어도 표지 밖으로 넘치지 않게 */
@@ -5861,7 +5861,7 @@
       const abs = Math.abs(rel);
       // v4.1: 양옆 책을 블러 없이 선명하게 — 살짝 축소 + 약간 풀린 투명도만 준다 (안개·흐림 없음)
       const scale = abs < 0.04 ? 1 : 0.84;
-      const rot = Math.max(-40, Math.min(40, -rel * 26));
+      const rot = Math.max(-22, Math.min(22, -rel * 14));
       const x = rel * step;
       const y = abs * Math.max(6, step * 0.02);
       btn.style.transform = `translate(-50%, -50%) translateX(${x.toFixed(2)}px) translateY(${y.toFixed(2)}px) rotateY(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
@@ -8489,7 +8489,7 @@
     const sub = String(book.subtitle || "").trim();
     const cat = String(book.category || "").trim();
     // v4.1: Goals 앞표지와 같은 얼굴 — 제목 · 구분선 · 부제 · 아래 메타(3페이지 · 독서). `3p` 알약 배지는 없앤다.
-    const foot = [recs.length ? `${recs.length}페이지` : "기록 없음", cat].filter(Boolean).join(" · ");
+    const foot = [`${recs.length}페이지`, cat].filter(Boolean).join(" · ");
     return `
       <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('archive', this)" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
         <span class="nb-cover ${coverImg ? "nb-cover--photo" : ""}" style="--spine:${spine}">
