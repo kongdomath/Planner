@@ -2155,8 +2155,8 @@
     .nb-back:hover { background: rgba(255,255,255,.17); }
     .nb-reader-head .nb-stage-count { justify-self: end; }
     .nb-reader-title { text-align: center; min-width: 0; justify-self: center; }
-    .nb-reader-title b { display: block; font-size: 16px; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .nb-reader-title span { display: block; margin-top: 2px; font-size: 11px; color: rgba(232,235,244,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-reader-title b { display: block; font-size: 15.5px; line-height: 19px; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nb-reader-title span { display: block; margin-top: 1px; font-size: 10.5px; line-height: 13px; color: rgba(232,235,244,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .nb-book {
       position: relative; display: flex; flex: 1 1 auto;
       align-items: center; justify-content: center;
@@ -2844,10 +2844,10 @@
     }
     .nb-day-dots { display: flex; gap: 2px; height: 4px; }
     .nb-day-dots i { width: 4px; height: 4px; border-radius: 50%; display: block; }
-    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 2px; height: 13px; }
+    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 1px; height: 11px; }
     .nb-mark { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
     .nb-mark svg { display: block; }
-    .nb-month-row .marks { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .nb-month-row .marks { display: flex; align-items: center; gap: 1px; flex-shrink: 0; }
     .nb-legend--marks { gap: 6px 12px; }
     .nb-legend--marks span { gap: 4px; font-size: 10.5px; letter-spacing: .04em; }
     .nb-month-foot { margin-top: auto; padding-top: 12px; font-size: 10.5px; color: #9aa0a9; }
@@ -5352,9 +5352,9 @@
 
   function dayDotsHtml(meta) {
     const marks = [];
-    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push(miniTabIcon("diary", 11));
-    if (meta && meta.hasAchieved) marks.push(miniTabIcon("goals", 11));
-    if (meta && meta.hasArchive) marks.push(miniTabIcon("archive", 11));
+    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push(miniTabIcon("diary", 8));
+    if (meta && meta.hasAchieved) marks.push(miniTabIcon("goals", 8));
+    if (meta && meta.hasArchive) marks.push(miniTabIcon("archive", 8));
     return marks.join("");
   }
 
@@ -5452,7 +5452,7 @@
         <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
         <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex, slot.index)).join("")}</div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
-        ${renderYearLegend()}
+        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
     `;
   }
@@ -5653,7 +5653,6 @@
     const month = Math.min(11, Math.max(0, yearPageIndex)) + 1;
     const monthRecords = collectMonthDays(year, month);
     const monthIdx = month - 1;
-    const monthHeads = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
     const leftPage = `
       <section class="nb-page nb-page--left">
@@ -5661,7 +5660,6 @@
           <div class="nb-month-head">
             <div>
               <div class="nb-month-name">${month}월</div>
-              <div class="nb-month-year">${year} · ${monthHeads[monthIdx]}</div>
             </div>
             <span class="nb-month-badge">기록 ${monthRecords.length}일</span>
           </div>
@@ -5730,7 +5728,7 @@
           <button class="nb-add-btn" onclick="openYearDay('${TODAY_STR}')" title="오늘 기록 추가" aria-label="오늘 기록 추가">${NB_ICONS.plus}</button>
           <span class="nb-bar-right"></span>
         </div>
-        <div class="nb-legend-slot">${renderYearLegend()}</div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
     `;
   }
