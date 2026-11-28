@@ -5359,15 +5359,6 @@
     return marks.join("");
   }
 
-  function renderYearLegend() {
-    return `
-      <div class="nb-legend nb-legend--marks">
-        <span>${miniTabIcon("diary", 11)}Diary</span>
-        <span>${miniTabIcon("goals", 11)}Goals</span>
-        <span>${miniTabIcon("archive", 11)}Archive</span>
-      </div>
-    `;
-  }
 
   function yearGoalStats(year) {
     const y = String(year || "").slice(0, 4);
