@@ -2042,7 +2042,7 @@
       display: flex; flex-direction: column; justify-content: space-between; align-items: center;
     }
     .nb-coil-ring {
-      position: relative; display: block; width: 50px; height: 8px; border-radius: 999px;
+      position: relative; display: block; width: 42px; height: 7px; border-radius: 999px;
       background:
         linear-gradient(180deg, #ffffff 0%, #e2e7ef 18%, #a8b0bf 42%, #6e7686 62%, #c3cad6 84%, #f4f7fb 100%);
       box-shadow:
@@ -2053,7 +2053,7 @@
     /* 고리가 종이 구멍 속으로 들어가는 부분: 어두운 펀치 구멍 + 종이 두께 */
     .nb-coil-ring::before,
     .nb-coil-ring::after {
-      content: ""; position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%;
+      content: ""; position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%;
       transform: translateY(-50%);
       background: radial-gradient(circle at 50% 32%, #161b26 0 44%, #2a3040 64%, #4c5466 84%, #7d8496 100%);
       box-shadow:
@@ -2061,8 +2061,8 @@
         0 0 0 1.2px rgba(255,252,242,.85),
         0 0 0 2px rgba(120,116,102,.28);
     }
-    .nb-coil-ring::before { left: -3px; }
-    .nb-coil-ring::after { right: -3px; }
+    .nb-coil-ring::before { left: -2px; }
+    .nb-coil-ring::after { right: -2px; }
     .nb-page-inner { display: flex; flex-direction: column; gap: 14px; min-height: 100%; }
     .nb-page-no {
       display: block;
@@ -2449,7 +2449,7 @@
     .nb-day.is-today .nb-day-num { color: #fff; font-weight: 700; }
     .nb-day-dots { display: flex; gap: 2px; height: 4px; }
     .nb-day-dots i { width: 4px; height: 4px; border-radius: 50%; display: block; }
-    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 2px; height: 11px; }
+    .nb-day-marks { display: flex; align-items: center; justify-content: center; gap: 2px; height: 13px; }
     .nb-mark { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
     .nb-mark svg { display: block; }
     .nb-month-row .marks { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -3292,7 +3292,7 @@
   }
 
   // 스프링: 종이를 뚫은 구멍을 지나 연결되는 메탈 고리 (모든 펼침면 공용)
-  const BOOK_COIL = `<span class="nb-coil" aria-hidden="true">${Array.from({ length: 22 }, () => `<i class="nb-coil-ring"></i>`).join("")}</span>`;
+  const BOOK_COIL = `<span class="nb-coil" aria-hidden="true">${Array.from({ length: 18 }, () => `<i class="nb-coil-ring"></i>`).join("")}</span>`;
 
   // ---------- 날짜(없음 · 하루 · 기간) 공용 도우미 ----------
   function dateModeOf(item) {
@@ -4612,18 +4612,18 @@
 
   function dayDotsHtml(meta) {
     const marks = [];
-    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push(miniTabIcon("diary", 9));
-    if (meta && meta.hasAchieved) marks.push(miniTabIcon("goals", 9));
-    if (meta && meta.hasArchive) marks.push(miniTabIcon("archive", 9));
+    if (meta && (meta.hasDiary || (meta.log && meta.log.oneLine))) marks.push(miniTabIcon("diary", 11));
+    if (meta && meta.hasAchieved) marks.push(miniTabIcon("goals", 11));
+    if (meta && meta.hasArchive) marks.push(miniTabIcon("archive", 11));
     return marks.join("");
   }
 
   function renderYearLegend() {
     return `
       <div class="nb-legend nb-legend--marks">
-        <span>${miniTabIcon("diary", 10)}Diary</span>
-        <span>${miniTabIcon("goals", 10)}Goals</span>
-        <span>${miniTabIcon("archive", 10)}Archive</span>
+        <span>${miniTabIcon("diary", 11)}Diary</span>
+        <span>${miniTabIcon("goals", 11)}Goals</span>
+        <span>${miniTabIcon("archive", 11)}Archive</span>
       </div>
     `;
   }
