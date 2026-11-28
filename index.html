@@ -4361,7 +4361,7 @@
     const cover = el ? el.querySelector(".nb-cover-btn") : null;
     const w = cover ? cover.offsetWidth : (isMobileViewport() ? 190 : 176);
     const gap = isMobileViewport() ? 8 : 12;
-    return { el, step: Math.max(110, w * 0.86 + gap) };
+    return { el, step: Math.max(104, w * 0.8 + gap * 0.7) };
   }
 
   function applyCarouselTransforms(el, pos, step) {
@@ -4371,15 +4371,15 @@
       if (!Number.isFinite(vi)) return;
       const rel = vi - pos;
       const abs = Math.abs(rel);
-      const scale = Math.max(0.62, 1 - 0.13 * abs);
-      const rot = Math.max(-38, Math.min(38, -rel * 22));
+      const scale = Math.max(0.6, 1 - 0.15 * abs);
+      const rot = Math.max(-48, Math.min(48, -rel * 30));
       const x = rel * step;
-      const y = abs * 5;
+      const y = abs * 6;
       btn.style.transform = `translate(-50%, -50%) translateX(${x.toFixed(2)}px) translateY(${y.toFixed(2)}px) rotateY(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
       btn.style.opacity = String(abs > 3.15 ? 0 : Math.max(0.22, 1 - 0.22 * abs));
       btn.style.filter = abs < 0.04
         ? "none"
-        : `brightness(${(1 - Math.min(0.34, abs * 0.12)).toFixed(3)}) saturate(${(1 - Math.min(0.24, abs * 0.07)).toFixed(3)})`;
+        : `brightness(${(1 - Math.min(0.4, abs * 0.14)).toFixed(3)}) saturate(${(1 - Math.min(0.26, abs * 0.08)).toFixed(3)})`;
       btn.style.zIndex = String(200 - Math.round(abs * 20));
       btn.classList.toggle("is-active", abs < 0.5);
     });
