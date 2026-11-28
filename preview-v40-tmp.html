@@ -2099,7 +2099,7 @@
     /* v4.0: 책장 높이 = Goals 책 높이(--book-h) — 가운데 책이 앞표지와 같은 크기로 앉는다 */
     .nb-carousel {
       position: relative; width: 100%;
-      height: calc(var(--book-h, 660px) + 16px);
+      height: calc(var(--book-h, 660px) + 8px);
       perspective: 1500px; perspective-origin: 50% 46%;
       touch-action: pan-y;
       cursor: grab;
@@ -2195,9 +2195,10 @@
     .nb-shelf-empty h3 { margin: 0 0 6px; font-size: 16px; }
     .nb-shelf-empty p { margin: 0 0 16px; font-size: 12.5px; color: rgba(232,235,244,.66); line-height: 1.6; }
 
-    /* v4.0: 좌우 여백을 .nb-stage와 똑같이 두어야 책장 책 너비가 Goals 앞표지와 정확히 같아진다 */
-    .nb-stage--shelf { padding: 22px 22px 20px; justify-content: center; }
-    .nb-book--shelf { perspective: none; }
+    /* v4.0: 좌우 여백을 .nb-stage와 똑같이 두어야 책장 책 너비가 Goals 앞표지와 정확히 같아진다.
+       위에서부터 차례대로 앉혀(justify-content:flex-start) 책이 표지와 같은 높이에서 열린다. */
+    .nb-stage--shelf { padding: 18px 22px 20px; justify-content: flex-start; }
+    .nb-book--shelf { perspective: none; flex: 0 0 auto; }
     .nb-book-meta { text-align: center; padding: 0 0 2px; }
     .nb-book-meta h3 {
       margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
@@ -3313,7 +3314,7 @@
 
     @media (max-width: 860px) {
       .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(400px, calc(100dvh - 310px), 780px); }
-      .nb-stage--shelf { padding: 18px 8px 16px; }
+      .nb-stage--shelf { padding: 14px 8px 16px; }
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
       .nb-stage-sub { font-size: 11px; }

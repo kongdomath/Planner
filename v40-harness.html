@@ -34,15 +34,18 @@ function run() {
     if (!P) { log("no __planner"); return; }
     res.version = P.version;
     var st = P.getState();
-    if (!st.books || !st.books.length) {
-      st.books = [
-        { id: "tb1", title: "차", subtitle: "차를 기록하다", category: "독서 · 문화", spine: "#3f6f6a", cover: "" },
-        { id: "tb2", title: "여행", subtitle: "여행 노트", category: "생활 · 루틴", spine: "#5b4a72", cover: "" },
-        { id: "tb3", title: "전시", subtitle: "전시 기록", category: "독서 · 문화", spine: "#8a5a3c", cover: "" },
-        { id: "tb4", title: "운동", subtitle: "운동 일지", category: "운동 · 건강", spine: "#3a5f8a", cover: "" }
-      ];
-      st.shelfSelectedBookId = "tb1";
+    var bs = Array.isArray(st.books) ? st.books : (st.books = []);
+    if (!bs.some(function (b) { return b.id === "tb1"; })) {
+      bs.unshift({ id: "tb1", title: "차", subtitle: "차를 기록하다", category: "독서 · 문화", spine: "#3f6f6a", cover: "" });
     }
+    if (!bs.some(function (b) { return b.id === "tb2"; })) {
+      bs.push({ id: "tb2", title: "여행", subtitle: "여행 노트", category: "생활 · 루틴", spine: "#5b4a72", cover: "" });
+    }
+    if (!bs.some(function (b) { return b.id === "tb3"; })) {
+      bs.push({ id: "tb3", title: "전시", subtitle: "전시 기록", category: "독서 · 문화", spine: "#8a5a3c", cover: "" });
+    }
+    st.shelfSelectedBookId = "tb1";
+    var openId = (bs.filter(function (b) { return b.id === "tb1"; })[0] || bs[0] || {}).id;
 
     var shot = function (name, extra) {
       var o = {};
@@ -94,9 +97,20 @@ function run() {
       P.goalBookStep(1);
       setTimeout(function () {
         shot("goalsPage1", function (o) { o.spread = r(q1(D, "#goalSpread")); });
-        res.errors = (P.errors && P.errors()) || [];
-        res.ok = true;
-        log(JSON.stringify(res, null, 1));
+        // 5) 책장에서 책을 열었을 때 앞표지가 같은 자리·같은 크기로 앉는지
+        try {
+          P.setTab("archive"); P.render();
+          P.openNotebook(openId);
+        } catch (e2) { res.openErr = String(e2); }
+        setTimeout(function () {
+          shot("archiveOpenCover", function (o) {
+            o.spread = r(q1(D, "#nbSpread"));
+            o.face = r(q1(D, "#nbSpread .nb-page--cover"));
+          });
+          res.errors = (P.errors && P.errors()) || [];
+          res.ok = true;
+          log(JSON.stringify(res, null, 1));
+        }, 800);
       }, 700);
     } catch (e) {
       res.errors = ["step:" + e];
