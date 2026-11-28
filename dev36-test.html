@@ -26,20 +26,21 @@
     <button onclick="run('calendar')">Calendar</button>
     <button onclick="run('month')">달력</button>
     <button onclick="run('day')">일기</button>
+    <button onclick="run('dayPhoto')">사진일기</button>
     <button onclick="run('goals')">Goals 앞표지</button>
     <button onclick="run('goalsPage')">Goals 페이지</button>
     <button onclick="run('goalsBack')">Goals 뒤표지</button>
     <button onclick="run('archive')">Archive 책장</button>
-    <button onclick="run('archiveRead')">Archive 읽기</button>
+    <button onclick="run('archivePhoto')">사진 기록</button>
+    <button onclick="run('archiveNone')">사진없는 기록</button>
     <button onclick="run('archiveEnd')">Archive 끝</button>
     <button onclick="run('newArchive')">새 기록 모달</button>
     <button onclick="run('goalModal')">목표 모달</button>
     <button onclick="run('search')">검색</button>
     <button onclick="run('settings')">설정</button>
   </div>
-  <div class="frame-wrap"><iframe id="f" width="1280" height="800" src="./dev36.html"></iframe></div>
+  <div class="frame-wrap"><iframe id="f" width="1280" height="800" src="./dev36.html?v=1795846700"></iframe></div>
   <script>
-    const TS = Date.now();
     const f = document.getElementById("f");
     function pick(btn) {
       document.querySelectorAll(".bar button[data-w]").forEach(b => b.classList.remove("on"));
@@ -49,31 +50,48 @@
     }
     pick(document.querySelector('.bar button[data-w="1280"]'));
     function P() { return f.contentWindow.__planner; }
-    function doc() { return f.contentDocument; }
+    function openBookOf(withPhotos) {
+      const p = P();
+      const st = p.getState();
+      const rec = (st.archives || []).find(a => !!((a.images || []).length) === withPhotos);
+      const book = rec ? (st.books || []).find(b => b.id === rec.bookId) : null;
+      const target = book || (st.books || [])[0];
+      if (!target) return;
+      p.setTab("archive");
+      p.openNotebook(target.id);
+      const list = (st.archives || []).filter(a => a.bookId === target.id);
+      const at = rec ? list.findIndex(a => a.id === rec.id) : 0;
+      if (at > 0) { st.notebookPageIndex = at; p.render(); }
+    }
     function run(name) {
       const p = P();
       if (!p) { alert("앱이 아직 준비되지 않았습니다"); return; }
       const st = p.getState();
-      if (name === "calendar") { p.setTab("year"); p.closeYearBook && p.closeYearBook(); p.closeYearDay && p.closeYearDay(); p.render(); }
+      if (name === "calendar") { p.setTab("year"); p.closeYearDay && p.closeYearDay(); p.closeYearBook && p.closeYearBook(); p.render(); }
       if (name === "month") { p.setTab("year"); p.openYearBook(st.selectedDate ? Number(st.selectedDate.slice(0,4)) : 2026); p.render(); }
       if (name === "day") { p.setTab("year"); p.openYearDay(st.selectedDate || "2026-11-28"); p.render(); }
+      if (name === "dayPhoto") {
+        p.setTab("year");
+        const day = Object.keys(st.logs || {}).find(d => ((st.logs[d].photos || []).length)) || st.selectedDate;
+        p.openYearDay(day); p.render();
+      }
       if (name === "goals") { p.setTab("goals"); st.goalBookPage = 0; p.render(); }
       if (name === "goalsPage") { p.setTab("goals"); st.goalBookPage = 1; p.render(); }
       if (name === "goalsBack") { p.setTab("goals"); st.goalBookPage = 999; p.render(); }
       if (name === "archive") { p.setTab("archive"); p.closeNotebookBook(); p.render(); }
-      if (name === "archiveRead") { p.setTab("archive"); const b = (st.books || [])[0]; if (b) p.openNotebook(b.id); p.render(); }
+      if (name === "archivePhoto") openBookOf(true);
+      if (name === "archiveNone") openBookOf(false);
       if (name === "archiveEnd") {
         p.setTab("archive");
         const b = (st.books || [])[0];
-        if (b) { p.openNotebook(b.id); const n = p.getState().archives.filter(a => a.bookId === b.id).length; p.getState().notebookPageIndex = 0; }
-        p.render();
+        if (b) { p.openNotebook(b.id); const n = (st.archives || []).filter(a => a.bookId === b.id).length; st.notebookPageIndex = n; p.render(); }
       }
       if (name === "newArchive") { p.setTab("archive"); p.openNewArchiveModal(""); }
       if (name === "goalModal") { p.setTab("goals"); p.openGoalModal(""); }
       if (name === "search") { p.openSearch(); }
       if (name === "settings") { p.openSettings(); }
     }
-    window.addEventListener("load", () => { setTimeout(() => run("calendar"), 600); });
+    window.addEventListener("load", () => { setTimeout(() => run("calendar"), 700); });
   </script>
 </body>
 </html>
