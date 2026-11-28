@@ -2416,6 +2416,25 @@
       font-size: 11.5px; font-weight: 700; letter-spacing: 0; line-height: 1.4;
       white-space: normal; word-break: keep-all;
     }
+    /* ===== v3.7 아카이브 자유 도장 (초록): 기간·완료·하고 싶은 말을 자유롭게 ===== */
+    .nb-stamp--free {
+      border-color: rgba(58,125,88,.55); color: #2f6b4a;
+      background: rgba(58,125,88,.055);
+      transform: rotate(1.4deg);
+      box-shadow: inset 0 0 0 2px rgba(252,251,246,.94), inset 0 0 0 3px rgba(58,125,88,.18);
+      max-width: 60%; align-items: flex-start; text-align: left;
+      padding: 6px 10px;
+    }
+    .nb-stamp--free b { font-size: 11.5px; font-weight: 700; letter-spacing: 0; line-height: 1.45; white-space: pre-line; word-break: keep-all; }
+    /* 기록일 하나짜리 날짜 입력 + 기간 유지 줄 */
+    .record-range { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 11px; color: #8d929b; }
+    .record-range b { font-weight: 600; color: #5b6478; }
+    .record-range-clear {
+      border: 0; background: rgba(120,126,140,.13); color: #6b707a;
+      font-size: 10.5px; font-weight: 600; border-radius: 999px; padding: 3px 9px;
+      cursor: pointer; font-family: inherit;
+    }
+    .record-range-clear:hover { background: rgba(200,75,75,.14); color: #b04a4a; }
     /* 세부정보 블록: 파선 대신 종이 노트에 어울리는 틴트 카드 */
     .nb-meta {
       position: relative; margin: 0 0 4px;
@@ -4454,6 +4473,64 @@
         <button type="button" class="date-clear" onclick="clearDateRow('${prefix}')" aria-label="날짜 지우기" title="날짜 지우기">${DATE_CLEAR_ICON}</button>
       </div>
     `;
+  }
+
+  // v3.7 아카이브 기록일: 기간(시작›종료) 대신 하루짜리 날짜 한 칸
+  //  · 이미 기간으로 적힌 기록은 그 기간을 보여 주고, '종료일 지우기'로 하루 기록일로 바꿀 수 있다
+  function recordDateRowHtml(prefix, item) {
+    const from = item ? (itemDateFrom(item) || String(item.date || "")) : "";
+    const to = item ? itemDateTo(item) : "";
+    const ranged = Boolean(from && to && to !== from);
+    return `
+      <div class="date-row ${from ? "" : "is-empty"}" id="${prefix}RecordDateRow">
+        <span class="date-row-icon" onclick="showDatePicker('${prefix}RecordDate')" aria-hidden="true">${DATE_ICON}</span>
+        <label class="date-pill">
+          <span class="date-pill-text ${from ? "" : "is-empty"}" id="${prefix}RecordDateText">${from ? escapeHtml(dottedDate(from)) : "기록일"}</span>
+          <input type="date" id="${prefix}RecordDate" value="${escapeAttr(from)}" aria-label="기록일" onchange="onRecordDateChange('${prefix}')" onclick="showDatePicker('${prefix}RecordDate')" />
+        </label>
+        <button type="button" class="date-clear" onclick="clearRecordDate('${prefix}')" aria-label="기록일 지우기" title="기록일 지우기">${DATE_CLEAR_ICON}</button>
+      </div>
+      ${ranged
+        ? `<div class="record-range" id="${prefix}RecordRange"><span>기간 <b>${escapeHtml(dottedDate(from))} – ${escapeHtml(dottedDate(to))}</b></span><button type="button" class="record-range-clear" onclick="clearRecordRange('${prefix}')">종료일 지우기</button></div>`
+        : `<div class="record-range" id="${prefix}RecordRange" hidden></div>`}
+      <input type="hidden" id="${prefix}RecordDateTo" value="${escapeAttr(ranged ? to : "")}" />
+    `;
+  }
+
+  function onRecordDateChange(prefix) {
+    const el = document.getElementById(prefix + "RecordDate");
+    const txt = document.getElementById(prefix + "RecordDateText");
+    const row = document.getElementById(prefix + "RecordDateRow");
+    const v = el ? String(el.value || "") : "";
+    if (txt) {
+      txt.textContent = v ? dottedDate(v) : "기록일";
+      txt.classList.toggle("is-empty", !v);
+    }
+    if (row) row.classList.toggle("is-empty", !v);
+  }
+
+  function clearRecordDate(prefix) {
+    const el = document.getElementById(prefix + "RecordDate");
+    if (el) el.value = "";
+    onRecordDateChange(prefix);
+  }
+
+  function clearRecordRange(prefix) {
+    const to = document.getElementById(prefix + "RecordDateTo");
+    if (to) to.value = "";
+    const box = document.getElementById(prefix + "RecordRange");
+    if (box) { box.hidden = true; box.innerHTML = ""; }
+  }
+
+  // 기록일 + (기존 기간이면) 종료일 → 날짜 모드/값
+  function readRecordDate(prefix) {
+    const dEl = document.getElementById(prefix + "RecordDate");
+    const tEl = document.getElementById(prefix + "RecordDateTo");
+    const d = dEl ? String(dEl.value || "") : "";
+    const t = tEl ? String(tEl.value || "") : "";
+    if (!d && !t) return { dateMode: "none", dateFrom: "", dateTo: "", date: "" };
+    if (d && t && t !== d) return { dateMode: "range", dateFrom: d, dateTo: t, date: d };
+    return { dateMode: "day", dateFrom: d, dateTo: "", date: d };
   }
 
   // 설정된 날짜를 한 번에 지운다 (비어 있으면 버튼 자체가 보이지 않음)
@@ -8200,9 +8277,16 @@
     return `<span class="nb-stamp nb-stamp--detail"><span class="nb-stamp-label">부제목</span><b>${escapeHtml(detail)}</b></span>`;
   }
 
-  // 날짜 도장 + 부제목 도장을 한 묶음으로
+  // v3.7 자유 도장(초록): 기간·완료·하고 싶은 말을 자유롭게
+  function archiveFreeStampHtml(a) {
+    const free = String((a && a.freeStamp) || "").trim();
+    if (!free) return "";
+    return `<span class="nb-stamp nb-stamp--free"><b>${escapeHtml(free)}</b></span>`;
+  }
+
+  // 날짜 도장 + 부제목 도장 + 자유 도장을 한 묶음으로
   function archiveStampsHtml(a) {
-    return archiveStampHtml(a) + archiveDetailStampHtml(a);
+    return archiveStampHtml(a) + archiveDetailStampHtml(a) + archiveFreeStampHtml(a);
   }
 
   function renderNotebookLeftPage(a, book, pageNo) {
@@ -8843,24 +8927,28 @@
     const defBook = book ? book.id : resolveArchiveBookId("", defCat);
     // 일기 오른면의 `+`처럼 그 날짜를 미리 채워 열 때, 아니면 작성일(오늘)로
     const seedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(presetDate || "")) ? String(presetDate) : TODAY_STR;
-    archiveTitleAuto = true;
+    archiveTitleAuto = false;
     openModal(book ? `‘${book.title}’에 새 기록` : "새 아카이브 기록", `
       <div class="modal-field">
         <label>책</label>
         <select id="mNewArchiveBook">${bookOptionsHtml(defBook)}</select>
       </div>
       <div class="modal-field">
-        <label>날짜</label>
-        ${dateFieldsHtml("mArchive", { date: seedDate })}
-        <p class="modal-hint">기본은 작성일(오늘)이에요. 시작일만 있으면 그날 기록, 종료일까지 넣으면 기간이 됩니다.</p>
+        <label>기록일</label>
+        ${recordDateRowHtml("mNewArchive", { dateMode: "day", dateFrom: seedDate })}
+        <p class="modal-hint">기본은 작성일(오늘)이에요. 필요하면 날짜를 바꿔 주세요.</p>
       </div>
       <div class="modal-field">
         <label>제목</label>
-        <input type="text" id="mNewArchiveTitle" value="${escapeAttr(diaryDateTitle(seedDate))}" placeholder="2026.11.28.(토)" oninput="markArchiveTitleEdited()" />
+        <input type="text" id="mNewArchiveTitle" value="" placeholder="예) 2026.11.28.(토) 산책, 전시 다녀온 날" />
       </div>
       <div class="modal-field">
         <label>부제목 (선택)</label>
         <input type="text" id="mNewArchiveSub" placeholder="전시명, 여행지, 책 제목처럼 덧붙일 말" />
+      </div>
+      <div class="modal-field">
+        <label>초록 도장 (선택)</label>
+        <input type="text" id="mNewArchiveFree" placeholder="예) 2026.01 ~ 2026.10 DONE / 성공!" />
       </div>
       <div class="modal-field">
         <label>글 · 감상</label>
@@ -8873,8 +8961,8 @@
       </div>
     `, () => {
       const titleEl = document.getElementById("mNewArchiveTitle");
-      const dates = readDateFields("mArchive");
-      // 제목을 비우면 날짜 제목으로 돌아간다
+      const dates = readRecordDate("mNewArchive");
+      // 제목을 비우면 기록일 제목으로 돌아간다 (빈 기록이 남지 않도록)
       const title = ((titleEl && titleEl.value ? titleEl.value : "").trim()) || diaryDateTitle(dates.dateFrom || dates.dateTo) || "새 기록";
       const bookSel = document.getElementById("mNewArchiveBook");
       const bookId = resolveArchiveBookId(bookSel ? bookSel.value : "", defCat);
@@ -8891,6 +8979,7 @@
         dateTo: dates.dateTo,
         title,
         subtitle: document.getElementById("mNewArchiveSub").value.trim(),
+        freeStamp: document.getElementById("mNewArchiveFree").value.trim(),
         note: document.getElementById("mNewArchiveNote").value.trim(),
         images: [...modalArchiveImages]
       });
@@ -8933,16 +9022,20 @@
         <select id="mArchiveBook">${bookOptionsHtml(a.bookId || defaultBookIdForCat(a.category))}</select>
       </div>
       <div class="modal-field">
-        <label>날짜</label>
-        ${dateFieldsHtml("mArchive", a)}
+        <label>기록일</label>
+        ${recordDateRowHtml("mArchive", a)}
       </div>
       <div class="modal-field">
         <label>제목</label>
-        <input type="text" id="mArchiveTitle" value="${escapeAttr(a.title)}" placeholder="2026.11.28.(토)" />
+        <input type="text" id="mArchiveTitle" value="${escapeAttr(a.title)}" placeholder="예) 2026.11.28.(토) 산책" />
       </div>
       <div class="modal-field">
         <label>부제목 (선택)</label>
         <input type="text" id="mArchiveSub" value="${escapeAttr(a.subtitle || "")}" placeholder="전시명, 여행지, 책 제목처럼 덧붙일 말" />
+      </div>
+      <div class="modal-field">
+        <label>초록 도장 (선택)</label>
+        <input type="text" id="mArchiveFree" value="${escapeAttr(a.freeStamp || "")}" placeholder="예) 2026.01 ~ 2026.10 DONE / 성공!" />
       </div>
       <div class="modal-field">
         <label>글 · 메모</label>
@@ -8956,13 +9049,14 @@
         </div>
       </div>
     `, () => {
-      const dates = readDateFields("mArchive");
+      const dates = readRecordDate("mArchive");
       a.dateMode = dates.dateMode;
       a.dateFrom = dates.dateFrom;
       a.dateTo = dates.dateTo;
       a.date = dates.dateFrom || dates.dateTo || "";
       a.title = document.getElementById("mArchiveTitle").value.trim() || diaryDateTitle(dates.dateFrom || dates.dateTo) || a.title;
       a.subtitle = document.getElementById("mArchiveSub").value.trim();
+      a.freeStamp = document.getElementById("mArchiveFree").value.trim();
       a.note = document.getElementById("mArchiveNote").value.trim();
       a.images = [...modalArchiveImages];
       const bookSel = document.getElementById("mArchiveBook");
