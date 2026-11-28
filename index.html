@@ -2478,6 +2478,37 @@
     .gb-count { font-size: 10.5px; font-weight: 600; color: #9aa0a9; letter-spacing: .04em; }
 
     /* 모달 날짜 입력: 없음 · 하루 · 기간 */
+    /* 날짜 입력: 미니컬 스타일 한 줄 (시작일 › 종료일 + 없음) */
+    .date-row {
+      display: flex; align-items: center; gap: 4px;
+      border: 1px solid var(--border); border-radius: 10px; background: #fff;
+      padding: 0 6px 0 9px; height: 44px;
+    }
+    .date-row-icon { display: inline-flex; color: var(--text-sub); flex-shrink: 0; }
+    .date-pill {
+      position: relative; flex: 1 1 0; min-width: 0;
+      display: flex; align-items: center; justify-content: center;
+      height: 34px; border-radius: 8px; cursor: pointer;
+    }
+    .date-pill:hover { background: rgba(120,126,140,.08); }
+    .date-pill-text {
+      font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .date-row.is-empty .date-pill-text { color: #a9adb6; font-weight: 500; }
+    .date-pill input[type="date"] {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; border: 0 !important; padding: 0 !important; margin: 0;
+      font-size: 16px; -webkit-appearance: none; appearance: none; cursor: pointer;
+    }
+    .date-row-sep { color: #b3b8c1; font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .date-row-clear {
+      flex-shrink: 0; height: 28px; padding: 0 10px; margin-left: 2px;
+      border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface-muted, #f4f2ea); color: var(--text-sub);
+      font-size: 11.5px; font-weight: 600; font-family: inherit; cursor: pointer;
+    }
+    .date-row-clear:hover { background: #fff; color: var(--text); }
     .date-mode-seg { width: 100%; }
     .date-mode-seg button { flex: 1; }
     .date-inputs {
@@ -3670,44 +3701,51 @@
     return `<span class="gb-stamp gb-stamp--plan" title="예정일"><b>${escapeHtml(dottedDate(from))}</b><span>PLAN</span></span>`;
   }
 
-  // ---------- 날짜 입력 UI (없음 · 하루 · 기간) ----------
+  // ---------- 날짜 입력 UI (미니컬 스타일 한 줄: 시작일 › 종료일, 시간 없음) ----------
+  const DATE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+
   function dateFieldsHtml(prefix, item) {
-    const mode = dateModeOf(item);
     const from = item ? itemDateFrom(item) : "";
     const to = item ? itemDateTo(item) : "";
-    const modes = [
-      ["none", "없음"],
-      ["day", "하루"],
-      ["range", "기간"]
-    ];
+    const shownTo = to || from;
     return `
-      <div class="segmented date-mode-seg" id="${prefix}DateSeg" role="group" aria-label="날짜 방식">
-        ${modes.map(([m, label]) => `<button type="button" data-mode="${m}" class="${mode === m ? "active" : ""}" onclick="setDateModeUI('${prefix}', '${m}')">${label}</button>`).join("")}
-      </div>
-      <div class="date-inputs" id="${prefix}DateInputs" data-mode="${mode}">
-        <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" />
-        <span class="date-tilde">~</span>
-        <input type="date" id="${prefix}DateTo" class="date-to" value="${escapeAttr(to || from)}" aria-label="종료일" />
-        <button type="button" class="btn btn-sm date-clear" onclick="clearDateMode('${prefix}')">지우기</button>
+      <div class="date-row ${from ? "" : "is-empty"}" id="${prefix}DateRow">
+        <span class="date-row-icon" aria-hidden="true">${DATE_ICON}</span>
+        <label class="date-pill">
+          <span class="date-pill-text" id="${prefix}FromText">${from ? escapeHtml(dottedDate(from)) : "시작일"}</span>
+          <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" onchange="onDateRowChange('${prefix}')" />
+        </label>
+        <span class="date-row-sep" aria-hidden="true">&#8250;</span>
+        <label class="date-pill">
+          <span class="date-pill-text" id="${prefix}ToText">${shownTo ? escapeHtml(dottedDate(shownTo)) : "종료일"}</span>
+          <input type="date" id="${prefix}DateTo" value="${escapeAttr(shownTo)}" aria-label="종료일" onchange="onDateRowChange('${prefix}')" />
+        </label>
+        <button type="button" class="date-row-clear" onclick="clearDateMode('${prefix}')" aria-label="날짜 없음">없음</button>
       </div>
     `;
   }
 
-  function setDateModeUI(prefix, mode) {
-    const seg = document.getElementById(prefix + "DateSeg");
-    if (seg) {
-      seg.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
-    }
-    const box = document.getElementById(prefix + "DateInputs");
-    if (!box) return;
-    box.dataset.mode = mode;
-    if (mode !== "none") {
-      const fromEl = document.getElementById(prefix + "DateFrom");
-      const toEl = document.getElementById(prefix + "DateTo");
-      if (fromEl && !fromEl.value) fromEl.value = TODAY_STR;
-      if (toEl && !toEl.value) toEl.value = fromEl ? fromEl.value : TODAY_STR;
-      if (mode === "day" && fromEl && toEl) toEl.value = fromEl.value;
-    }
+  function syncDateRow(prefix) {
+    const fromEl = document.getElementById(prefix + "DateFrom");
+    const toEl = document.getElementById(prefix + "DateTo");
+    const fromText = document.getElementById(prefix + "FromText");
+    const toText = document.getElementById(prefix + "ToText");
+    const row = document.getElementById(prefix + "DateRow");
+    const from = fromEl ? fromEl.value : "";
+    const to = toEl ? toEl.value : "";
+    if (fromText) fromText.textContent = from ? dottedDate(from) : "시작일";
+    if (toText) toText.textContent = to ? dottedDate(to) : "종료일";
+    if (row) row.classList.toggle("is-empty", !from);
+  }
+
+  // 시작일만 고르거나 같으면 하루, 종료일이 더 뒤면 기간
+  function onDateRowChange(prefix) {
+    const fromEl = document.getElementById(prefix + "DateFrom");
+    const toEl = document.getElementById(prefix + "DateTo");
+    if (!fromEl || !toEl) return;
+    if (!fromEl.value) toEl.value = "";
+    else if (!toEl.value || toEl.value < fromEl.value) toEl.value = fromEl.value;
+    syncDateRow(prefix);
   }
 
   function clearDateMode(prefix) {
@@ -3715,20 +3753,17 @@
     const toEl = document.getElementById(prefix + "DateTo");
     if (fromEl) fromEl.value = "";
     if (toEl) toEl.value = "";
-    setDateModeUI(prefix, "none");
+    syncDateRow(prefix);
   }
 
   function readDateFields(prefix) {
-    const seg = document.getElementById(prefix + "DateSeg");
-    const active = seg ? seg.querySelector("button.active") : null;
-    const mode = active ? active.dataset.mode : "none";
     const fromEl = document.getElementById(prefix + "DateFrom");
     const toEl = document.getElementById(prefix + "DateTo");
     const from = fromEl ? fromEl.value : "";
     const to = toEl ? toEl.value : "";
-    if (mode === "none" || !from) return { dateMode: "none", dateFrom: "", dateTo: "" };
-    if (mode === "day") return { dateMode: "day", dateFrom: from, dateTo: "" };
-    return { dateMode: "range", dateFrom: from, dateTo: to && to >= from ? to : from };
+    if (!from) return { dateMode: "none", dateFrom: "", dateTo: "" };
+    if (!to || to <= from) return { dateMode: "day", dateFrom: from, dateTo: "" };
+    return { dateMode: "range", dateFrom: from, dateTo: to };
   }
 
   // 인덱스 탭 라벨을 한 글자씩 세로로 세워 표시 (글꼴·브라우저에 상관없이 똑바로)
