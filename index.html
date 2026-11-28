@@ -2485,7 +2485,7 @@
     }
 
     @media (max-width: 860px) {
-      .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(400px, calc(100dvh - 340px), 760px); }
+      .nb-stage { padding: 14px 8px 16px; border-radius: 16px; --book-h: clamp(400px, calc(100dvh - 310px), 780px); }
       .nb-stage--shelf { padding: 18px 4px 16px; }
       .nb-stage-head { gap: 8px; }
       .nb-stage-title { font-size: 14px; }
@@ -7698,6 +7698,8 @@
       const merged = { ...item, ...local };
       Object.keys(item).forEach(k => {
         if (k === "images") return;
+        // 제목·부제목은 빈 값도 사용자가 지운 결과로 본다 (구름 값으로 되살리지 않음)
+        if (k === "title" || k === "subtitle" || k === "subject") return;
         const cur = merged[k];
         const emptyCur = cur === undefined || cur === null || cur === "" || (Array.isArray(cur) && !cur.length);
         if (emptyCur && item[k] !== undefined && item[k] !== null && item[k] !== "") merged[k] = item[k];
