@@ -81,7 +81,7 @@
       st.id = "freeze";
       doc.head.appendChild(st);
     }
-    st.textContent = ".nbf-shut *, .nbf-shut, .nb-stage, .nb-page--cover, .nb-spread{animation-play-state:paused !important;}" +
+    st.textContent = ".nbf-shut *, .nbf-shut{animation-play-state:paused !important;}" +
       (ms === null ? "" : (".nbf-shut *, .nbf-shut{animation-delay:-" + ms + "ms !important;}"));
     return "frozen@" + ms;
   };
