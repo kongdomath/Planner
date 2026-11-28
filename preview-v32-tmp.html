@@ -4800,7 +4800,7 @@
     const hasArchive = (state.archives || []).some(a => archiveOnDay(a, dateStr));
     const hasTodo = state.todos.some(t => t.date === dateStr);
     const hasPhoto = normalizePhotos(log).length > 0;
-    const hasAny = Boolean(log.oneLine || hasDiary || hasPhoto || log.mood || hasAchieved || hasArchive || hasTodo);
+    const hasAny = Boolean(log.oneLine || hasDiary || hasPhoto || log.mood || hasAchieved || hasArchive);
     return { log, hasDiary, hasAchieved, hasArchive, hasTodo, hasPhoto, hasAny };
   }
 
@@ -5155,7 +5155,7 @@
     if (arch && arch.title) return arch.title;
     if (meta && meta.hasAchieved) return "목표 · 버킷 달성";
     if (meta && meta.hasDiary) return "일기 기록";
-    if (meta && meta.hasTodo) return "할일 기록";
+    if (meta && meta.hasPhoto) return "사진 기록";
     return "기록";
   }
 
@@ -5682,7 +5682,6 @@
           <header class="nb-day-head">
             <div class="nb-day-date">
               <b>${dottedDate(d)}</b><em>(${dowNames[dow]})</em>
-              ${isToday ? `<span class="nb-day-now">오늘</span>` : ""}
             </div>
             <div class="nb-day-moods" role="group" aria-label="오늘의 기분">
               ${DAY_MOODS.map(md => `
