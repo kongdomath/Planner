@@ -1717,6 +1717,130 @@
       color: #33383f;
     }
     .diary-note .diary-save-line { margin-top: 8px; }
+
+    /* ===== v3.2 하루 페이지(일기): 책자 왼면 = 날짜·기분·한 줄·일기·사진 / 오른면 = Goals·Archive ===== */
+    .nb-day-inner { height: 100%; gap: 13px; }
+    .nb-day-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .nb-day-date { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+    .nb-day-date b {
+      font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: 700;
+      letter-spacing: .01em; color: #2b2f37; white-space: nowrap;
+    }
+    .nb-day-date em { font-style: normal; font-size: 12.5px; color: #8d929b; letter-spacing: .02em; }
+    .nb-day-now {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: #2b3145;
+      background: #eceae0; border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+    }
+    .nb-day-moods { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .nb-mood {
+      width: 31px; height: 31px; border-radius: 50%; padding: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid transparent; background: transparent; color: #bcc0c7;
+      transition: color .14s ease, background .14s ease, border-color .14s ease, transform .14s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nb-mood svg { width: 22px; height: 22px; display: block; }
+    .nb-mood:hover { color: #8d929b; background: rgba(120,126,140,.08); }
+    .nb-mood.is-on { color: #3a4152; background: rgba(120,126,140,.15); border-color: rgba(120,126,140,.3); transform: translateY(-1px); }
+
+    .nb-day-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .nb-day-field--grow { flex: 1 1 auto; min-height: 0; }
+    .nb-day-field-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .nb-day-label { font-size: 9.5px; font-weight: 700; letter-spacing: .18em; color: #a9adb6; text-transform: uppercase; }
+    .nb-day-one { height: 33px !important; font-size: 16px !important; }
+    textarea.nb-day-diary {
+      flex: 1 1 auto; min-height: 108px; overflow-y: auto; resize: none;
+      font-size: 14.5px; line-height: 30px;
+      background-image: repeating-linear-gradient(to bottom, transparent 0 29px, rgba(120,126,140,.15) 29px 30px);
+      background-position: 0 1px;
+      background-repeat: repeat;
+    }
+    .nb-day-diary::-webkit-scrollbar { width: 5px; }
+    .nb-day-diary::-webkit-scrollbar-thumb { background: rgba(120,126,140,.28); border-radius: 3px; }
+    .nb-day-photo-btn {
+      position: relative; display: inline-flex; align-items: center; gap: 4px;
+      height: 25px; padding: 0 9px; border-radius: 999px;
+      border: 1px solid rgba(120,126,140,.28); background: rgba(255,255,255,.72);
+      color: #6b707a; font-size: 10.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .nb-day-photo-btn:hover { background: #fff; color: #3f444e; }
+    .nb-day-photo-ic { display: inline-flex; }
+    .nb-day-photo-btn input[type="file"] {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; font-size: 16px;
+    }
+
+    /* 사진: 대표 1장이 아니라 첨부한 모든 사진을 노트에 폴라로이드처럼 붙인다 */
+    .nb-photos { display: grid; gap: 11px; margin-top: 2px; }
+    .nb-photos--n1 { grid-template-columns: minmax(0, 1fr); }
+    .nb-photos--n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nb-photos--n3, .nb-photos--n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nb-photos--n5, .nb-photos--n6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .nb-pola {
+      position: relative; display: block; background: #fff; padding: 6px 6px 16px;
+      border-radius: 1px; transform: rotate(var(--rot, 0deg));
+      box-shadow: 0 6px 14px rgba(30,34,44,.16), 0 1px 0 rgba(0,0,0,.05);
+    }
+    .nb-pola-btn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+    .nb-pola img {
+      display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+      background: #eceade; border-radius: 1px;
+    }
+    .nb-photos--n3 img, .nb-photos--n4 img, .nb-photos--n5 img, .nb-photos--n6 img { aspect-ratio: 1 / 1; }
+    .nb-pola-tape {
+      position: absolute; top: -7px; left: 50%; width: 54px; height: 16px; z-index: 2;
+      transform: translateX(-50%) rotate(-1.4deg);
+      background: rgba(208,190,146,.5); box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    }
+    .nb-photos--n5 .nb-pola-tape, .nb-photos--n6 .nb-pola-tape { width: 42px; height: 13px; top: -6px; }
+    .nb-pola-del {
+      position: absolute; right: 4px; top: 4px; z-index: 3;
+      width: 22px; height: 22px; border-radius: 50%; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(120,126,140,.24); background: rgba(252,251,247,.92);
+      color: #7d818b; cursor: pointer; opacity: 0; transition: opacity .14s ease;
+    }
+    .nb-pola:hover .nb-pola-del, .nb-pola:focus-within .nb-pola-del { opacity: 1; }
+    .nb-pola-del svg { width: 11px; height: 11px; }
+
+    .nb-day-side .nb-day-block + .nb-day-block { margin-top: 18px; }
+    .nb-day-block-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+      padding-bottom: 7px; border-bottom: 1px solid rgba(120,126,140,.28);
+    }
+    .nb-day-block-head b { font-size: 12.5px; letter-spacing: .02em; color: #33383f; }
+    .nb-day-block-head span { font-size: 10.5px; font-weight: 600; color: #9aa0a9; }
+    .nb-day-list { display: flex; flex-direction: column; }
+    .nb-day-item {
+      display: flex; align-items: flex-start; gap: 9px; width: 100%;
+      padding: 9px 0; border: 0; border-bottom: 1px dashed rgba(120,126,140,.22);
+      background: none; text-align: left; font-family: inherit; cursor: pointer;
+    }
+    .nb-day-item:hover { background: rgba(120,126,140,.06); }
+    .nb-day-item:last-child { border-bottom: 0; }
+    .nb-day-check {
+      flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.4px solid rgba(120,126,140,.4); color: #fcfbf6;
+    }
+    .nb-day-check.is-done { background: #4a5162; border-color: #4a5162; }
+    .nb-day-check.is-archive { border-color: transparent; color: #8d929b; }
+    .nb-day-item-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .nb-day-item-title { font-size: 12.8px; font-weight: 600; color: #2f343d; line-height: 1.45; word-break: keep-all; }
+    .nb-day-item-title.is-done { color: #9aa0a9; }
+    .nb-day-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+    .nb-day-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600; color: #5b6478;
+      background: rgba(120,126,140,.12); border-radius: 999px; padding: 2px 7px;
+    }
+    .nb-day-tag {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: #8d929b;
+      border: 1px solid rgba(120,126,140,.26); border-radius: 3px; padding: 1px 5px;
+      white-space: nowrap; font-family: Georgia, "Times New Roman", serif;
+    }
+    .nb-day-tag--done { color: #2d6a4f; border-color: rgba(45,106,79,.42); background: rgba(45,106,79,.05); }
+    .nb-day-empty { margin: 10px 0 0; font-size: 12px; color: #c2c5cc; }
     .nb-stage .save-status { color: #9aa0a9; }
     .paper .item-list { gap: 0; }
     .paper .list-item {
@@ -2477,38 +2601,48 @@
     .gb-date-note { font-size: 10.5px; color: #8d929b; letter-spacing: .01em; }
     .gb-count { font-size: 10.5px; font-weight: 600; color: #9aa0a9; letter-spacing: .04em; }
 
-    /* 모달 날짜 입력: 없음 · 하루 · 기간 */
-    /* 날짜 입력: 미니컬 스타일 한 줄 (시작일 › 종료일 + 없음) */
+    /* 모달 날짜 입력: 미니컬 스타일 한 줄 (달력 아이콘 하나 + 시작일 › 종료일) */
     .date-row {
       display: flex; align-items: center; gap: 4px;
       border: 1px solid var(--border); border-radius: 10px; background: #fff;
-      padding: 0 6px 0 9px; height: 44px;
+      padding: 0 8px 0 9px; height: 44px;
     }
     .date-row-icon { display: inline-flex; color: var(--text-sub); flex-shrink: 0; }
     .date-pill {
       position: relative; flex: 1 1 0; min-width: 0;
       display: flex; align-items: center; justify-content: center;
       height: 34px; border-radius: 8px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .date-pill:hover { background: rgba(120,126,140,.08); }
     .date-pill-text {
       font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      pointer-events: none;
     }
     .date-row.is-empty .date-pill-text { color: #a9adb6; font-weight: 500; }
-    .date-pill input[type="date"] {
+    /* 실제 date 입력은 글자·테두리·아이콘 없이 투명하게 덮어 두기만 한다 (브라우저 기본 달력 아이콘 숨김) */
+    .date-pill input[type="date"],
+    .date-pill input[type="date"]:focus {
       position: absolute; inset: 0; width: 100%; height: 100%;
-      opacity: 0; border: 0 !important; padding: 0 !important; margin: 0;
-      font-size: 16px; -webkit-appearance: none; appearance: none; cursor: pointer;
+      opacity: 0 !important; color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+      background: transparent !important;
+      border: 0 !important; padding: 0 !important; margin: 0;
+      font-size: 16px; line-height: 1;
+      -webkit-appearance: none !important; appearance: none !important;
+      cursor: pointer;
+    }
+    .date-pill input[type="date"]::-webkit-calendar-picker-indicator,
+    .date-pill input[type="date"]::-webkit-inner-spin-button,
+    .date-pill input[type="date"]::-webkit-clear-button,
+    .date-pill input[type="date"]::-webkit-datetime-edit,
+    .date-pill input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+      opacity: 0 !important; display: none !important;
+      -webkit-appearance: none !important; appearance: none !important;
+      width: 0; height: 0; margin: 0; padding: 0;
     }
     .date-row-sep { color: #b3b8c1; font-size: 16px; flex-shrink: 0; line-height: 1; }
-    .date-row-clear {
-      flex-shrink: 0; height: 28px; padding: 0 10px; margin-left: 2px;
-      border-radius: 999px; border: 1px solid var(--border);
-      background: var(--surface-muted, #f4f2ea); color: var(--text-sub);
-      font-size: 11.5px; font-weight: 600; font-family: inherit; cursor: pointer;
-    }
-    .date-row-clear:hover { background: #fff; color: var(--text); }
     .date-mode-seg { width: 100%; }
     .date-mode-seg button { flex: 1; }
     .date-inputs {
@@ -2729,6 +2863,14 @@
       .nb-day-num { font-size: 12px; }
       .nb-legend { gap: 6px 10px; font-size: 10px; margin-top: 14px; }
       .nb-legend-hint { display: none; }
+      .nb-day-date b { font-size: 22px; }
+      .nb-day-date em { font-size: 11.5px; }
+      .nb-day-inner { gap: 10px; }
+      .nb-mood { width: 27px; height: 27px; }
+      .nb-mood svg { width: 19px; height: 19px; }
+      .nb-photos { gap: 9px; }
+      .nb-pola-del { opacity: 1; }
+      .nb-day-item-title { font-size: 12.5px; }
     }
 
     /* 화면이 높은 기기(아이패드 세로)에서는 책장 커버도 크게 */
@@ -3537,6 +3679,7 @@
 
   function setMobileBookSide(spreadId, side) {
     if (spreadId === "nbYearSpread") yearMobileSide = side;
+    else if (spreadId === "nbDaySpread") yearMobileSide = side;
     else if (spreadId === "goalSpread") goalBookSide = side;
     else notebookMobileSide = side;
   }
@@ -3710,19 +3853,25 @@
     const shownTo = to || from;
     return `
       <div class="date-row ${from ? "" : "is-empty"}" id="${prefix}DateRow">
-        <span class="date-row-icon" aria-hidden="true">${DATE_ICON}</span>
+        <span class="date-row-icon" onclick="showDatePicker('${prefix}DateFrom')" aria-hidden="true">${DATE_ICON}</span>
         <label class="date-pill">
           <span class="date-pill-text" id="${prefix}FromText">${from ? escapeHtml(dottedDate(from)) : "시작일"}</span>
-          <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" onchange="onDateRowChange('${prefix}')" />
+          <input type="date" id="${prefix}DateFrom" value="${escapeAttr(from)}" aria-label="시작일" onchange="onDateRowChange('${prefix}')" onclick="showDatePicker('${prefix}DateFrom')" />
         </label>
         <span class="date-row-sep" aria-hidden="true">&#8250;</span>
         <label class="date-pill">
           <span class="date-pill-text" id="${prefix}ToText">${shownTo ? escapeHtml(dottedDate(shownTo)) : "종료일"}</span>
-          <input type="date" id="${prefix}DateTo" value="${escapeAttr(shownTo)}" aria-label="종료일" onchange="onDateRowChange('${prefix}')" />
+          <input type="date" id="${prefix}DateTo" value="${escapeAttr(shownTo)}" aria-label="종료일" onchange="onDateRowChange('${prefix}')" onclick="showDatePicker('${prefix}DateTo')" />
         </label>
-        <button type="button" class="date-row-clear" onclick="clearDateMode('${prefix}')" aria-label="날짜 없음">없음</button>
       </div>
     `;
+  }
+
+  // 달력 아이콘을 눌러도 날짜 선택기가 열리게 (기본 달력 아이콘은 숨김)
+  function showDatePicker(id) {
+    const el = document.getElementById(id);
+    if (!el || typeof el.showPicker !== "function") return;
+    try { el.showPicker(); } catch (_) {}
   }
 
   function syncDateRow(prefix) {
@@ -3745,14 +3894,6 @@
     if (!fromEl || !toEl) return;
     if (!fromEl.value) toEl.value = "";
     else if (!toEl.value || toEl.value < fromEl.value) toEl.value = fromEl.value;
-    syncDateRow(prefix);
-  }
-
-  function clearDateMode(prefix) {
-    const fromEl = document.getElementById(prefix + "DateFrom");
-    const toEl = document.getElementById(prefix + "DateTo");
-    if (fromEl) fromEl.value = "";
-    if (toEl) toEl.value = "";
     syncDateRow(prefix);
   }
 
@@ -4646,8 +4787,9 @@
       state.buckets.some(b => b.done && b.doneDate === dateStr);
     const hasArchive = (state.archives || []).some(a => archiveOnDay(a, dateStr));
     const hasTodo = state.todos.some(t => t.date === dateStr);
-    const hasAny = Boolean(log.oneLine || hasDiary || hasAchieved || hasArchive || hasTodo);
-    return { log, hasDiary, hasAchieved, hasArchive, hasTodo, hasAny };
+    const hasPhoto = normalizePhotos(log).length > 0;
+    const hasAny = Boolean(log.oneLine || hasDiary || hasPhoto || log.mood || hasAchieved || hasArchive || hasTodo);
+    return { log, hasDiary, hasAchieved, hasArchive, hasTodo, hasPhoto, hasAny };
   }
 
   // 1년 연력 뷰 (달별 모아보기는 '기록 있는 날만' 고정)
@@ -4740,7 +4882,36 @@
     carouselRaf = requestAnimationFrame(frame);
   }
 
+  // 표지 탭: 가운데(선택된) 책은 바로 펼치고, 옆 책은 그 책으로 이동
+  let shelfTapLock = 0;
+  function shelfCoverTap(kind, btn) {
+    if (!btn) return;
+    if (Date.now() - shelfTapLock < 420) return;
+    shelfTapLock = Date.now();
+    const vi = Number(btn.dataset.vindex);
+    const idx = Number(btn.dataset.index);
+    const active = kind === "year" ? yearShelfIndex : notebookShelfIndex;
+    if (Number.isFinite(vi) && Math.abs(vi - active) < 0.5) {
+      if (kind === "year") openYearBook(Number(btn.dataset.year));
+      else openNotebook(String(btn.dataset.bookId || ""));
+      return;
+    }
+    if (!Number.isFinite(idx) || !Number.isFinite(vi)) return;
+    shelfAnimate(kind, active, vi, () => {
+      if (kind === "year") {
+        yearShelfIndex = idx;
+      } else {
+        notebookShelfIndex = idx;
+        const books = getBooks();
+        if (books[idx]) state.shelfSelectedBookId = books[idx].id;
+        saveState();
+      }
+      render();
+    });
+  }
+
   // 책장: 좌우로 끌면 손끝을 따라 책이 돌아가고, 놓으면 가까운 책으로 붙음
+  // 손가락이 16px 안에서 흔들린 짧은 탭은 드래그가 아니라 '표지 누르기'로 본다 (iOS Safari)
   function bindShelfCarousels() {
     document.querySelectorAll(".nb-carousel").forEach(el => {
       if (el.dataset.bound === "1") return;
@@ -4750,37 +4921,65 @@
       const activeOf = () => (kind === "year" ? yearShelfIndex : notebookShelfIndex);
       let dragging = false;
       let startX = 0;
+      let startY = 0;
+      let lastX = 0;
+      let lastY = 0;
       let base = 0;
       let pos = 0;
       let moved = 0;
 
+      const TAP_SLOP = 16; // 손가락이 이만큼 안에서 흔들리면 탭
       const stepPx = () => carouselMetrics(kind).step;
       const paint = p => applyCarouselTransforms(el, p, stepPx());
       const clamp = p => {
         const a = activeOf();
         return Math.max(a - 0.94, Math.min(a + 0.94, p));
       };
-      const begin = x => {
+      const begin = (x, y) => {
         if (!countOf()) return;
         cancelAnimationFrame(carouselRaf);
         dragging = true;
         moved = 0;
         startX = x;
+        startY = Number.isFinite(y) ? y : 0;
+        lastX = startX;
+        lastY = startY;
         base = activeOf();
         pos = base;
-        el.classList.add("dragging");
       };
-      const move = x => {
+      const move = (x, y) => {
         if (!dragging) return;
+        const yy = Number.isFinite(y) ? y : lastY;
         const dx = x - startX;
-        moved = Math.max(moved, Math.abs(dx));
+        const dy = yy - startY;
+        lastX = x;
+        lastY = yy;
+        const dist = Math.max(Math.abs(dx), Math.abs(dy));
+        moved = Math.max(moved, dist);
+        if (dist <= 6) return; // 미세한 떨림만으로는 책을 움직이지 않는다
+        if (dist > TAP_SLOP) el.classList.add("dragging");
         pos = clamp(base - dx / stepPx());
         paint(pos);
       };
-      const end = () => {
+      // 손가락을 뗀 곳(x, y)에서 표지를 찾아 탭이면 바로 연다
+      const end = (x, y) => {
         if (!dragging) return;
         dragging = false;
+        const wasDragging = el.classList.contains("dragging");
         el.classList.remove("dragging");
+        if (!wasDragging && moved <= TAP_SLOP) {
+          cancelAnimationFrame(carouselRaf);
+          paint(base);
+          const px = Number.isFinite(x) ? x : lastX;
+          const py = Number.isFinite(y) ? y : lastY;
+          const hit = (px || py) ? document.elementFromPoint(px, py) : null;
+          const btn = hit && hit.closest ? hit.closest(".nb-cover-btn") : null;
+          if (btn) {
+            el.dataset.tapAt = String(Date.now());
+            shelfCoverTap(kind, btn);
+          }
+          return;
+        }
         el.dataset.draggedAt = String(Date.now());
         const dir = Math.round(pos - base);
         if (!dir) {
@@ -4806,33 +5005,42 @@
 
       el.addEventListener("touchstart", e => {
         const t = e.touches && e.touches[0];
-        if (t) begin(t.clientX);
+        if (t) begin(t.clientX, t.clientY);
       }, { passive: true });
       el.addEventListener("touchmove", e => {
         const t = e.touches && e.touches[0];
-        if (t) move(t.clientX);
+        if (t) move(t.clientX, t.clientY);
       }, { passive: true });
-      el.addEventListener("touchend", end, { passive: true });
-      el.addEventListener("touchcancel", end, { passive: true });
+      el.addEventListener("touchend", e => {
+        const t = (e.changedTouches && e.changedTouches[0]) || null;
+        end(t ? t.clientX : undefined, t ? t.clientY : undefined);
+      }, { passive: true });
+      el.addEventListener("touchcancel", () => {
+        if (!dragging) return;
+        dragging = false;
+        el.classList.remove("dragging");
+        paint(base);
+      }, { passive: true });
 
       let mouseDown = false;
       el.addEventListener("pointerdown", e => {
         if (e.pointerType !== "mouse" || e.button !== 0) return;
         mouseDown = true;
-        begin(e.clientX);
+        begin(e.clientX, e.clientY);
       });
       el.addEventListener("pointermove", e => {
         if (!mouseDown) return;
-        move(e.clientX);
+        move(e.clientX, e.clientY);
       });
-      window.addEventListener("pointerup", () => {
+      window.addEventListener("pointerup", e => {
         if (!mouseDown) return;
         mouseDown = false;
-        end();
+        end(e.clientX, e.clientY);
       });
+      // 실제로 끌고 난 뒤 따라오는 클릭만 막는다 (탭은 그대로 통과)
       el.addEventListener("click", e => {
         const at = Number(el.dataset.draggedAt || 0);
-        if (at && (Date.now() - at < 320 || moved > 8)) {
+        if (el.classList.contains("dragging") || (at && Date.now() - at < 400)) {
           e.preventDefault();
           e.stopPropagation();
         }
@@ -4982,7 +5190,7 @@
       : `기록 ${days}일`;
   }
 
-  function renderYearCover(year, isActive, vindex) {
+  function renderYearCover(year, isActive, vindex, index) {
     const y = Number(year);
     const days = countYearDays(y);
     const isThisYear = String(y) === TODAY_STR.slice(0, 4);
@@ -4990,7 +5198,7 @@
     const title = entry.title || String(y);
     const sub = typeof entry.subtitle === "string" ? entry.subtitle : "Yearly Note";
     return `
-      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" data-vindex="${Number(vindex) || 0}" onclick="openYearBook(${y})" aria-label="${escapeAttr(title)} 펼치기" title="${escapeAttr(title)} 펼치기">
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-year="${y}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('year', this)" aria-label="${escapeAttr(title)} 펼치기" title="${escapeAttr(title)} 펼치기">
         <span class="nb-cover nb-cover--year" style="--spine:${yearSpineColor(y)}">
           ${isThisYear ? `<span class="nb-year-now">올해</span>` : ""}
           ${entry.cover
@@ -5039,7 +5247,7 @@
     return `
       <div class="nb-stage nb-stage--shelf">
         <div id="nbYearShelfMeta">${renderYearShelfMeta(activeYear)}</div>
-        <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex)).join("")}</div>
+        <div class="nb-carousel" data-shelf="year" id="nbYearShelfCarousel">${shelfRing(yearBooks.length, yearShelfIndex, shelfRadius()).map(slot => renderYearCover(yearBooks[slot.index].year, slot.vindex === yearShelfIndex, slot.vindex, slot.index)).join("")}</div>
         <div class="nb-actions" id="nbYearShelfActions">${renderYearShelfActions(activeYear)}</div>
         ${renderYearLegend()}
       </div>
@@ -5077,11 +5285,10 @@
     render();
   }
 
-  // 그 연도 노트 안에서 하루 페이지 열기
-  function openYearDay(dateStr) {
+  // 그 연도 노트 안에서 하루 페이지 열기 (달력 → 일기는 책장 3D로 넘어간다)
+  function applyYearDayState(dateStr) {
     const ds = String(dateStr || "");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) return;
-    flushDiaryDraft();
     state.selectedDate = ds;
     state.activeTab = "year";
     ensureYearBook(Number(ds.slice(0, 4)));
@@ -5090,17 +5297,38 @@
     yearDayDate = ds;
     yearMobileSide = "left";
     saveState();
-    render();
+  }
+
+  function openYearDay(dateStr, opts = {}) {
+    const ds = String(dateStr || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) return;
+    flushDiaryDraft();
+    const animate = !opts || opts.animate !== false;
+    const spread = document.querySelector(".nb-spread");
+    if (!animate || !spread || prefersReducedMotion()) {
+      applyYearDayState(ds);
+      render();
+      return;
+    }
+    const forward = yearDayDate ? ds >= yearDayDate : true;
+    turnToPage(forward ? 1 : -1, () => applyYearDayState(ds));
   }
 
   function closeYearDay() {
-    yearDayDate = "";
-    render();
+    flushDiaryDraft();
+    if (prefersReducedMotion() || !document.querySelector(".nb-spread")) {
+      yearDayDate = "";
+      render();
+      return;
+    }
+    turnToPage(-1, () => { yearDayDate = ""; });
   }
 
   function stepYearDay(delta) {
-    if (!yearDayDate) return;
-    turnToPage(delta, () => openYearDay(shiftDate(yearDayDate, delta)));
+    if (!yearDayDate || !delta) return;
+    flushDiaryDraft();
+    const next = shiftDate(yearDayDate, delta);
+    turnToPage(delta, () => applyYearDayState(next));
   }
 
   function openTodayYearBook() {
@@ -5311,7 +5539,116 @@
     return renderYearShelf();
   }
 
-  // 연력 · 일기: 노트 안에서 열리는 하루 페이지 (한 줄 요약 + 긴 일기 + 할일 + 달성)
+  // 연력 · 일기: 스프링 노트 안의 하루 페이지
+  //  · 왼쪽 면 = 날짜 · 기분 · 오늘의 한 줄 · 긴 일기 · 사진 / 오른쪽 면 = Goals · Archive
+  const DAY_MOODS = [
+    { key: "great", label: "아주 좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M7.8 13.4a4.9 4.9 0 0 0 8.4 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
+    { key: "good", label: "좋음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.6 14a4 4 0 0 0 6.8 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
+    { key: "soso", label: "보통", face: `<circle cx="12" cy="12" r="9"/><path d="M8.8 14.6h6.4"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
+    { key: "down", label: "가라앉음", face: `<circle cx="12" cy="12" r="9"/><path d="M8.6 15.2a4 4 0 0 1 6.8 0"/><circle cx="9.2" cy="9.6" r=".95" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.6" r=".95" fill="currentColor" stroke="none"/>` },
+    { key: "tired", label: "지침", face: `<circle cx="12" cy="12" r="9"/><path d="M7.6 10.2h3.1"/><path d="M13.3 10.2h3.1"/><path d="M9 15h6"/>` }
+  ];
+
+  const DAY_CAMERA = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+  const DAY_CHECK = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  function moodFaceSvg(key) {
+    const md = DAY_MOODS.find(x => x.key === key) || DAY_MOODS[1];
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${md.face}</svg>`;
+  }
+
+  function normalizePhotos(log) {
+    if (!log) return [];
+    if (Array.isArray(log.photos)) return log.photos.filter(Boolean);
+    if (Array.isArray(log.images)) return log.images.filter(Boolean);
+    return [];
+  }
+
+  function dayOfYear(dateStr) {
+    const parts = String(dateStr || "").split("-");
+    const t = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const start = new Date(t.getFullYear(), 0, 1);
+    return Math.floor((t - start) / 86400000) + 1;
+  }
+
+  // 첨부된 사진을 대표 1장 캐러셀 없이 노트에 전부 붙인다 (1장 크게 · 2장 나란히 · 3~4장 격자 · 5장+ 3열)
+  function photoBoardHtml(images, handlerFor, opts = {}) {
+    const list = (Array.isArray(images) ? images : []).filter(Boolean).slice(0, 6);
+    if (!list.length) return "";
+    const rots = [-1.5, 1.2, 1.4, -1.3, 1.6, -1.1];
+    const removable = opts.removeFn || "";
+    return `
+      <div class="nb-photos nb-photos--n${list.length}">
+        ${list.map((src, i) => `
+          <div class="nb-pola" style="--rot:${rots[i % rots.length]}deg">
+            <span class="nb-pola-tape" aria-hidden="true"></span>
+            <button class="nb-pola-btn" onclick="${handlerFor(i)}" aria-label="사진 ${i + 1} 크게 보기" title="사진 크게 보기">
+              <img src="${src}" alt="" />
+            </button>
+            ${removable ? `<button class="nb-pola-del" onclick="${removable}(${i})" aria-label="사진 ${i + 1} 떼기" title="사진 떼기">${ICONS.close}</button>` : ""}
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  // 그날 달성했거나 기간이 겹치는 목표·버킷
+  function dayGoalEntries(dateStr) {
+    const out = [];
+    (state.goals || []).forEach(g => {
+      const doneOn = Boolean(g.done && g.doneDate === dateStr);
+      const mode = dateModeOf(g);
+      const from = itemDateFrom(g);
+      const to = itemDateTo(g) || from;
+      const inRange = mode !== "none" && Boolean(from) && dateStr >= from && dateStr <= to;
+      if (doneOn || inRange) out.push({ item: g, done: Boolean(g.done), doneOn, from: inRange ? from : "", to: inRange ? to : "" });
+    });
+    (state.buckets || []).forEach(b => {
+      if (b.done && b.doneDate === dateStr) out.push({ item: b, done: true, doneOn: true, from: "", to: "" });
+    });
+    return out;
+  }
+
+  function renderDayGoalItem(entry) {
+    const it = entry.item || {};
+    const isBucket = Boolean(it.category && it.topic === undefined);
+    const topic = isBucket ? it.category : it.topic;
+    const iconKey = isBucket ? getBucketCatIconKey(topic) : getTopicIconKey(topic);
+    const meta = [];
+    if (topic) meta.push(`<span class="nb-day-pill">${renderPictogram(iconKey, 11)} ${escapeHtml(topic)}</span>`);
+    if (entry.doneOn) meta.push(`<span class="nb-day-tag nb-day-tag--done">DONE</span>`);
+    else if (entry.from) meta.push(`<span class="nb-day-tag">${escapeHtml(humanDateRange(entry.from, entry.to))}</span>`);
+    return `
+      <button class="nb-day-item" onclick="openEditGoalItem('${it.id}')" title="눌러서 수정">
+        <span class="nb-day-check ${entry.done ? "is-done" : ""}">${entry.done ? DAY_CHECK : ""}</span>
+        <span class="nb-day-item-main">
+          <span class="nb-day-item-title ${entry.done ? "is-done" : ""}">${escapeHtml(it.title || "")}</span>
+          ${meta.length ? `<span class="nb-day-item-meta">${meta.join("")}</span>` : ""}
+        </span>
+      </button>
+    `;
+  }
+
+  function renderDayArchiveItem(a) {
+    const from = itemDateFrom(a);
+    const to = itemDateTo(a);
+    const cat = a.category || "";
+    const hasPhotos = normalizeImages(a).length;
+    return `
+      <button class="nb-day-item" onclick="openEditArchive('${a.id}')" title="눌러서 수정">
+        <span class="nb-day-check is-archive">${renderPictogram(getArchiveCatIconKey(cat), 11)}</span>
+        <span class="nb-day-item-main">
+          <span class="nb-day-item-title">${escapeHtml(a.title || "")}</span>
+          <span class="nb-day-item-meta">
+            ${cat ? `<span class="nb-day-pill">${escapeHtml(cat)}</span>` : ""}
+            ${from ? `<span class="nb-day-tag">${escapeHtml(humanDateRange(from, to))}</span>` : ""}
+            ${hasPhotos ? `<span class="nb-day-tag">사진 ${hasPhotos}</span>` : ""}
+          </span>
+        </span>
+      </button>
+    `;
+  }
+
   function renderYearDay(dateStr) {
     const d = dateStr;
     const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -5319,80 +5656,143 @@
     const y = d.slice(0, 4);
     const m = Number(d.slice(5, 7));
     const day = Number(d.slice(8, 10));
-    const maxDay = new Date(Number(y), m, 0).getDate();
-    const log = state.logs[d] || { oneLine: "", diary: "" };
+    const log = state.logs[d] || {};
     const isToday = d === TODAY_STR;
+    const mood = String(log.mood || "");
+    const photos = normalizePhotos(log);
+    const goals = dayGoalEntries(d);
+    const archives = (state.archives || []).filter(a => archiveOnDay(a, d));
+    const pageNo = dayOfYear(d);
 
-    const dayTodos = state.todos.filter(t => t.date === d);
-    const doneGoals = state.goals.filter(g => g.done && g.doneDate === d);
-    const doneBuckets = state.buckets.filter(b => b.done && b.doneDate === d);
-    const dayArchives = state.archives.filter(a => archiveOnDay(a, d));
-    const doneCount = doneGoals.length + doneBuckets.length + dayArchives.length;
+    const leftPage = `
+      <section class="nb-page nb-page--left nb-day-page">
+        <div class="nb-page-inner nb-day-inner">
+          <header class="nb-day-head">
+            <div class="nb-day-date">
+              <b>${dottedDate(d)}</b><em>(${dowNames[dow]})</em>
+              ${isToday ? `<span class="nb-day-now">오늘</span>` : ""}
+            </div>
+            <div class="nb-day-moods" role="group" aria-label="오늘의 기분">
+              ${DAY_MOODS.map(md => `
+                <button class="nb-mood ${mood === md.key ? "is-on" : ""}" data-mood="${md.key}" onclick="setDayMood('${md.key}')" title="${md.label}" aria-label="${md.label}" aria-pressed="${mood === md.key ? "true" : "false"}">${moodFaceSvg(md.key)}</button>
+              `).join("")}
+            </div>
+          </header>
+
+          <div class="nb-day-field">
+            <span class="nb-day-label">오늘의 한 줄</span>
+            <input type="text" id="oneLineInput" class="paper-input-line nb-day-one" value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" aria-label="오늘의 한 줄" />
+          </div>
+
+          <div class="nb-day-field nb-day-field--grow">
+            <div class="nb-day-field-head">
+              <span class="nb-day-label">일기</span>
+              <label class="nb-day-photo-btn" title="사진 붙이기">
+                <span class="nb-day-photo-ic">${DAY_CAMERA}</span><span>사진</span>
+                <input type="file" accept="image/*" multiple onchange="handleDayPhotos(event)" aria-label="일기 사진 붙이기" />
+              </label>
+            </div>
+            <textarea class="diary-area nb-day-diary" id="diaryInput" oninput="onDiaryInput()" aria-label="일기">${escapeHtml(log.diary || "")}</textarea>
+          </div>
+
+          ${photos.length ? photoBoardHtml(photos, i => `openDayPhoto(${i})`, { removeFn: "removeDayPhoto" }) : ""}
+          ${paperPageNo(pageNo * 2 - 1)}
+        </div>
+      </section>
+    `;
+
+    const rightPage = `
+      <section class="nb-page nb-page--right nb-day-side">
+        <div class="nb-page-inner">
+          <div class="nb-day-block">
+            <div class="nb-day-block-head"><b>Goals</b><span>${goals.length}</span></div>
+            ${goals.length ? `<div class="nb-day-list">${goals.map(renderDayGoalItem).join("")}</div>` : `<p class="nb-day-empty">—</p>`}
+          </div>
+          <div class="nb-day-block">
+            <div class="nb-day-block-head"><b>Archive</b><span>${archives.length}</span></div>
+            ${archives.length ? `<div class="nb-day-list">${archives.map(renderDayArchiveItem).join("")}</div>` : `<p class="nb-day-empty">—</p>`}
+          </div>
+          ${paperPageNo(pageNo * 2)}
+        </div>
+      </section>
+    `;
 
     return `
       <div class="nb-stage">
         <div class="nb-reader-head">
           <button class="nb-back" onclick="closeYearDay()">${ICONS.chevLeft}달력</button>
           <div class="nb-reader-title">
-            <b>${m}월 ${day}일 <em>(${dowNames[dow]})</em></b>
-            <span>${y}년${isToday ? " · 오늘" : ""}</span>
+            <b>${y}년 ${m}월 ${day}일</b>
+            <span>${dowNames[dow]}요일${isToday ? " · 오늘" : ""}</span>
           </div>
-          <span class="nb-reader-spacer" aria-hidden="true"></span>
+          <button class="nb-head-btn ${isToday ? "is-now" : ""}" onclick="openYearDay('${TODAY_STR}')" title="오늘로" aria-label="오늘로">${NB_ICONS.calendar}<span class="nb-head-btn-label">오늘</span></button>
         </div>
-
-        <div class="day-controls">
-          <button class="stage-nav prev" onclick="stepYearDay(-1)" aria-label="이전 날">${ICONS.chevLeft}<span class="label">이전 날</span></button>
-          <button class="stage-chip ${isToday ? "is-today" : ""}" onclick="openYearDay('${TODAY_STR}')">오늘</button>
-          <button class="stage-nav next" onclick="stepYearDay(1)" aria-label="다음 날"><span class="label">다음 날</span>${ICONS.chevRight}</button>
-        </div>
-
-        <div class="day-stack">
-          <section class="paper diary-note paper--dot">
-            <div class="paper-label">${ICONS.diary}연력 한 줄 요약</div>
-            <input type="text" id="oneLineInput" class="paper-input-line" placeholder="연력 칸에 표시될 한 줄..." value="${escapeAttr(log.oneLine || "")}" oninput="onDiaryInput()" aria-label="연력 한 줄 요약" />
-            <div class="paper-rule"></div>
-            <div class="paper-label">${ICONS.diary}${m}월 ${day}일의 긴 기록 · 일기</div>
-            <textarea class="diary-area" id="diaryInput" placeholder="오늘 있었던 일, 생각, 감정을 자유롭게 길게 기록하세요..." oninput="onDiaryInput()" aria-label="긴 기록 일기">${escapeHtml(log.diary || "")}</textarea>
-            <div class="diary-save-line">
-              <span id="saveStatus" class="save-status">입력하면 자동으로 저장됩니다</span>
-            </div>
-            ${paperPageNo(day)}
-          </section>
-
-          <div class="day-side-grid">
-            <section class="paper">
-              <div class="paper-label">${ICONS.year}이 날의 할일</div>
-              <div class="form-row" style="margin-bottom:8px;">
-                <input type="text" id="dayTodoInput" style="flex:1; min-width:0;" placeholder="이 날짜에 할일 추가..." onkeydown="if (event.key === 'Enter') addDayTodo()" aria-label="할일 추가" />
-                <button class="btn" onclick="addDayTodo()">추가</button>
-              </div>
-              <div class="item-list">
-                ${dayTodos.length ? dayTodos.map(t => `
-                  <div class="list-item ${t.done ? "done" : ""}">
-                    <div class="item-left">
-                      <input type="checkbox" class="chk" ${t.done ? "checked" : ""} onchange="toggleTodo('${t.id}')" aria-label="할일 완료" />
-                      <div class="item-title tap-edit-target" onclick="openEditTodo('${t.id}')" title="탭하여 수정">${escapeHtml(t.title)}</div>
-                    </div>
-                    <button class="icon-btn danger" onclick="deleteItem('todos', '${t.id}')" title="삭제" aria-label="할일 삭제">${ICONS.trash}</button>
-                  </div>
-                `).join("") : `<p class="paper-empty">등록된 할일이 없습니다.</p>`}
-              </div>
-            </section>
-
-            <section class="paper">
-              <div class="paper-label">${ICONS.goals}이 날의 달성 · 아카이브</div>
-              ${doneCount ? `
-                <div class="item-list">
-                  ${doneGoals.map(g => `<div class="list-item tap-edit-target" onclick="openEditGoalItem('${g.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getTopicIconKey(g.topic), 12)} ${escapeHtml(g.topic)}</span><span class="item-title">${escapeHtml(g.title)}</span></div></div>`).join("")}
-                  ${doneBuckets.map(b => `<div class="list-item tap-edit-target" onclick="openEditGoalItem('${b.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getBucketCatIconKey(b.category), 12)} ${escapeHtml(b.category)}</span><span class="item-title">${escapeHtml(b.title)}</span></div></div>`).join("")}
-                  ${dayArchives.map(a => `<div class="list-item tap-edit-target" onclick="openEditArchive('${a.id}')" title="탭하여 수정"><div class="diary-figure"><span class="pill">${renderPictogram(getArchiveCatIconKey(a.category), 12)} 아카이브 · ${escapeHtml(a.category)}</span><span class="item-title">${escapeHtml(a.title)}</span></div></div>`).join("")}
-                </div>
-              ` : `<p class="paper-empty">이 날 달성한 목표·버킷이나 남긴 아카이브가 아직 없습니다.</p>`}
-            </section>
+        <div class="nb-book">
+          <button class="nb-nav prev" onclick="stepYearDay(-1)" aria-label="이전 날">${ICONS.chevLeft}</button>
+          <div class="nb-spread" id="nbDaySpread" data-side="${yearMobileSide}">
+            <span class="nb-edge nb-edge--left"></span>
+            <span class="nb-edge nb-edge--right"></span>
+            ${leftPage}
+            ${rightPage}
+            <span class="nb-spine"></span>
+            ${BOOK_COIL}
           </div>
+          <button class="nb-nav next" onclick="stepYearDay(1)" aria-label="다음 날">${ICONS.chevRight}</button>
         </div>
+        <div class="nb-bottom-bar">
+          <span class="nb-bar-left"></span>
+          <button class="nb-add-btn" onclick="openNewArchiveModal()" title="이 날 기록 추가" aria-label="이 날 기록 추가">${NB_ICONS.plus}</button>
+          <span class="nb-bar-right"></span>
+        </div>
+        <div class="nb-legend-slot" aria-hidden="true"></div>
       </div>
     `;
+  }
+
+  function setDayMood(key) {
+    const d = state.selectedDate;
+    if (!d) return;
+    const log = state.logs[d] || (state.logs[d] = { oneLine: "", diary: "" });
+    log.mood = log.mood === key ? "" : key;
+    saveState();
+    document.querySelectorAll(".nb-mood").forEach(b => {
+      const on = b.dataset.mood === log.mood;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function openDayPhoto(index) {
+    const d = state.selectedDate;
+    const log = state.logs[d] || {};
+    openLightbox(normalizePhotos(log), Number(index) || 0, dottedDate(d));
+  }
+
+  async function handleDayPhotos(event) {
+    const d = state.selectedDate;
+    const files = event && event.target ? event.target.files : null;
+    if (d && files && files.length) {
+      const log = state.logs[d] || (state.logs[d] = { oneLine: "", diary: "" });
+      try {
+        log.photos = await processMultipleFiles(files, normalizePhotos(log), 2);
+        saveState();
+      } catch (_) {
+        alert("이미지를 불러오는 중 오류가 발생했습니다.");
+      }
+    }
+    if (event && event.target) event.target.value = "";
+    render();
+  }
+
+  function removeDayPhoto(index) {
+    const d = state.selectedDate;
+    const log = state.logs[d];
+    const list = normalizePhotos(log);
+    if (index < 0 || index >= list.length) return;
+    list.splice(index, 1);
+    log.photos = list;
+    saveState();
+    render();
   }
 
   function onDiaryInput() {
@@ -5419,15 +5819,18 @@
   function saveDiaryDraft() {
     const oneEl = document.getElementById("oneLineInput");
     const diaryEl = document.getElementById("diaryInput");
-    if (!oneEl || !diaryEl) return;
-    state.logs[state.selectedDate] = { oneLine: oneEl.value, diary: diaryEl.value };
-    const ok = saveState();
+    if (!oneEl && !diaryEl) return;
+    const prev = state.logs[state.selectedDate] || {};
+    state.logs[state.selectedDate] = {
+      ...prev,
+      oneLine: oneEl ? oneEl.value : (prev.oneLine || ""),
+      diary: diaryEl ? diaryEl.value : (prev.diary || "")
+    };
+    saveState();
     const st = document.getElementById("saveStatus");
     if (st) {
       st.classList.remove("saving");
-      st.textContent = ok
-        ? `자동 저장됨 · ${timeStr(lastSavedAt)}`
-        : "저장 실패 · 설정에서 백업을 확인해 주세요";
+      st.textContent = "저장됨 · " + timeStr(lastSavedAt);
     }
   }
 
@@ -6599,13 +7002,13 @@
     return book ? renderNotebookReader(book) : renderNotebookShelf();
   }
 
-  function renderShelfCover(book, isActive, vindex) {
+  function renderShelfCover(book, isActive, vindex, index) {
     const recs = bookArchives(book.id);
     const coverImg = book.cover || "";
     const spine = normalizeSpineColor(book.spine, BOOK_SPINE_PALETTE[0]);
     const sub = String(book.subtitle || "").trim();
     return `
-      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-vindex="${Number(vindex) || 0}" onclick="openNotebook('${book.id}')" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
+      <button class="nb-cover-btn ${isActive ? "is-active" : ""}" data-book-id="${escapeAttr(book.id)}" data-index="${Number(index) || 0}" data-vindex="${Number(vindex) || 0}" onclick="shelfCoverTap('archive', this)" aria-label="${escapeAttr(book.title)} 펼치기" title="${escapeAttr(book.title)} 펼치기">
         <span class="nb-cover" style="--spine:${spine}">
           ${coverImg
             ? `<img class="nb-cover-photo" src="${coverImg}" alt="" /><span class="nb-cover-plate">${escapeHtml(book.title)}</span>`
@@ -6659,7 +7062,7 @@
     return `
       <div class="nb-stage nb-stage--shelf">
         <div id="nbShelfMeta">${renderShelfMeta(active)}</div>
-        <div class="nb-carousel" data-shelf="archive" id="nbShelfCarousel">${shelfRing(books.length, notebookShelfIndex, shelfRadius()).map(slot => renderShelfCover(books[slot.index], slot.vindex === notebookShelfIndex, slot.vindex)).join("")}</div>
+        <div class="nb-carousel" data-shelf="archive" id="nbShelfCarousel">${shelfRing(books.length, notebookShelfIndex, shelfRadius()).map(slot => renderShelfCover(books[slot.index], slot.vindex === notebookShelfIndex, slot.vindex, slot.index)).join("")}</div>
         <div class="nb-actions" id="nbShelfActions">${renderShelfActions(active)}</div>
       </div>
     `;
@@ -6762,17 +7165,7 @@
 
     const visual = imgs.length
       ? `
-        <div class="nb-photo-frame">
-          <span class="nb-photo-tape"></span>
-          <img src="${imgs[0]}" alt="${escapeAttr(a.title)}" />
-          <button class="nb-photo-zoom" onclick="event.stopPropagation(); openNotebookPhoto('${a.id}', 0)" title="사진 크게 보기" aria-label="사진 크게 보기">${ICONS.search}</button>
-          ${imgs.length > 1 ? `<span class="nb-photo-count">사진 ${imgs.length}장 · 아래에서 골라 보기</span>` : ""}
-        </div>
-        ${imgs.length > 1 ? `
-          <div class="nb-thumbs">
-            ${imgs.map((src, i) => `<button class="nb-thumb" onclick="openNotebookPhoto('${a.id}', ${i})" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" /></button>`).join("")}
-          </div>
-        ` : ""}
+        ${photoBoardHtml(imgs, i => `openNotebookPhoto('${a.id}', ${i})`)}
       `
       : `
         <div class="nb-visual">
@@ -6905,11 +7298,13 @@
     const spreads = [
       document.getElementById("nbSpread"),
       document.getElementById("nbYearSpread"),
+      document.getElementById("nbDaySpread"),
       document.getElementById("goalSpread")
     ].filter(Boolean);
     spreads.forEach(spread => {
       const isYear = spread.id === "nbYearSpread";
       const isGoal = spread.id === "goalSpread";
+      const isDay = spread.id === "nbDaySpread";
       if (spread.dataset.gestureBound === "1") return;
       spread.dataset.gestureBound = "1";
       let sx = 0;
@@ -6930,12 +7325,13 @@
           const dir = dx < 0 ? 1 : -1;
           if (isYear) bookTurn(spread, dir, () => yearPageStep(1), () => yearPageStep(-1));
           else if (isGoal) bookTurn(spread, dir, () => goalBookStep(1), () => goalBookStep(-1));
+          else if (isDay) bookTurn(spread, dir, () => stepYearDay(1), () => stepYearDay(-1));
           else bookTurn(spread, dir, () => notebookStep(1), () => notebookStep(-1));
         }
       }, { passive: true });
       // 모바일 1면 보기: 페이지를 탭하면 왼쪽 면 ↔ 오른쪽 면 뒤집기
       spread.addEventListener("click", e => {
-        if (isYear || !isMobileViewport()) return;
+        if (isYear || isDay || !isMobileViewport()) return;
         const last = Number(spread.dataset.swipedAt || 0);
         if (last && Date.now() - last < 420) return;
         if (e.target.closest("button, a, input, textarea, select, label, .nb-thumb, .nb-guide, .nb-photo-zoom, .nb-nav, .idx-tab, .gb-add, .gb-stamp")) return;
@@ -8197,11 +8593,14 @@
     const l = (localLog && typeof localLog === "object") ? localLog : {};
     const c = (cloudLog && typeof cloudLog === "object") ? cloudLog : {};
     const out = { ...c, ...l };
-    ["oneLine", "diary", "memo", "text"].forEach(k => {
+    ["oneLine", "diary", "memo", "text", "mood"].forEach(k => {
       if (k in c && isEmptyText(l[k]) && !isEmptyText(c[k])) out[k] = c[k];
     });
     const images = mergeImageLists(normalizeImages(l), normalizeImages(c));
     if (images.length) out.images = images;
+    // 하루 페이지 사진(log.photos)도 양쪽 기록을 합친다
+    const photos = mergeImageLists(Array.isArray(l.photos) ? l.photos : [], Array.isArray(c.photos) ? c.photos : []);
+    if (photos.length) out.photos = photos;
     return cleanUndefined(out);
   }
 
