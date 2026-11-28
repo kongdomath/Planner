@@ -2035,28 +2035,27 @@
       display: flex; flex-direction: column; justify-content: space-between; align-items: center;
     }
     .nb-coil-ring {
-      position: relative; display: block; width: 52px; height: 12px; border-radius: 999px;
+      position: relative; display: block; width: 50px; height: 5px; border-radius: 999px;
       background:
-        linear-gradient(180deg, #ffffff 0%, #d5dbe6 16%, #969ead 40%, #626a79 58%, #b3bbc9 78%, #eef2f8 100%);
+        linear-gradient(180deg, #ffffff 0%, #dbe1ea 26%, #929bab 52%, #5f6776 64%, #bcc4d1 84%, #f2f5fa 100%);
       box-shadow:
-        0 2px 3px -1px rgba(14,18,28,.55),
-        inset 0 1px 0 rgba(255,255,255,.95),
-        inset 0 -1px 1px rgba(20,26,38,.4),
-        0 0 0 .5px rgba(30,36,50,.35);
+        0 1.5px 2px -.5px rgba(14,18,28,.55),
+        inset 0 .5px 0 rgba(255,255,255,.95),
+        inset 0 -.5px 1px rgba(20,26,38,.35);
     }
     /* 고리가 종이 구멍 속으로 들어가는 부분: 어두운 펀치 구멍 + 종이 두께 */
     .nb-coil-ring::before,
     .nb-coil-ring::after {
-      content: ""; position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%;
+      content: ""; position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%;
       transform: translateY(-50%);
-      background: radial-gradient(circle at 50% 36%, #171c28 0 44%, #2b3140 60%, #4a5160 78%, #7d8494 100%);
+      background: radial-gradient(circle at 50% 34%, #161b26 0 40%, #262c3a 58%, #40485a 78%, #6f7789 100%);
       box-shadow:
         inset 0 2px 3px rgba(0,0,0,.85),
-        0 0 0 1.5px rgba(255,252,242,.85),
-        0 0 0 2.5px rgba(120,116,102,.35);
+        0 0 0 1.5px rgba(255,252,242,.9),
+        0 0 0 2.5px rgba(120,116,102,.32);
     }
-    .nb-coil-ring::before { left: -4px; }
-    .nb-coil-ring::after { right: -4px; }
+    .nb-coil-ring::before { left: -1px; }
+    .nb-coil-ring::after { right: -1px; }
     .nb-page-inner { display: flex; flex-direction: column; gap: 14px; min-height: 100%; }
     .nb-page-no {
       display: block;
@@ -2422,8 +2421,9 @@
       flex-shrink: 0; font-size: 10.5px; font-weight: 600; color: #5b6478;
       background: rgba(120,126,140,.12); border-radius: 999px; padding: 4px 9px;
     }
-    .nb-cal { margin-top: 14px; }
+    .nb-cal { margin-top: 14px; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
     .nb-cal-head, .nb-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+    .nb-cal-grid { flex: 1 1 auto; grid-auto-rows: minmax(38px, 1fr); align-content: stretch; }
     .nb-cal-head span { text-align: center; font-size: 9px; font-weight: 700; color: #a0a5ae; letter-spacing: .06em; padding-bottom: 5px; }
     .nb-cal-head .sun { color: #c05a60; }
     .nb-cal-head .sat { color: #4e6f9a; }
