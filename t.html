@@ -135,6 +135,44 @@
     log("Archive: 옆으로 끌면 다음 책으로 넘어감 (" + before + " → " + after + ")", before !== after);
     log("Archive: 끌기는 책을 열지 않음", !D().querySelector("#nbSpread"));
 
+    // 6) 달력 → 일기: 3D 책 넘김이 실제로 그려지는지
+    P.setTab("year");
+    P.openYearBook(2026, 10);
+    P.render();
+    await wait(300);
+    var flipSeen = false;
+    var sp = D().querySelector("#nbYearSpread");
+    var Obs = W().MutationObserver;
+    var obs = new Obs(function (muts) {
+      muts.forEach(function (m) {
+        Array.prototype.forEach.call(m.addedNodes, function (n) {
+          if (n.classList && (n.classList.contains("nb-flip") || n.classList.contains("nb-flip-leaf"))) flipSeen = true;
+        });
+      });
+    });
+    if (sp) obs.observe(sp, { childList: true, subtree: true });
+    var cell = null;
+    Array.prototype.forEach.call(D().querySelectorAll(".nb-day"), function (b) {
+      var al = b.getAttribute("aria-label") || "";
+      if (al.indexOf("11월 28일") >= 0) cell = b;
+    });
+    log("Calendar: 28일 칸 찾음", !!cell);
+    cell.click();
+    await wait(600);
+    if (obs.disconnect) obs.disconnect();
+    log("Calendar: 달력→일기 전환에 3D 책 넘김 종이가 실제로 그려짐", flipSeen);
+    log("Calendar: 넘김 뒤 일기 페이지(#nbDaySpread)가 열림", !!D().querySelector("#nbDaySpread"));
+
+    // 7) 일기 페이지에서 손가락 스와이프로 다음 날
+    var before = P.getState().selectedDate;
+    var sp2 = D().querySelector("#nbDaySpread");
+    drag(sp2, -90);
+    await wait(700);
+    drag(D().querySelector("#nbDaySpread"), -90);
+    await wait(800);
+    var after = P.getState().selectedDate;
+    log("일기: 스와이프로 다음 날 이동 (" + before + " → " + after + ")", !!after && after !== before);
+
     log("window.__errors = " + W().__errors.length, W().__errors.length === 0);
     document.title = "done";
   }

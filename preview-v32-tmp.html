@@ -1810,8 +1810,7 @@
     .nb-pola:hover .nb-pola-del, .nb-pola:focus-within .nb-pola-del { opacity: 1; }
     .nb-pola-del svg { width: 11px; height: 11px; }
 
-    .nb-day-side .nb-day-block + .nb-day-block { margin-top: 18px; }
-    .nb-day-block-head {
+    .nb-day-side .nb-day-block + .nb-day-block { margin-top: 18px; }    .nb-day-block-head {
       display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
       padding-bottom: 7px; border-bottom: 1px solid rgba(120,126,140,.28);
     }
@@ -1848,6 +1847,8 @@
     }
     .nb-day-tag--done { color: #2d6a4f; border-color: rgba(45,106,79,.42); background: rgba(45,106,79,.05); }
     .nb-day-empty { margin: 10px 0 0; font-size: 12px; color: #c2c5cc; }
+    /* 일기 면은 페이지 번호가 아니라 일기 영역이 남는 높이를 차지한다 */
+    .nb-day-page .nb-page-no { margin-top: 2px; }
     .nb-stage .save-status { color: #9aa0a9; }
     .paper .item-list { gap: 0; }
     .paper .list-item {
@@ -3075,7 +3076,7 @@
 <script>
   "use strict";
 
-  const APP_VERSION = "3.1";
+  const APP_VERSION = "3.2";
   const STORAGE_KEY = "personal_archive_planner_v8";
   const LEGACY_PERSONAL_KEYS = [
     "personal_archive_planner_v7",
